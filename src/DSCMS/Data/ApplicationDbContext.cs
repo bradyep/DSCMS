@@ -22,5 +22,13 @@ namespace DSCMS.Data
             // For example, you can rename the ASP.NET Identity table names and more.
             // Add your customizations after calling base.OnModelCreating(builder);
         }
+
+        public DbSet<Layout> Layouts { get; set; }
+        public DbSet<Template> Templates { get; set; }
+        public DbSet<Content> Contents { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<ContentType> ContentTypes { get; set; }
+        public DbSet<ContentTypeItem> ContentTypeItems { get; set; }
+        public DbSet<ContentItem> ContentItems { get; set; }
     }
 }
