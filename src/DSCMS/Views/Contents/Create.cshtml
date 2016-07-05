@@ -1,0 +1,80 @@
+@model DSCMS.Models.Content
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2>Create</h2>
+
+<form asp-action="Create">
+    <div class="form-horizontal">
+        <h4>Content</h4>
+        <hr />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="Body" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Body" class="form-control" />
+                <span asp-validation-for="Body" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="ContentTypeId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="ContentTypeId" class ="form-control" asp-items="ViewBag.ContentTypeId"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CreatedBy" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="CreatedBy" class ="form-control" asp-items="ViewBag.CreatedBy"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="CreationDate" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="CreationDate" class="form-control" />
+                <span asp-validation-for="CreationDate" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LastUpdatedBy" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="LastUpdatedBy" class ="form-control" asp-items="ViewBag.LastUpdatedBy"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="LastUpdatedDate" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="LastUpdatedDate" class="form-control" />
+                <span asp-validation-for="LastUpdatedDate" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="TemplateId" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <select asp-for="TemplateId" class ="form-control" asp-items="ViewBag.TemplateId"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="UrlToDisplay" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="UrlToDisplay" class="form-control" />
+                <span asp-validation-for="UrlToDisplay" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
