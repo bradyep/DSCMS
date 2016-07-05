@@ -22,19 +22,18 @@ namespace DSCMS.Controllers
             return View();
         }
 
-        public IActionResult ContentType(string name)
+        public IActionResult ContentType(string id = "Blog")
         {
-            // Figure out which layout, title and view page to use
-            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == name).FirstOrDefault();
+            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == id).FirstOrDefault();
             if (contentType == null) return NotFound();
 
-            string layoutToUse = contentType.Template.Layout.FileLocation ?? "_Layout";
-            ViewData["Layout"] = layoutToUse;
+            ViewData["Title"] = contentType.Title ?? "Title";
 
-            string contentTypePageTitle = contentType.Title ?? "Title";
-            ViewData["Title"] = contentTypePageTitle;
+            Template template = _context.Templates.Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
+            Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
+            ViewData["Layout"] = layout.FileLocation ?? "_Layout";
 
-            string viewLocationToUse = contentType.Template.FileLocation ?? "/Views/Home/Index.cshtml";
+            string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
 
             return View(viewLocationToUse);
         }
