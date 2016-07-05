@@ -10,6 +10,7 @@ namespace DSCMS.Models
     {
         public int ContentId { get; set; }
         public string UrlToDisplay { get; set; }
+        public string Title { get; set; }
         public string Body { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastUpdatedDate { get; set; }

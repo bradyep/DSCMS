@@ -58,7 +58,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,UrlToDisplay")] Content content)
+        public async Task<IActionResult> Create([Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,Title,UrlToDisplay")] Content content)
         {
             if (ModelState.IsValid)
             {
@@ -98,7 +98,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,UrlToDisplay")] Content content)
+        public async Task<IActionResult> Edit(int id, [Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,Title,UrlToDisplay")] Content content)
         {
             if (id != content.ContentId)
             {
