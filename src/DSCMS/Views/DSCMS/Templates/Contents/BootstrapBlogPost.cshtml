@@ -1,0 +1,13 @@
+﻿@model DSCMS.Models.Content
+
+@{
+    Layout = (string) ViewData["Layout"];
+}
+
+<div class="blog-post">
+    <h2 class="blog-post-title">New feature</h2>
+    <p class="blog-post-meta">December 14, 2013 by <a href="#">Chris</a></p>
+
+    @Model.Body
+
+</div><!-- /.blog-post -->

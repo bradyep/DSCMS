@@ -38,9 +38,20 @@ namespace DSCMS.Controllers
             return View(viewLocationToUse);
         }
 
-        public IActionResult Content(int contentId)
+        new public IActionResult Content(string id) // The id here is Content.UrlToDisplay
         {
-            return View();
+            Content content = _context.Contents.Where(c => c.UrlToDisplay == id).FirstOrDefault();
+            if (content == null) return NotFound();
+
+            ViewData["Title"] = content.Title ?? "Title";
+
+            Template template = _context.Templates.Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
+            Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
+            ViewData["Layout"] = layout.FileLocation ?? "_Layout";
+
+            string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
+
+            return View(viewLocationToUse, content);
         }
 
         public IActionResult About()
