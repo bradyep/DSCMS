@@ -25,9 +25,9 @@ namespace DSCMS.Controllers
             return View();
         }
 
-        public IActionResult ContentType(string id = "Blog") // The id here is ContentType.Name
+        public IActionResult ContentType(string contentTypeName = "Blog")
         {
-            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == id).FirstOrDefault();
+            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
             if (contentType == null) return NotFound();
 
             ViewData["Title"] = contentType.Title ?? "Title";
@@ -41,9 +41,12 @@ namespace DSCMS.Controllers
             return View(viewLocationToUse);
         }
 
-        new public IActionResult Content(string id) // The id here is Content.UrlToDisplay
+        new public IActionResult Content(string contentTypeName, string contentUrl) // The id here is Content.UrlToDisplay
         {
-            Content content = _context.Contents.Where(c => c.UrlToDisplay == id).FirstOrDefault();
+            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
+            if (contentType == null) return NotFound();
+
+            Content content = _context.Contents.Where(c => c.UrlToDisplay == contentUrl).FirstOrDefault();
             if (content == null) return NotFound();
 
             ViewData["Title"] = content.Title ?? "Title";
