@@ -92,18 +92,39 @@ namespace DSCMS
             app.UseMvc(routes =>
             {
                 //routes.MapRoute(
-                //    name: "dscms",
-                //    template: "{controller=Home}/{action=Index}/{contentTypeName?}/{contentUrl?}");
-                //routes.MapRoute("layouts_route", "Layouts/{*slug}",
-                //  defaults: new { controller = "Layouts", action = "ReadPost" });
+                //    name: "blank",
+                //    template: "",
+                //    defaults: new { controller = "Home", action = "Index" });
+
                 routes.MapRoute(
-                    name: "layouts",
-                    template: "Layouts/{action?}/{id?}",
+                    name: "Layouts",
+                    template: "Admin/Layouts/{action?}/{id?}",
                     defaults: new { controller = "Layouts", action = "Index" });
                 routes.MapRoute(
-                    name: "templates",
-                    template: "Templates/{action?}/{id?}",
+                    name: "Templates",
+                    template: "Admin/Templates/{action?}/{id?}",
                     defaults: new { controller = "Templates", action = "Index" });
+                routes.MapRoute(
+                    name: "Contents",
+                    template: "Admin/Contents/{action?}/{id?}",
+                    defaults: new { controller = "Contents", action = "Index" });
+                routes.MapRoute(
+                    name: "Users",
+                    template: "Admin/Users/{action?}/{id?}",
+                    defaults: new { controller = "Users", action = "Index" });
+                routes.MapRoute(
+                    name: "ContentTypes",
+                    template: "Admin/ContentTypes/{action?}/{id?}",
+                    defaults: new { controller = "ContentTypes", action = "Index" });
+                routes.MapRoute(
+                    name: "ContentItems",
+                    template: "Admin/ContentItems/{action?}/{id?}",
+                    defaults: new { controller = "ContentItems", action = "Index" });
+                routes.MapRoute(
+                    name: "ContentTypeItems",
+                    template: "Admin/ContentTypeItems/{action?}/{id?}",
+                    defaults: new { controller = "ContentTypeItems", action = "Index" });
+
                 routes.MapRoute(
                     name: "cms",
                     template: "{contentTypeName?}/{contentUrl?}",
