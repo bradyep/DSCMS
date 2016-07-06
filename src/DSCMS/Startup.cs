@@ -91,6 +91,23 @@ namespace DSCMS
 
             app.UseMvc(routes =>
             {
+                //routes.MapRoute(
+                //    name: "dscms",
+                //    template: "{controller=Home}/{action=Index}/{contentTypeName?}/{contentUrl?}");
+                //routes.MapRoute("layouts_route", "Layouts/{*slug}",
+                //  defaults: new { controller = "Layouts", action = "ReadPost" });
+                routes.MapRoute(
+                    name: "layouts",
+                    template: "Layouts/{action?}/{id?}",
+                    defaults: new { controller = "Layouts", action = "Index" });
+                routes.MapRoute(
+                    name: "templates",
+                    template: "Templates/{action?}/{id?}",
+                    defaults: new { controller = "Templates", action = "Index" });
+                routes.MapRoute(
+                    name: "cms",
+                    template: "{contentTypeName?}/{contentUrl?}",
+                    defaults: new { controller = "DSCMS", action = "Content" });
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{contentTypeName?}/{contentUrl?}");

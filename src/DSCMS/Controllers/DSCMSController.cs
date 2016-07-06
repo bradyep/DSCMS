@@ -25,6 +25,7 @@ namespace DSCMS.Controllers
             return View();
         }
 
+        /*
         public IActionResult ContentType(string contentTypeName = "Blog")
         {
             ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
@@ -40,18 +41,28 @@ namespace DSCMS.Controllers
 
             return View(viewLocationToUse);
         }
+        */
 
-        new public IActionResult Content(string contentTypeName, string contentUrl) // The id here is Content.UrlToDisplay
+        new public IActionResult Content(string contentTypeName, string contentUrl = "") // The id here is Content.UrlToDisplay
         {
+            Content content = null;
+            Template template;
+
             ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
             if (contentType == null) return NotFound();
 
-            Content content = _context.Contents.Where(c => c.UrlToDisplay == contentUrl).FirstOrDefault();
-            if (content == null) return NotFound();
+            if (contentUrl.Trim() != "") { // Content was requested
+                content = _context.Contents.Where(c => c.UrlToDisplay == contentUrl && c.ContentTypeId == contentType.ContentTypeId).FirstOrDefault();
+                if (content == null) return NotFound();
+                ViewData["Title"] = content.Title ?? "Title";
+                template = _context.Templates.Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
+            }
+            else // ContentType was requested
+            {
+                ViewData["Title"] = contentType.Title ?? "Title";
+                template = _context.Templates.Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
+            }
 
-            ViewData["Title"] = content.Title ?? "Title";
-
-            Template template = _context.Templates.Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
             Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
             ViewData["Layout"] = layout.FileLocation ?? "_Layout";
 
