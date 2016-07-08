@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DSCMS.Data;
 using DSCMS.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DSCMS.Controllers
 {
+    [Authorize]
     public class ContentTypeItemsController : Controller
     {
         private readonly ApplicationDbContext _context;

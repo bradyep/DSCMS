@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using DSCMS.Data;
 using DSCMS.Models;
 using DSCMS.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace DSCMS
 {
@@ -51,9 +52,26 @@ namespace DSCMS
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite("Filename=./dscms.db"));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            //services.Configure<CookieAuthenticationOptions>(options =>
+            //{
+            //    options.LoginPath = new PathString("/Admin/Account/Login");
+            //    // options.LogoutPath = new PathString("/Admin/Account/LogOff");
+            //});
+
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Cookies.ApplicationCookie.LoginPath = "/Admin/Account/Login";
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Password = new Microsoft.AspNetCore.Identity.PasswordOptions
+                {
+                    RequireNonAlphanumeric = false
+                };
+            });
 
             services.AddMvc();
 
@@ -89,12 +107,29 @@ namespace DSCMS
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
 
+            //app.UseCookieAuthentication(options =>
+            //{
+            //    options.LoginPath = new PathString("/Admin/Account/Login")
+            //});
+
             app.UseMvc(routes =>
             {
                 //routes.MapRoute(
                 //    name: "blank",
                 //    template: "",
                 //    defaults: new { controller = "Home", action = "Index" });
+
+                /*
+                routes.MapRoute(
+                    name: "Admin",
+                    template: "Admin/{controller}/{action?}/{id?}",
+                    defaults: new { action = "Index" });
+                */
+
+                routes.MapRoute(
+                    name: "Account",
+                    template: "Admin/Account/{action?}/{id?}",
+                    defaults: new { controller = "Account", action = "Index" });
 
                 routes.MapRoute(
                     name: "Layouts",
@@ -127,8 +162,9 @@ namespace DSCMS
 
                 routes.MapRoute(
                     name: "cms",
-                    template: "{contentTypeName?}/{contentUrl?}",
+                    template: "{contentTypeName}/{contentUrl?}",
                     defaults: new { controller = "DSCMS", action = "Content" });
+                // Default route. Let an admin somehow decide where this takes the user. 
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{contentTypeName?}/{contentUrl?}");
