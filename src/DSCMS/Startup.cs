@@ -52,12 +52,6 @@ namespace DSCMS
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite("Filename=./dscms.db"));
 
-            //services.Configure<CookieAuthenticationOptions>(options =>
-            //{
-            //    options.LoginPath = new PathString("/Admin/Account/Login");
-            //    // options.LogoutPath = new PathString("/Admin/Account/LogOff");
-            //});
-
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Cookies.ApplicationCookie.LoginPath = "/Admin/Account/Login";
@@ -106,11 +100,6 @@ namespace DSCMS
             app.UseIdentity();
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-
-            //app.UseCookieAuthentication(options =>
-            //{
-            //    options.LoginPath = new PathString("/Admin/Account/Login")
-            //});
 
             app.UseMvc(routes =>
             {
