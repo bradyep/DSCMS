@@ -10,12 +10,14 @@ namespace DSCMS.Models
   public class Content
   {
     public int ContentId { get; set; }
+    [Display(Name = "URL To Display")]
     public string UrlToDisplay { get; set; }
     public string Title { get; set; }
     [DataType(DataType.MultilineText)]
     public string Body { get; set; }
     [Display(Name = "Creation Date")]
     [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
     public DateTime CreationDate { get; set; }
     [Display(Name = "Last Updated Date")]
     [DataType(DataType.Date)]
