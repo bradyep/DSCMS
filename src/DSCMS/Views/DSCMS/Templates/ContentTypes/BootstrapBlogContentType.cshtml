@@ -10,6 +10,7 @@
   {
     <div class="blog-post">
       <h2 class="blog-post-title">@item.GetValueFor("Subject")</h2>
+      @*<h3>@ViewData["Page"]</h3>*@
       <p class="blog-post-meta">@Html.DisplayFor(x => item.CreationDate) by <a href="#">@item.CreatedByUser.DisplayName</a></p>
 
       @Html.Raw(item.Body)

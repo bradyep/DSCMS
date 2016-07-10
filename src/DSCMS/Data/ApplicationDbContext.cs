@@ -26,7 +26,7 @@ namespace DSCMS.Data
         public DbSet<Layout> Layouts { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
-        public DbSet<User> Users { get; set; }
+        new public DbSet<User> Users { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }
         public DbSet<ContentTypeItem> ContentTypeItems { get; set; }
         public DbSet<ContentItem> ContentItems { get; set; }

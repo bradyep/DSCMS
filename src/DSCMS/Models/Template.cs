@@ -14,6 +14,7 @@ namespace DSCMS.Models
     public string FileLocation { get; set; }
     [Display(Name = "File Contents")]
     public string FileContents { get; set; }
+    public bool IsForContentType { get; set; }
 
     public int LayoutId { get; set; }
     public Layout Layout { get; set; }

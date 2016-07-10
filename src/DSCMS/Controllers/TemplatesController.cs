@@ -57,7 +57,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TemplateId,FileContents,FileLocation,LayoutId,Name")] Template template)
+        public async Task<IActionResult> Create([Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TemplateId,FileContents,FileLocation,LayoutId,Name")] Template template)
+        public async Task<IActionResult> Edit(int id, [Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
         {
             if (id != template.TemplateId)
             {

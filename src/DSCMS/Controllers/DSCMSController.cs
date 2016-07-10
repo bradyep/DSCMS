@@ -19,15 +19,7 @@ namespace DSCMS.Controllers
       _context = context;
     }
 
-    /*
-    // GET: /<controller>/
-    public IActionResult Index()
-    {
-        return View();
-    }
-    */
-
-    new public IActionResult Content(string contentTypeName, string contentUrl = "") // The id here is Content.UrlToDisplay
+    public IActionResult Content(string contentTypeName, string contentUrl = "", string page = "") 
     {
       Content content = null;
       Template template;
@@ -50,7 +42,8 @@ namespace DSCMS.Controllers
         // Handle ContentItems
         content.ContentType.ContentTypeItems = _context.ContentTypeItems.Where(cti => cti.ContentTypeId == contentType.ContentTypeId).ToList();
         content.ContentItems = _context.ContentItems
-            .Where(ci => content.ContentType.ContentTypeItems.Select(cti => cti.ContentTypeItemId).Contains(ci.ContentTypeItemId) && ci.ContentId == content.ContentId)
+            .Where(ci => content.ContentType.ContentTypeItems.Select(cti => cti.ContentTypeItemId)
+            .Contains(ci.ContentTypeItemId) && ci.ContentId == content.ContentId)
             .ToList();
       }
       else // ContentType was requested
@@ -58,8 +51,18 @@ namespace DSCMS.Controllers
         ViewData["Title"] = contentType.Title ?? "Title";
         template = _context.Templates.Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
         contentType.ContentTypeItems = _context.ContentTypeItems.Where(cti => cti.ContentTypeId == contentType.ContentTypeId).ToList();
+        // Handle paging
+        int pageValue = 0;
+        Int32.TryParse(page, out pageValue);
+        ViewData["Page"] = pageValue;
         // Handle associated Contents
-        contentType.Contents = _context.Contents.Where(c => c.ContentTypeId == contentType.ContentTypeId).ToList();
+        if (pageValue < 1 || contentType.ItemsPerPage < 1) // Get all Contents
+          contentType.Contents = _context.Contents.Where(c => c.ContentTypeId == contentType.ContentTypeId).ToList();
+        else // Get Contents based on page
+          contentType.Contents = _context.Contents.Where(c => c.ContentTypeId == contentType.ContentTypeId)
+            .Skip((pageValue - 1) * contentType.ItemsPerPage)
+            .Take(contentType.ItemsPerPage)
+            .ToList();
         foreach (Content contentItem in contentType.Contents)
         {
           contentItem.CreatedByUser = _context.Users.Where(u => u.UserId == contentItem.CreatedBy).FirstOrDefault();
