@@ -7,8 +7,9 @@
 <div class="col-sm-8 blog-main">
 
     <div class="blog-post">
-        <h2 class="blog-post-title">@Model.ContentItems.Where(ci => ci.ContentTypeItem.Name == "Subject").FirstOrDefault().Value</h2>
-        <p class="blog-post-meta">December 14, 2013 by <a href="#">Chris</a></p>
+        @*<h2 class="blog-post-title">@Model.ContentItems.Where(ci => ci.ContentTypeItem.Name == "Subject").FirstOrDefault().Value</h2>*@
+        <h2 class="blog-post-title">@Model.GetValueFor("Subject")</h2>
+        <p class="blog-post-meta">December 14, 2013 by <a href="#">@Model.CreatedByUser.DisplayName</a></p>
 
         @Html.Raw(Model.Body)
 
@@ -16,8 +17,7 @@
 
     <nav>
         <ul class="pager">
-            <li><a href="#">Previous</a></li>
-            <li><a href="#">Next</a></li>
+            <li><a href="/Blog">Return</a></li>
         </ul>
     </nav>
 

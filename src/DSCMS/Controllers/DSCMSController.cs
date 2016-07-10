@@ -10,58 +10,72 @@ using DSCMS.Models;
 
 namespace DSCMS.Controllers
 {
-    public class DSCMSController : Controller
+  public class DSCMSController : Controller
+  {
+    private readonly ApplicationDbContext _context;
+
+    public DSCMSController(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
-
-        public DSCMSController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        /*
-        // GET: /<controller>/
-        public IActionResult Index()
-        {
-            return View();
-        }
-        */
-
-        new public IActionResult Content(string contentTypeName, string contentUrl = "") // The id here is Content.UrlToDisplay
-        {
-            Content content = null;
-            Template template;
-
-            ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
-            if (contentType == null) return NotFound();
-
-            if (contentUrl.Trim() != "") { // Content was requested
-                content = _context.Contents.Where(c => c.UrlToDisplay == contentUrl && c.ContentTypeId == contentType.ContentTypeId).FirstOrDefault();
-                if (content == null) return NotFound();
-                content.ContentType = contentType;
-                ViewData["Title"] = content.Title ?? "Title";
-                template = _context.Templates.Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
-                // Handle ContentItems
-                content.ContentType.ContentTypeItems = _context.ContentTypeItems.Where(cti => cti.ContentTypeId == contentType.ContentTypeId).ToList();
-                content.ContentItems = _context.ContentItems
-                    .Where(ci => content.ContentType.ContentTypeItems.Select(cti => cti.ContentTypeItemId).Contains(ci.ContentTypeItemId) && ci.ContentId == content.ContentId)
-                    .ToList();
-            }
-            else // ContentType was requested
-            {
-                ViewData["Title"] = contentType.Title ?? "Title";
-                template = _context.Templates.Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
-            }
-
-            Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
-            ViewData["Layout"] = layout.FileLocation ?? "_Layout";
-
-            string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
-
-            if (contentUrl.Trim() != "") // Content was requested
-                return View(viewLocationToUse, content);
-            else // ContentType was requested
-                return View(viewLocationToUse, contentType);
-        }
+      _context = context;
     }
+
+    /*
+    // GET: /<controller>/
+    public IActionResult Index()
+    {
+        return View();
+    }
+    */
+
+    new public IActionResult Content(string contentTypeName, string contentUrl = "") // The id here is Content.UrlToDisplay
+    {
+      Content content = null;
+      Template template;
+
+      ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
+      if (contentType == null) return NotFound();
+
+      if (contentUrl.Trim() != "")
+      { // Content was requested
+        content = _context.Contents.Where(c => c.UrlToDisplay == contentUrl && c.ContentTypeId == contentType.ContentTypeId).FirstOrDefault();
+        if (content == null) return NotFound();
+        content.ContentType = contentType;
+        content.CreatedByUser = _context.Users.Where(u => u.UserId == content.CreatedBy).FirstOrDefault();
+        content.LastUpdatedByUser = _context.Users.Where(u => u.UserId == content.LastUpdatedBy).FirstOrDefault();
+        ViewData["Title"] = content.Title ?? "Title";
+        template = _context.Templates.Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
+        // Handle ContentItems
+        content.ContentType.ContentTypeItems = _context.ContentTypeItems.Where(cti => cti.ContentTypeId == contentType.ContentTypeId).ToList();
+        content.ContentItems = _context.ContentItems
+            .Where(ci => content.ContentType.ContentTypeItems.Select(cti => cti.ContentTypeItemId).Contains(ci.ContentTypeItemId) && ci.ContentId == content.ContentId)
+            .ToList();
+      }
+      else // ContentType was requested
+      {
+        ViewData["Title"] = contentType.Title ?? "Title";
+        template = _context.Templates.Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
+        contentType.ContentTypeItems = _context.ContentTypeItems.Where(cti => cti.ContentTypeId == contentType.ContentTypeId).ToList();
+        // Handle associated Contents
+        contentType.Contents = _context.Contents.Where(c => c.ContentTypeId == contentType.ContentTypeId).ToList();
+        foreach (Content contentItem in contentType.Contents)
+        {
+          contentItem.CreatedByUser = _context.Users.Where(u => u.UserId == contentItem.CreatedBy).FirstOrDefault();
+          contentItem.LastUpdatedByUser = _context.Users.Where(u => u.UserId == contentItem.LastUpdatedBy).FirstOrDefault();
+          contentItem.ContentItems = _context.ContentItems
+              .Where(ci => contentType.ContentTypeItems.Select(cti => cti.ContentTypeItemId).Contains(ci.ContentTypeItemId) && ci.ContentId == contentItem.ContentId)
+              .ToList();
+        }
+      }
+
+      Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
+      ViewData["Layout"] = layout.FileLocation ?? "_Layout";
+
+      string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
+
+      if (contentUrl.Trim() != "") // Content was requested
+        return View(viewLocationToUse, content);
+      else // ContentType was requested
+        return View(viewLocationToUse, contentType);
+    }
+  }
 }

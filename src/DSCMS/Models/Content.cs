@@ -28,5 +28,10 @@ namespace DSCMS.Models
         [ForeignKey("LastUpdatedBy")]
         public User LastUpdatedByUser { get; set; }
         public List<ContentItem> ContentItems { get; set; }
+
+        public string GetValueFor(string contentTypeItemName)
+        {
+            return this.ContentItems.Where(ci => ci.ContentTypeItem.Name == contentTypeItemName).FirstOrDefault().Value ?? "";
+        }
     }
 }
