@@ -32,6 +32,9 @@ namespace DSCMS.Controllers
       Content content = null;
       Template template;
 
+      ViewData["ContentTypeName"] = contentTypeName;
+      ViewData["ContentUrl"] = contentUrl;
+
       ContentType contentType = _context.ContentTypes.Where(ct => ct.Name == contentTypeName).FirstOrDefault();
       if (contentType == null) return NotFound();
 
