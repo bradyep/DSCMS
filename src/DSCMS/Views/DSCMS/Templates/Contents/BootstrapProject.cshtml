@@ -1,0 +1,22 @@
+﻿@model DSCMS.Models.Content
+
+@{
+  Layout = (string)ViewData["Layout"];
+}
+
+<div class="col-sm-8 blog-main">
+
+  <div class="blog-post">
+    <h2 class="blog-post-title">@Model.GetValueFor("Name")</h2>
+
+    @Html.Raw(Model.Body)
+
+  </div><!-- /.blog-post -->
+
+  <nav>
+    <ul class="pager">
+      <li><a href="/projects">Return</a></li>
+    </ul>
+  </nav>
+
+</div><!-- /.blog-main -->

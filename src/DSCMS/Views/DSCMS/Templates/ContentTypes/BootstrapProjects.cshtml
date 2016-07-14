@@ -1,0 +1,27 @@
+﻿@model DSCMS.Models.ContentType
+
+@{
+  Layout = (string)ViewData["Layout"];
+}
+
+<div class="col-sm-8 blog-main">
+
+  <h2>Projects</h2>
+
+  @foreach (var item in Model.Contents.OrderByDescending(c => c.CreationDate))
+  {
+    <div class="blog-post">
+
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">@item.GetValueFor("Name")</h3>
+        </div>
+        <div class="panel-body">
+          Panel content
+        </div>
+      </div> <!-- /.panel -->
+
+    </div><!-- /.blog-post -->
+  }
+
+</div><!-- /.blog-main -->
