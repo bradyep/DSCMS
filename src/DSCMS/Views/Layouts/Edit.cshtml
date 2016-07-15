@@ -1,50 +1,51 @@
 @model DSCMS.Models.Layout
 
 @{
-    ViewData["Title"] = "Edit";
+  ViewData["Title"] = "Edit";
 }
 
 <h2>Edit</h2>
 
 <form asp-action="Edit">
-    <div class="form-horizontal">
-        <h4>Layout</h4>
-        <hr />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+  <div class="form-horizontal">
+    <h4>Layout</h4>
+    <hr />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="LayoutId" />
-        <div class="form-group">
-            <label asp-for="FileContents" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="FileContents" class="form-control" />
-                <span asp-validation-for="FileContents" class="text-danger" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label asp-for="FileLocation" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="FileLocation" class="form-control" />
-                <span asp-validation-for="FileLocation" class="text-danger" />
-            </div>
-        </div>
-        <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger" />
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
-        </div>
+    <div class="form-group">
+      <label asp-for="Name" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger" />
+      </div>
     </div>
+    <div class="form-group">
+      <label asp-for="FileLocation" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <input asp-for="FileLocation" class="form-control" />
+        <span asp-validation-for="FileLocation" class="text-danger" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label asp-for="FileContents" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <input type="hidden" asp-for="FileContents" class="form-control" />
+        <span asp-validation-for="FileContents" class="text-danger" />
+        <span>@(Model.FileContents == null ? "False" : (Model.FileContents.Trim() != "").ToString())</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-offset-2 col-md-10">
+        <input type="submit" value="Save" class="btn btn-default" />
+      </div>
+    </div>
+  </div>
 </form>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+  <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+  @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
