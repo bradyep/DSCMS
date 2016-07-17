@@ -84,6 +84,12 @@ namespace DSCMS.Controllers
         return NotFound();
       }
       ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name", template.LayoutId);
+      var types = new[]
+      {
+        new { Name = "Content", Value = 0 },
+        new { Name = "ContentType", Value = 1 }
+      };
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
       return View(template);
     }
 

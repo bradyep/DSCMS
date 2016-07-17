@@ -30,7 +30,8 @@
     <div class="form-group">
       <label asp-for="IsForContentType" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input asp-for="IsForContentType" class="form-control" />
+        <select asp-for="IsForContentType" class="form-control" asp-items="ViewBag.Types"></select>
+        @*<input asp-for="IsForContentType" class="form-control" />*@
         <span asp-validation-for="IsForContentType" class="text-danger" />
       </div>
     </div>
