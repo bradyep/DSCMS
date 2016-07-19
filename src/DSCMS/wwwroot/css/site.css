@@ -18,6 +18,11 @@ textarea {
     max-width: 80%;
 }
 
+.filter {
+  max-width: 280px;
+  display: inline-block;
+}
+
 /* Carousel */
 .carousel-caption p {
     font-size: 20px;

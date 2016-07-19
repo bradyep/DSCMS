@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace DSCMS.Models
     public string Description { get; set; }
     public int ItemsPerPage { get; set; }
 
+    [Display(Name = "Template")]
     public int TemplateId { get; set; }
     public Template Template { get; set; }
     public List<ContentTypeItem> ContentTypeItems { get; set; }

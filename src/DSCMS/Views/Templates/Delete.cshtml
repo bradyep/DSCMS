@@ -24,6 +24,12 @@
       @Html.DisplayFor(model => model.Layout.Name)
     </dd>
     <dt>
+      @Html.DisplayNameFor(model => model.IsForContentType)
+    </dt>
+    <dd>
+      @(Model.IsForContentType > 0 ? "ContentType" : "Content")
+    </dd>
+    <dt>
       @Html.DisplayNameFor(model => model.FileLocation)
     </dt>
     <dd>

@@ -36,7 +36,7 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var contentType = await _context.ContentTypes.SingleOrDefaultAsync(m => m.ContentTypeId == id);
+            var contentType = await _context.ContentTypes.Include(ct => ct.Template).SingleOrDefaultAsync(m => m.ContentTypeId == id);
             if (contentType == null)
             {
                 return NotFound();
@@ -48,7 +48,7 @@ namespace DSCMS.Controllers
         // GET: ContentTypes/Create
         public IActionResult Create()
         {
-            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId");
+            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace DSCMS.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId", contentType.TemplateId);
+            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
             return View(contentType);
         }
 
@@ -77,12 +77,12 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var contentType = await _context.ContentTypes.SingleOrDefaultAsync(m => m.ContentTypeId == id);
+            var contentType = await _context.ContentTypes.Include(ct => ct.ContentTypeItems).SingleOrDefaultAsync(m => m.ContentTypeId == id);
             if (contentType == null)
             {
                 return NotFound();
             }
-            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId", contentType.TemplateId);
+            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
             return View(contentType);
         }
 
@@ -118,7 +118,7 @@ namespace DSCMS.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId", contentType.TemplateId);
+            ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
             return View(contentType);
         }
 
@@ -130,7 +130,7 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var contentType = await _context.ContentTypes.SingleOrDefaultAsync(m => m.ContentTypeId == id);
+            var contentType = await _context.ContentTypes.Include(ct => ct.Template).SingleOrDefaultAsync(m => m.ContentTypeId == id);
             if (contentType == null)
             {
                 return NotFound();

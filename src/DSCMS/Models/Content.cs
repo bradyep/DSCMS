@@ -21,10 +21,13 @@ namespace DSCMS.Models
     public DateTime CreationDate { get; set; }
     [Display(Name = "Last Updated Date")]
     [DataType(DataType.Date)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
     public DateTime LastUpdatedDate { get; set; }
 
+    [Display(Name = "Content Type")]
     public int ContentTypeId { get; set; }
     public ContentType ContentType { get; set; }
+    [Display(Name = "Template")]
     public int TemplateId { get; set; }
     public Template Template { get; set; }
     public int CreatedBy { get; set; }

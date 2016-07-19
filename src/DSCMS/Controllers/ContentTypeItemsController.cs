@@ -82,7 +82,7 @@ namespace DSCMS.Controllers
             {
                 return NotFound();
             }
-            ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId", contentTypeItem.ContentTypeId);
+            ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", contentTypeItem.ContentTypeId);
             return View(contentTypeItem);
         }
 
@@ -118,7 +118,7 @@ namespace DSCMS.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId", contentTypeItem.ContentTypeId);
+            ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", contentTypeItem.ContentTypeId);
             return View(contentTypeItem);
         }
 
