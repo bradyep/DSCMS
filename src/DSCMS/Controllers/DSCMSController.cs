@@ -22,24 +22,25 @@ namespace DSCMS.Controllers
 
     public IActionResult Content(string contentTypeName, string contentUrl = "", string page = "") 
     {
+      string pContentUrl = contentUrl.ToLower();
       Content content = null;
       Template template;
 
       ViewData["ContentTypeName"] = contentTypeName;
-      ViewData["ContentUrl"] = contentUrl;
+      ViewData["ContentUrl"] = pContentUrl;
 
       ContentType contentType = _context.ContentTypes
         .Include(ct => ct.ContentTypeItems)
         .Where(ct => ct.Name == contentTypeName).FirstOrDefault();
       if (contentType == null) return NotFound();
 
-      if (contentUrl.Trim() != "") // Content was requested
+      if (pContentUrl.Trim() != "") // Content was requested
       { 
         content = _context.Contents
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
           .Include(c => c.ContentItems)
-          .Where(c => c.UrlToDisplay == contentUrl && c.ContentTypeId == contentType.ContentTypeId)
+          .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
         if (content == null) return NotFound();
         content.ContentType = contentType;
@@ -76,12 +77,11 @@ namespace DSCMS.Controllers
             .ToList();
       }
 
-      // Layout layout = _context.Layouts.Where(l => l.LayoutId == template.LayoutId).FirstOrDefault();
       ViewData["Layout"] = template.Layout.FileLocation ?? "_Layout";
 
       string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
 
-      if (contentUrl.Trim() != "") // Content was requested
+      if (pContentUrl.Trim() != "") // Content was requested
         return View(viewLocationToUse, content);
       else // ContentType was requested
         return View(viewLocationToUse, contentType);

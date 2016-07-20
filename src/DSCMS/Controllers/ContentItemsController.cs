@@ -84,8 +84,8 @@ namespace DSCMS.Controllers
             {
                 return NotFound();
             }
-            ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "ContentId", contentItem.ContentId);
-            ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "ContentTypeItemId", contentItem.ContentTypeItemId);
+            ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", contentItem.ContentId);
+            ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name", contentItem.ContentTypeItemId);
             return View(contentItem);
         }
 
@@ -121,8 +121,8 @@ namespace DSCMS.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "ContentId", contentItem.ContentId);
-            ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "ContentTypeItemId", contentItem.ContentTypeItemId);
+            ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", contentItem.ContentId);
+            ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name", contentItem.ContentTypeItemId);
             return View(contentItem);
         }
 

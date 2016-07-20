@@ -58,10 +58,10 @@ namespace DSCMS.Controllers
     // GET: Contents/Create
     public IActionResult Create()
     {
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId");
+      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name");
       ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId");
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId");
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId");
+      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name");
       return View();
     }
 
@@ -70,18 +70,20 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,Title,UrlToDisplay")] Content content)
+    public async Task<IActionResult> Create([Bind("ContentId,Body,ContentTypeId,CreatedBy,LastUpdatedBy,TemplateId,Title,UrlToDisplay")] Content content)
     {
       if (ModelState.IsValid)
       {
+        content.CreationDate = DateTime.Now;
+        content.LastUpdatedDate = DateTime.Now;
         _context.Add(content);
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");
       }
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId", content.ContentTypeId);
+      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
       ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "TemplateId", content.TemplateId);
+      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
       return View(content);
     }
 
@@ -93,7 +95,10 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var content = await _context.Contents.Include(c => c.ContentItems).SingleOrDefaultAsync(m => m.ContentId == id);
+      var content = await _context.Contents
+        .Include(x => x.ContentItems)
+        .ThenInclude(x => x.ContentTypeItem)
+        .SingleOrDefaultAsync(m => m.ContentId == id);
       if (content == null)
       {
         return NotFound();
@@ -119,6 +124,7 @@ namespace DSCMS.Controllers
 
       if (ModelState.IsValid)
       {
+        content.LastUpdatedDate = DateTime.Now;
         try
         {
           _context.Update(content);

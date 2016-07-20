@@ -11,6 +11,7 @@ namespace DSCMS.Models
   {
     public int ContentId { get; set; }
     [Display(Name = "URL To Display")]
+    [RegularExpression(@"^[a-z0-9-]+$"), Required, StringLength(100)]
     public string UrlToDisplay { get; set; }
     public string Title { get; set; }
     [DataType(DataType.MultilineText)]
@@ -40,7 +41,8 @@ namespace DSCMS.Models
 
     public string GetValueFor(string contentTypeItemName)
     {
-      return this.ContentItems.Where(ci => ci.ContentTypeItem.Name == contentTypeItemName).FirstOrDefault().Value ?? "";
+      ContentItem contentItem = this.ContentItems.Where(ci => ci.ContentTypeItem.Name == contentTypeItemName).FirstOrDefault();
+      return contentItem == null ? "" : contentItem.Value ?? "";
     }
   }
 }

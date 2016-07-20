@@ -26,26 +26,26 @@
                 <select asp-for="ContentTypeId" class ="form-control" asp-items="ViewBag.ContentTypeId"></select>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" hidden>
             <label asp-for="CreatedBy" class="col-md-2 control-label"></label>
             <div class="col-md-10">
                 <select asp-for="CreatedBy" class ="form-control" asp-items="ViewBag.CreatedBy"></select>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" hidden>
             <label asp-for="CreationDate" class="col-md-2 control-label"></label>
             <div class="col-md-10">
                 <input asp-for="CreationDate" class="form-control" />
                 <span asp-validation-for="CreationDate" class="text-danger" />
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" hidden>
             <label asp-for="LastUpdatedBy" class="col-md-2 control-label"></label>
             <div class="col-md-10">
                 <select asp-for="LastUpdatedBy" class ="form-control" asp-items="ViewBag.LastUpdatedBy"></select>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" hidden>
             <label asp-for="LastUpdatedDate" class="col-md-2 control-label"></label>
             <div class="col-md-10">
                 <input asp-for="LastUpdatedDate" class="form-control" />
