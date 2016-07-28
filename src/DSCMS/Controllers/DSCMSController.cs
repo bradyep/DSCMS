@@ -22,16 +22,17 @@ namespace DSCMS.Controllers
 
     public IActionResult Content(string contentTypeName, string contentUrl = "", string page = "") 
     {
+      string pContentTypeName = contentTypeName.ToLower();
       string pContentUrl = contentUrl.ToLower();
       Content content = null;
       Template template;
 
-      ViewData["ContentTypeName"] = contentTypeName;
+      ViewData["ContentTypeName"] = pContentTypeName;
       ViewData["ContentUrl"] = pContentUrl;
 
       ContentType contentType = _context.ContentTypes
         .Include(ct => ct.ContentTypeItems)
-        .Where(ct => ct.Name == contentTypeName).FirstOrDefault();
+        .Where(ct => ct.Name == pContentTypeName).FirstOrDefault();
       if (contentType == null) return NotFound();
 
       if (pContentUrl.Trim() != "") // Content was requested

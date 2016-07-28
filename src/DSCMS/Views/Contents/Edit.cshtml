@@ -81,7 +81,7 @@
     <h4>Content Items</h4>
 
     <p>
-      <a asp-controller="ContentItems" asp-action="Create">Create New Content Item</a>
+      <a asp-controller="ContentItems" asp-action="Create" asp-route-id="@Model.ContentId">Create New Content Item</a>
     </p>
     <table class="table">
       <thead>

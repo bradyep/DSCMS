@@ -106,7 +106,7 @@ namespace DSCMS.Controllers
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
       ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
+      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name", content.TemplateId);
       return View(content);
     }
 
