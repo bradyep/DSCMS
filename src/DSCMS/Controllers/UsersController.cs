@@ -55,7 +55,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UserId,DisplayName,Email,Password,Username")] User user)
+        public async Task<IActionResult> Create([Bind("UserId,DisplayName,Email,Password")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace DSCMS.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UserId,DisplayName,Email,Password,Username")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("UserId,DisplayName,Email,Password")] User user)
         {
             if (id != user.UserId)
             {

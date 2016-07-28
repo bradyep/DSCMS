@@ -31,12 +31,15 @@ namespace DSCMS.Models
     [Display(Name = "Template")]
     public int TemplateId { get; set; }
     public Template Template { get; set; }
+
     public int CreatedBy { get; set; }
     [ForeignKey("CreatedBy")]
     public User CreatedByUser { get; set; }
+
     public int LastUpdatedBy { get; set; }
     [ForeignKey("LastUpdatedBy")]
     public User LastUpdatedByUser { get; set; }
+
     public List<ContentItem> ContentItems { get; set; }
 
     public string GetValueFor(string contentTypeItemName)

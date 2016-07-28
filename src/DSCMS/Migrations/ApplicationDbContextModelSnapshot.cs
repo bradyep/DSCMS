@@ -5,13 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using DSCMS.Data;
 
-namespace DSCMS.Data.Migrations
+namespace DSCMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160710203302_Pagination")]
-    partial class Pagination
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431");
@@ -86,7 +85,9 @@ namespace DSCMS.Data.Migrations
 
                     b.Property<string>("Title");
 
-                    b.Property<string>("UrlToDisplay");
+                    b.Property<string>("UrlToDisplay")
+                        .IsRequired()
+                        .HasAnnotation("MaxLength", 100);
 
                     b.HasKey("ContentId");
 
@@ -126,6 +127,8 @@ namespace DSCMS.Data.Migrations
                     b.Property<int>("ContentTypeId")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<int>("DefaultTemplateForContent");
+
                     b.Property<string>("Description");
 
                     b.Property<int>("ItemsPerPage");
@@ -137,6 +140,8 @@ namespace DSCMS.Data.Migrations
                     b.Property<string>("Title");
 
                     b.HasKey("ContentTypeId");
+
+                    b.HasIndex("DefaultTemplateForContent");
 
                     b.HasIndex("TemplateId");
 
@@ -184,7 +189,7 @@ namespace DSCMS.Data.Migrations
 
                     b.Property<string>("FileLocation");
 
-                    b.Property<bool>("IsForContentType");
+                    b.Property<int>("IsForContentType");
 
                     b.Property<int>("LayoutId");
 
@@ -207,8 +212,6 @@ namespace DSCMS.Data.Migrations
                     b.Property<string>("Email");
 
                     b.Property<string>("Password");
-
-                    b.Property<string>("Username");
 
                     b.HasKey("UserId");
 
@@ -360,6 +363,11 @@ namespace DSCMS.Data.Migrations
 
             modelBuilder.Entity("DSCMS.Models.ContentType", b =>
                 {
+                    b.HasOne("DSCMS.Models.Template", "DefaultContentTemplate")
+                        .WithMany("HasAsDefaultContentTemplate")
+                        .HasForeignKey("DefaultTemplateForContent")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("DSCMS.Models.Template", "Template")
                         .WithMany("ContentTypes")
                         .HasForeignKey("TemplateId")
