@@ -67,11 +67,19 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("ContentTypeItemId,ContentTypeId,Name")] ContentTypeItem contentTypeItem)
     {
+      // ContentType ct = contentTypeItem.ContentType;
+      ContentType ct = _context.ContentTypes.Where(x => x.ContentTypeId == contentTypeItem.ContentTypeId).FirstOrDefault();
+
       if (ModelState.IsValid)
       {
         _context.Add(contentTypeItem);
         await _context.SaveChangesAsync();
-        return RedirectToAction("Index");
+
+        // return RedirectToAction("Index");
+        // return View("/Views/ContentTypes/Edit.cshtml", ct);
+
+        // Run ContentType controller action: Edit
+        return RedirectToAction("Edit", "ContentTypes", new { id = ct.ContentTypeId });
       }
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId", contentTypeItem.ContentTypeId);
       return View(contentTypeItem);
@@ -152,10 +160,15 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+      ContentTypeItem cti = _context.ContentTypeItems.Include(x => x.ContentType).Where(x => x.ContentTypeItemId == id).FirstOrDefault();
+      // ContentType ct = cti.ContentType;
       var contentTypeItem = await _context.ContentTypeItems.SingleOrDefaultAsync(m => m.ContentTypeItemId == id);
       _context.ContentTypeItems.Remove(contentTypeItem);
       await _context.SaveChangesAsync();
-      return RedirectToAction("Index");
+
+      // return RedirectToAction("Index");
+      // return View("/Views/ContentTypes/Edit.cshtml", cti.ContentType);
+      return RedirectToAction("Edit", "ContentTypes", new { id = cti.ContentType.ContentTypeId });
     }
 
     private bool ContentTypeItemExists(int id)
