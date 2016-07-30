@@ -70,11 +70,16 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("ContentItemId,ContentId,ContentTypeItemId,Value")] ContentItem contentItem)
     {
+      Content content = _context.Contents.Where(x => x.ContentId == contentItem.ContentId).FirstOrDefault();
+
       if (ModelState.IsValid)
       {
         _context.Add(contentItem);
         await _context.SaveChangesAsync();
-        return RedirectToAction("Index");
+
+        // return RedirectToAction("Index");
+        // Redirect to Contents
+        return RedirectToAction("Edit", "Contents", new { id = content.ContentId });
       }
       ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "ContentId", contentItem.ContentId);
       ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "ContentTypeItemId", contentItem.ContentTypeItemId);
@@ -158,10 +163,13 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+      ContentItem ci = _context.ContentItems.Include(x => x.Content).Where(x => x.ContentItemId == id).FirstOrDefault();
+
       var contentItem = await _context.ContentItems.SingleOrDefaultAsync(m => m.ContentItemId == id);
       _context.ContentItems.Remove(contentItem);
       await _context.SaveChangesAsync();
-      return RedirectToAction("Index");
+      // return RedirectToAction("Index");
+      return RedirectToAction("Edit", "Contents", new { id = ci.Content.ContentId });
     }
 
     private bool ContentItemExists(int id)

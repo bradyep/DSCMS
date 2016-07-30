@@ -1,7 +1,7 @@
 @model DSCMS.Models.Content
 
 @{
-    ViewData["Title"] = "Create";
+  ViewData["Title"] = "Create";
 }
 
 <h2>Create</h2>
@@ -23,7 +23,7 @@
         <div class="form-group">
             <label asp-for="ContentTypeId" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                <select asp-for="ContentTypeId" class ="form-control" asp-items="ViewBag.ContentTypeId"></select>
+                <select asp-for="ContentTypeId" class ="form-control" asp-items="ViewBag.ContentTypeId" onchange="onContentTypeIdChanged()"></select>
             </div>
         </div>
         <div class="form-group" hidden>
@@ -87,3 +87,25 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+
+<script>
+  // Put together default templates
+  var defaultTemplateLookup = new Map();
+  @{ var lookupDictionary = (Dictionary<int, int>)ViewData["DefaultTemplateLookup"]; }
+  @foreach (var item in lookupDictionary)
+  {
+    @*var stringToWrite = "defaultTemplateLookup.set(" + @item.Key + ", " + @item.Value + ");\n";
+    <text>@stringToWrite</text>*@
+    @:defaultTemplateLookup.set(@item.Key,@item.Value);
+  }
+    // Function used to find the default template
+    function onContentTypeIdChanged() {
+      // alert('it changed');
+      let selectedContentTypeId = $("#ContentTypeId :selected").val();
+      // Try to find our default content template
+      let lookupAttempt = defaultTemplateLookup.get(+selectedContentTypeId);
+      if (lookupAttempt) {
+        $("#TemplateId").val(lookupAttempt);
+      }
+    }
+</script>

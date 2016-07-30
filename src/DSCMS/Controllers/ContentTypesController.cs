@@ -118,7 +118,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("ContentTypeId,Description,Name,TemplateId,Title,ItemsPerPage")] ContentType contentType)
+    public async Task<IActionResult> Edit(int id, [Bind("ContentTypeId,Description,Name,TemplateId,Title,ItemsPerPage,DefaultTemplateForContent")] ContentType contentType)
     {
       if (id != contentType.ContentTypeId)
       {
