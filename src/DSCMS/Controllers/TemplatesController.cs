@@ -49,6 +49,12 @@ namespace DSCMS.Controllers
     public IActionResult Create()
     {
       ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name");
+      var types = new[]
+      {
+        new { Name = "Content", Value = 0 },
+        new { Name = "ContentType", Value = 1 }
+      };
+      ViewData["Types"] = new SelectList(types, "Value", "Name");
       return View();
     }
 
@@ -66,6 +72,12 @@ namespace DSCMS.Controllers
         return RedirectToAction("Index");
       }
       ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name", template.LayoutId);
+      var types = new[]
+      {
+        new { Name = "Content", Value = 0 },
+        new { Name = "ContentType", Value = 1 }
+      };
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
       return View(template);
     }
 

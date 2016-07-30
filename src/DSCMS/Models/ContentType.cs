@@ -21,7 +21,7 @@ namespace DSCMS.Models
     [ForeignKey("TemplateId")]
     public Template Template { get; set; }
 
-    public int DefaultTemplateForContent { get; set; }
+    public int? DefaultTemplateForContent { get; set; }
     [ForeignKey("DefaultTemplateForContent")]
     public Template DefaultContentTemplate { get; set; }
 

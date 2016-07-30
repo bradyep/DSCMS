@@ -48,7 +48,8 @@ namespace DSCMS.Controllers
     // GET: ContentTypes/Create
     public IActionResult Create()
     {
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name");
+      // ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name");
+      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name");
       return View();
     }
 
@@ -65,7 +66,8 @@ namespace DSCMS.Controllers
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");
       }
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
+      // ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
+      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name", contentType.TemplateId);
       return View(contentType);
     }
 

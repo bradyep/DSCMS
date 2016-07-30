@@ -12,10 +12,24 @@
     <hr />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="form-group">
-      <label asp-for="FileContents" class="col-md-2 control-label"></label>
+      <label asp-for="Name" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input asp-for="FileContents" class="form-control" />
-        <span asp-validation-for="FileContents" class="text-danger" />
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label asp-for="LayoutId" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <select asp-for="LayoutId" class="form-control" asp-items="ViewBag.LayoutId"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label asp-for="IsForContentType" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        @*<input asp-for="IsForContentType" class="form-control" />*@
+        <select asp-for="IsForContentType" class="form-control" asp-items="ViewBag.Types"></select>
+        <span asp-validation-for="IsForContentType" class="text-danger" />
       </div>
     </div>
     <div class="form-group">
@@ -26,23 +40,10 @@
       </div>
     </div>
     <div class="form-group">
-      <label asp-for="LayoutId" class="col-md-2 control-label"></label>
+      <label asp-for="FileContents" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <select asp-for="LayoutId" class="form-control" asp-items="ViewBag.LayoutId"></select>
-      </div>
-    </div>
-    <div class="form-group">
-      <label asp-for="Name" class="col-md-2 control-label"></label>
-      <div class="col-md-10">
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label asp-for="IsForContentType" class="col-md-2 control-label"></label>
-      <div class="col-md-10">
-        <input asp-for="IsForContentType" class="form-control" />
-        <span asp-validation-for="IsForContentType" class="text-danger" />
+        <input asp-for="FileContents" class="form-control" />
+        <span asp-validation-for="FileContents" class="text-danger" />
       </div>
     </div>
     <div class="form-group">
