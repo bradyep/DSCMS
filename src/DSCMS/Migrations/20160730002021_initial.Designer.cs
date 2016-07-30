@@ -8,7 +8,7 @@ using DSCMS.Data;
 namespace DSCMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20160728012413_initial")]
+    [Migration("20160730002021_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -128,7 +128,7 @@ namespace DSCMS.Migrations
                     b.Property<int>("ContentTypeId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<int>("DefaultTemplateForContent");
+                    b.Property<int?>("DefaultTemplateForContent");
 
                     b.Property<string>("Description");
 
@@ -366,8 +366,7 @@ namespace DSCMS.Migrations
                 {
                     b.HasOne("DSCMS.Models.Template", "DefaultContentTemplate")
                         .WithMany("HasAsDefaultContentTemplate")
-                        .HasForeignKey("DefaultTemplateForContent")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("DefaultTemplateForContent");
 
                     b.HasOne("DSCMS.Models.Template", "Template")
                         .WithMany("ContentTypes")

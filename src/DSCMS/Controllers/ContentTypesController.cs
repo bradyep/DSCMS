@@ -50,6 +50,13 @@ namespace DSCMS.Controllers
     {
       // ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name");
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name");
+
+      List<Template> ts = new List<Template>();
+      ts.Add(new Template { Name = "", TemplateId = 0 });
+      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      var tsSelectList = new SelectList(ts, "TemplateId", "Name", ts);
+      ViewData["DefaultTemplateId"] = tsSelectList;
+      // ViewData["DefaultTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name");
       return View();
     }
 
@@ -58,16 +65,27 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ContentTypeId,Description,Name,TemplateId,Title,ItemsPerPage")] ContentType contentType)
+    public async Task<IActionResult> Create([Bind("ContentTypeId,Description,Name,TemplateId,DefaultTemplateForContent,Title,ItemsPerPage")] ContentType contentType)
     {
+      if (contentType.DefaultTemplateForContent < 1) contentType.DefaultTemplateForContent = null;
       if (ModelState.IsValid)
       {
         _context.Add(contentType);
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");
       }
-      // ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.TemplateId);
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name", contentType.TemplateId);
+
+      // Figure out the default default templateId
+      // int defaultDefaultTemplateIdToUse = contentType.DefaultTemplateForContent == null ? 0 : contentType.DefaultTemplateForContent;
+      int defaultDefaultTemplateIdToUse = contentType.DefaultTemplateForContent ?? 0;
+
+      List <Template> ts = new List<Template>();
+      ts.Add(new Template { Name = "", TemplateId = 0 });
+      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      var tsSelectList = new SelectList(ts, "TemplateId", "Name", defaultDefaultTemplateIdToUse);
+      ViewData["DefaultTemplateId"] = tsSelectList;
+      // ViewData["DefaultTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name", contentType.DefaultTemplateForContent);
       return View(contentType);
     }
 
@@ -85,6 +103,13 @@ namespace DSCMS.Controllers
         return NotFound();
       }
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name", contentType.TemplateId);
+
+      List<Template> ts = new List<Template>();
+      ts.Add(new Template { Name = "", TemplateId = 0 });
+      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      var tsSelectList = new SelectList(ts, "TemplateId", "Name", contentType.DefaultTemplateForContent);
+      ViewData["DefaultTemplateId"] = tsSelectList;
+
       return View(contentType);
     }
 

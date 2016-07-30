@@ -206,7 +206,7 @@ namespace DSCMS.Migrations
                 {
                     ContentTypeId = table.Column<int>(nullable: false)
                         .Annotation("Autoincrement", true),
-                    DefaultTemplateForContent = table.Column<int>(nullable: false),
+                    DefaultTemplateForContent = table.Column<int>(nullable: true),
                     Description = table.Column<string>(nullable: true),
                     ItemsPerPage = table.Column<int>(nullable: false),
                     Name = table.Column<string>(nullable: true),
@@ -221,7 +221,7 @@ namespace DSCMS.Migrations
                         column: x => x.DefaultTemplateForContent,
                         principalTable: "Templates",
                         principalColumn: "TemplateId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ContentTypes_Templates_TemplateId",
                         column: x => x.TemplateId,

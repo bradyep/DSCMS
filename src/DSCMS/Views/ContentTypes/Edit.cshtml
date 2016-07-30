@@ -13,24 +13,10 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="ContentTypeId" />
     <div class="form-group">
-      <label asp-for="Description" class="col-md-2 control-label"></label>
-      <div class="col-md-10">
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger" />
-      </div>
-    </div>
-    <div class="form-group">
       <label asp-for="Name" class="col-md-2 control-label"></label>
       <div class="col-md-10">
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger" />
-      </div>
-    </div>
-    <div class="form-group">
-      <label asp-for="TemplateId" class="control-label col-md-2"></label>
-      <div class="col-md-10">
-        <select asp-for="TemplateId" class="form-control" asp-items="ViewBag.TemplateId"></select>
-        <span asp-validation-for="TemplateId" class="text-danger" />
       </div>
     </div>
     <div class="form-group">
@@ -41,10 +27,32 @@
       </div>
     </div>
     <div class="form-group">
+      <label asp-for="TemplateId" class="control-label col-md-2"></label>
+      <div class="col-md-10">
+        <select asp-for="TemplateId" class="form-control" asp-items="ViewBag.TemplateId"></select>
+        <span asp-validation-for="TemplateId" class="text-danger" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label asp-for="DefaultTemplateForContent" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <select asp-for="DefaultTemplateForContent" class="form-control" asp-items="ViewBag.DefaultTemplateId"></select>
+      </div>
+    </div>
+
+    <div class="form-group">
       <label asp-for="ItemsPerPage" class="col-md-2 control-label"></label>
       <div class="col-md-10">
         <input asp-for="ItemsPerPage" class="form-control" />
         <span asp-validation-for="ItemsPerPage" class="text-danger" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label asp-for="Description" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger" />
       </div>
     </div>
 
