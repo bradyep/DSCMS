@@ -134,7 +134,9 @@ namespace DSCMS.Controllers
             throw;
           }
         }
-        return RedirectToAction("Index");
+        // return RedirectToAction("Index");
+        // Take them to the edit for the parent Content
+        return RedirectToAction("Edit", "Contents", new { id = contentItem.ContentId });
       }
       ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", contentItem.ContentId);
       ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name", contentItem.ContentTypeItemId);

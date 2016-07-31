@@ -94,13 +94,10 @@
   @{ var lookupDictionary = (Dictionary<int, int>)ViewData["DefaultTemplateLookup"]; }
   @foreach (var item in lookupDictionary)
   {
-    @*var stringToWrite = "defaultTemplateLookup.set(" + @item.Key + ", " + @item.Value + ");\n";
-    <text>@stringToWrite</text>*@
     @:defaultTemplateLookup.set(@item.Key,@item.Value);
   }
     // Function used to find the default template
     function onContentTypeIdChanged() {
-      // alert('it changed');
       let selectedContentTypeId = $("#ContentTypeId :selected").val();
       // Try to find our default content template
       let lookupAttempt = defaultTemplateLookup.get(+selectedContentTypeId);
