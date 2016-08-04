@@ -78,9 +78,10 @@ namespace DSCMS.Controllers
             .ToList();
       }
 
-      ViewData["Layout"] = template.Layout.FileLocation ?? "_Layout";
+      ViewData["Layout"] = template != null ? template.Layout.FileLocation ?? null : null;
 
-      string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
+      // string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
+      string viewLocationToUse = template != null ? template.FileLocation ?? "/Views/Home/Index.cshtml" : "/Views/DSCMS/Templates/Empty.cshtml";
 
       if (pContentUrl.Trim() != "") // Content was requested
         return View(viewLocationToUse, content);
