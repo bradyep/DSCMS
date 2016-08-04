@@ -2,6 +2,9 @@
 
 @{
   Layout = (string)ViewData["Layout"];
+  int previousPageNumber = (int)ViewData["Page"] - 1;
+  int nextPageNumber = (int)ViewData["Page"] + 1;
+  bool olderContentExists = (bool)ViewData["OlderContentExists"];
 }
 
 <div class="col-sm-8 blog-main">
@@ -10,18 +13,33 @@
   {
     <div class="blog-post">
       <h2 class="blog-post-title">@item.GetValueFor("Subject")</h2>
-      @*<h3>@ViewData["Page"]</h3>*@
       <p class="blog-post-meta">@Html.DisplayFor(x => item.CreationDate) by <a href="#">@item.CreatedByUser.DisplayName</a></p>
 
-      @Html.Raw(item.Body)
+      @*@Html.Raw(item.Body)*@
+      @*@item.GetValueFor("TeaserText")*@
+      @Html.Raw(item.GetValueFor("TeaserText"))
+
+      <div style="float: right; margin-top: 35px;">
+        @if (item.Body != null && item.Body.Trim() != "")
+        {
+          <a href="blog/@item.UrlToDisplay">Read More</a>
+          @*<a asp-action="@item.UrlToDisplay" >Read More</a>*@
+        }
+      </div>
 
     </div><!-- /.blog-post -->
   }
 
   <nav>
     <ul class="pager">
-      <li><a href="#">Newer</a></li>
-      <li><a href="#">Older</a></li>
+      @if (previousPageNumber > 0)
+      {
+        <li><a href="/blog?page=@previousPageNumber">Newer</a></li>
+      }
+      @if (olderContentExists)
+      {
+        <li><a href="/blog?page=@nextPageNumber">Older</a></li>
+      }
     </ul>
   </nav>
 

@@ -59,20 +59,27 @@ namespace DSCMS.Controllers
         // Handle paging
         int pageValue = 0;
         Int32.TryParse(page, out pageValue);
+        if (pageValue < 1) pageValue = 1;
         ViewData["Page"] = pageValue;
         // Handle associated Contents
+        /*
         if (pageValue < 1 || contentType.ItemsPerPage < 1) // Get all Contents
           contentType.Contents = _context.Contents
             .Include(c => c.CreatedByUser)
             .Include(c => c.LastUpdatedByUser)
             .Include(c => c.ContentItems)
             .Where(c => c.ContentTypeId == contentType.ContentTypeId).ToList();
-        else // Get Contents based on page
-          contentType.Contents = _context.Contents
-            .Include(c => c.CreatedByUser)
-            .Include(c => c.LastUpdatedByUser)
-            .Include(c => c.ContentItems)
-            .Where(c => c.ContentTypeId == contentType.ContentTypeId)
+            */
+        // else // Get Contents based on page
+        contentType.Contents = _context.Contents
+          .Where(c => c.ContentTypeId == contentType.ContentTypeId)
+          .Include(c => c.CreatedByUser)
+          .Include(c => c.LastUpdatedByUser)
+          .Include(c => c.ContentItems)
+          .ToList();
+        ViewData["OlderContentExists"] = contentType.ItemsPerPage * pageValue < contentType.Contents.Count();
+        contentType.Contents = contentType.Contents
+            .OrderByDescending(x => x.CreationDate)
             .Skip((pageValue - 1) * contentType.ItemsPerPage)
             .Take(contentType.ItemsPerPage)
             .ToList();
