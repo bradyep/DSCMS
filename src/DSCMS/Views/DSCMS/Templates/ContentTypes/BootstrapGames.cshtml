@@ -22,11 +22,11 @@
       {
         @:<div class="row">
         @:  <div class="col-md-6">
-          @:  <a href="#">
+          @:  <a href="@item.GetValueFor("GameJamLink")">
             @:  <img class="img-responsive" src="@item.GetValueFor("Screenshot")" alt="">
             @:</a>
             @:<h3>
-@:              <a href="#">@item.GetValueFor("Name")</a>
+@:              <a href="@item.GetValueFor("GameJamLink")">@item.GetValueFor("Name")</a>
             @:</h3>
             @:<p>@item.GetValueFor("TeaserText")</p>
           @:</div>
@@ -38,11 +38,11 @@
       else
       {
           @:<div class="col-md-6">
-            @:<a href="#">
+            @:<a href="@item.GetValueFor("GameJamLink")">
               @:<img class="img-responsive" src="@item.GetValueFor("Screenshot")" alt="">
             @:</a>
             @:<h3>
-              @:<a href="#">@item.GetValueFor("Name")</a>
+              @:<a href="@item.GetValueFor("GameJamLink")">@item.GetValueFor("Name")</a>
             @:</h3>
             @:<p>@item.GetValueFor("TeaserText")</p>
           @:</div>
