@@ -77,12 +77,15 @@ namespace DSCMS.Controllers
           .Include(c => c.LastUpdatedByUser)
           .Include(c => c.ContentItems)
           .ToList();
+        if (contentType.ItemsPerPage > 0)
+        { 
         ViewData["OlderContentExists"] = contentType.ItemsPerPage * pageValue < contentType.Contents.Count();
         contentType.Contents = contentType.Contents
             .OrderByDescending(x => x.CreationDate)
             .Skip((pageValue - 1) * contentType.ItemsPerPage)
             .Take(contentType.ItemsPerPage)
             .ToList();
+        }
       }
 
       ViewData["Layout"] = template != null ? template.Layout.FileLocation ?? null : null;
