@@ -20,7 +20,7 @@ namespace DSCMS.Controllers
       _context = context;
     }
 
-    public IActionResult Content(string contentTypeName, string contentUrl = "", string page = "") 
+    public IActionResult Content(string contentTypeName = "blog", string contentUrl = "", string page = "") 
     {
       string pContentTypeName = contentTypeName.ToLower();
       string pContentUrl = contentUrl.ToLower();

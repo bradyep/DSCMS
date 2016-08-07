@@ -161,7 +161,7 @@ namespace DSCMS
         // Default route. Let an admin somehow decide where this takes the user. 
         routes.MapRoute(
             name: "default",
-            template: "{controller=Home}/{action=Index}/{contentTypeName?}/{contentUrl?}");
+            template: "{controller=DSCMS}/{action=Content}/{contentTypeName?}/{contentUrl?}");
       });
     }
   }
