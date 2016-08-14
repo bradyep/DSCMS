@@ -25,7 +25,7 @@ namespace DSCMS.Models.AccountViewModels
         public string ConfirmPassword { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [Display(Name = "Initialization Key")]
         public string InitializationKey { get; set; }
     }

@@ -8,6 +8,10 @@
 <form asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
     <h4>Create a new account.</h4>
     <hr />
+@if (!(bool)ViewData["KeyHasBeenSet"])
+{
+    <div>Initialization Key Has Not Been Set - You can set this in the appsettings.json file</div>
+}
     <div asp-validation-summary="All" class="text-danger"></div>
     <div class="form-group">
         <label asp-for="Email" class="col-md-2 control-label"></label>
@@ -39,7 +43,9 @@
     </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
+          @if ((bool)ViewData["KeyHasBeenSet"]) {
             <button type="submit" class="btn btn-default">Register</button>
+          }
         </div>
     </div>
 </form>
