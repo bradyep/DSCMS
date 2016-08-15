@@ -155,6 +155,12 @@ var IDemon;
             this.keyC.onDown.add(this.playerPunch, this);
             this.keyV = this.game.input.keyboard.addKey(Phaser.Keyboard.V);
             this.keyV.onDown.add(this.playerKick, this);
+            // addKeyCapture to stop the browser from scrolling around
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.SPACEBAR);
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.UP);
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.DOWN);
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.LEFT);
+            game.input.keyboard.addKeyCapture(Phaser.Keyboard.RIGHT);
             // Player limbs
             // this.playerFist = this.playerAttackSprites.create(-1000, -1000, "fist");
             this.playerFist = this.playerAttackSprites.create(this.width / 1.6, -(this.height / 4 + 5), "fist");
