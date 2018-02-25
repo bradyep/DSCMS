@@ -1,0 +1,75 @@
+@model IEnumerable<DSCMS.Models.Content>
+
+@{
+  ViewData["Title"] = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+  <a asp-action="Create">Create New</a>
+</p>
+
+<form asp-controller="Contents" asp-action="Index">
+  <p>
+    @*Content Type: <input type="text" name="contentType">*@
+    <select name="contentType" class="form-control filter" asp-items="ViewBag.ContentType"></select>
+    <input type="submit" value="Filter" />
+  </p>
+</form>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>
+        @Html.DisplayNameFor(model => model.Title)
+      </th>
+      <th>
+        Content Type
+      </th>
+      <th>
+        @Html.DisplayNameFor(model => model.UrlToDisplay)
+      </th>
+      <th>
+        @Html.DisplayNameFor(model => model.Body)
+      </th>
+      @*<th>
+            @Html.DisplayNameFor(model => model.CreationDate)
+        </th>*@
+      <th>
+        @Html.DisplayNameFor(model => model.LastUpdatedDate)
+      </th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var item in Model)
+    {
+      <tr>
+        <td>
+          @Html.DisplayFor(modelItem => item.Title)
+        </td>
+        <td>
+          @Html.DisplayFor(modelItem => item.ContentType.Name)
+        </td>
+        <td>
+          @Html.DisplayFor(modelItem => item.UrlToDisplay)
+        </td>
+        <td>
+          @(item.Body == null || item.Body.Trim() == "" ? "False" : "True")
+        </td>
+        @*<td>
+              @Html.DisplayFor(modelItem => item.CreationDate)
+          </td>*@
+        <td>
+          @Html.DisplayFor(modelItem => item.LastUpdatedDate)
+        </td>
+        <td>
+          <a asp-action="Edit" asp-route-id="@item.ContentId">Edit</a> |
+          <a asp-action="Details" asp-route-id="@item.ContentId">Details</a> |
+          <a asp-action="Delete" asp-route-id="@item.ContentId">Delete</a>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

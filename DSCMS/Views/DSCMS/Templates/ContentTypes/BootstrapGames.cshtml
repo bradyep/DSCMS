@@ -1,0 +1,55 @@
+﻿@model DSCMS.Models.ContentType
+
+@{
+  Layout = (string)ViewData["Layout"];
+}
+
+<div class="col-sm-8 blog-main">
+
+  <div class="blog-post">
+    <h1>Games</h1>
+
+  @{ 
+    int counter = 0;
+    Model.Contents.Reverse();
+    }
+
+    @for (int i = 0; i < Model.Contents.Count; i++)
+    {
+      counter++;
+      var item = Model.Contents[i];
+      if (i % 2 == 0)
+      {
+        @:<div class="row">
+        @:  <div class="col-md-6">
+          @:  <a href="games/@item.UrlToDisplay">
+            @:  <img class="img-responsive" src="@item.GetValueFor("Screenshot")" alt="">
+            @:</a>
+            @:<h3>
+@:              <a href="games/@item.UrlToDisplay">@item.GetValueFor("Name")</a>
+            @:</h3>
+            @:<p>@item.GetValueFor("TeaserText")</p>
+          @:</div>
+          if (i == Model.Contents.Count - 1)
+        {
+          @:</div> <!-- /class="row" -->
+        }
+      }
+      else
+      {
+          @:<div class="col-md-6">
+            @:<a href="games/@item.UrlToDisplay">
+              @:<img class="img-responsive" src="@item.GetValueFor("Screenshot")" alt="">
+            @:</a>
+            @:<h3>
+              @:<a href="games/@item.UrlToDisplay">@item.GetValueFor("Name")</a>
+            @:</h3>
+            @:<p>@item.GetValueFor("TeaserText")</p>
+          @:</div>
+        @:</div> <!-- /class="row" -->
+      }
+    } @* End of For Loop *@
+
+  </div><!-- /.blog-post -->
+
+</div><!-- /.blog-main -->
