@@ -28,7 +28,10 @@ namespace DSCMS
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 // options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-                options.UseSqlite("Filename=dscms-data/dscms.db"));
+                // Use the option below to test locally on my Windows machine
+                // options.UseSqlite("Filename=dscms-data/dscms.db"));
+                // Use the option below when deploying to production
+                options.UseSqlite("Filename=/dscms-data/dscms.db"));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
