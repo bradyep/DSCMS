@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using DSCMS.Data;
 using DSCMS.Models;
 using DSCMS.Services;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace DSCMS
 {
@@ -57,7 +58,13 @@ namespace DSCMS
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseStaticFiles();
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".odt"] = "application/vnd.oasis.opendocument.text";
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            });
 
             app.UseAuthentication();
 
