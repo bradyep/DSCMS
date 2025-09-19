@@ -7,24 +7,27 @@ using System.Threading.Tasks;
 
 namespace DSCMS.Models
 {
+  /// <summary>
+  /// Razor template that contains all the HTML needed to represent specific content.
+  /// </summary>
   public class Template
   {
     public int TemplateId { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
     [Display(Name = "File Location")]
-    public string FileLocation { get; set; }
+    public string? FileLocation { get; set; }
     [Display(Name = "File Contents")]
-    public string FileContents { get; set; }
+    public string? FileContents { get; set; }
     [Display(Name = "Type")]
     public int IsForContentType { get; set; }
 
-    public int LayoutId { get; set; }
-    public Layout Layout { get; set; }
-    public List<Content> Contents { get; set; }
+    public int? LayoutId { get; set; }
+    public Layout? Layout { get; set; }
+    public List<Content> Contents { get; set; } = new List<Content>();
 
     [InverseProperty("Template")]
-    public List<ContentType> ContentTypes { get; set; }
+    public List<ContentType> ContentTypes { get; set; } = new List<ContentType>();
     [InverseProperty("DefaultContentTemplate")]
-    public List<ContentType> HasAsDefaultContentTemplate { get; set; }
+    public List<ContentType> HasAsDefaultContentTemplate { get; set; } = new List<ContentType>();
   }
 }

@@ -2,32 +2,43 @@
 
 @{
   Layout = (string)ViewData["Layout"];
-  int previousPageNumber = (int)ViewData["Page"] - 1;
-  int nextPageNumber = (int)ViewData["Page"] + 1;
-  bool olderContentExists = (bool)ViewData["OlderContentExists"];
+  int currentPage = ViewData["Page"] != null ? (int)ViewData["Page"] : 1;
+  int previousPageNumber = currentPage - 1;
+  int nextPageNumber = currentPage + 1;
+  bool olderContentExists = ViewData["OlderContentExists"] != null ? (bool)ViewData["OlderContentExists"] : false;
 }
 
 <div class="col-sm-8 blog-main">
 
-  @foreach (var item in Model.Contents.OrderByDescending(c => c.CreationDate))
+  @if (Model?.Contents != null && Model.Contents.Any())
+  {
+    @foreach (var item in Model.Contents.OrderByDescending(c => c.CreationDate))
+    {
+      <div class="blog-post">
+        <h2 class="blog-post-title">@item.GetValueFor("Subject")</h2>
+        <p class="blog-post-meta">@Html.DisplayFor(x => item.CreationDate) by <a href="#">@(item.CreatedByUser?.DisplayName ?? "Unknown")</a></p>
+
+        @*@Html.Raw(item.Body)*@
+        @*@item.GetValueFor("TeaserText")*@
+        @Html.Raw(item.GetValueFor("TeaserText"))
+
+        <div style="float: right; margin-top: 35px;">
+          @if (item.Body != null && item.Body.Trim() != "")
+          {
+            <a href="blog/@item.UrlToDisplay">Read More</a>
+            @*<a asp-action="@item.UrlToDisplay" >Read More</a>*@
+          }
+        </div>
+
+      </div><!-- /.blog-post -->
+    }
+  }
+  else
   {
     <div class="blog-post">
-      <h2 class="blog-post-title">@item.GetValueFor("Subject")</h2>
-      <p class="blog-post-meta">@Html.DisplayFor(x => item.CreationDate) by <a href="#">@item.CreatedByUser.DisplayName</a></p>
-
-      @*@Html.Raw(item.Body)*@
-      @*@item.GetValueFor("TeaserText")*@
-      @Html.Raw(item.GetValueFor("TeaserText"))
-
-      <div style="float: right; margin-top: 35px;">
-        @if (item.Body != null && item.Body.Trim() != "")
-        {
-          <a href="blog/@item.UrlToDisplay">Read More</a>
-          @*<a asp-action="@item.UrlToDisplay" >Read More</a>*@
-        }
-      </div>
-
-    </div><!-- /.blog-post -->
+      <h2 class="blog-post-title">No Content Available</h2>
+      <p class="blog-post-meta">There are currently no blog posts to display.</p>
+    </div>
   }
 
   <nav>
