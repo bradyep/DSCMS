@@ -128,6 +128,12 @@ namespace DSCMS
                 pattern: "Admin",
                 defaults: new { controller = "Layouts", action = "Index" });
 
+            // Add explicit route for Diagnostics controller before the catch-all route
+            app.MapControllerRoute(
+                name: "Diagnostics",
+                pattern: "Diagnostics/{action=Index}",
+                defaults: new { controller = "Diagnostics" });
+
             app.MapControllerRoute(
                 name: "cms",
                 pattern: "{contentTypeName}/{contentUrl?}",

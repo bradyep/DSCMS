@@ -67,8 +67,8 @@ namespace DSCMS.Controllers
 
       // ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name");
 
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId");
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId");
+      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
+      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
 
       /*
       List<Template> templates = new List<Template>();
@@ -108,8 +108,8 @@ namespace DSCMS.Controllers
         return RedirectToAction("Index");
       }
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.LastUpdatedBy);
+      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
       return View(content);
     }
@@ -131,8 +131,8 @@ namespace DSCMS.Controllers
         return NotFound();
       }
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.LastUpdatedBy);
+      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name", content.TemplateId);
       return View(content);
     }
@@ -171,8 +171,8 @@ namespace DSCMS.Controllers
         return RedirectToAction("Index");
       }
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "UserId", "UserId", content.LastUpdatedBy);
+      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
       return View(content);
     }

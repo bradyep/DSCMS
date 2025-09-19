@@ -108,6 +108,8 @@ namespace DSCMS.Controllers
         {
           contentType.Contents = _context.Contents
             .Where(c => c.ContentTypeId == contentType.ContentTypeId)
+            .Include(c => c.CreatedByUser)
+            .Include(c => c.LastUpdatedByUser)
             .Include(c => c.ContentItems)
             .ThenInclude(ci => ci.ContentTypeItem)
             .ToList();
