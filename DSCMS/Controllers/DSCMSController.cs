@@ -55,6 +55,7 @@ namespace DSCMS.Controllers
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
           .Include(c => c.ContentItems)
+          .ThenInclude(ci => ci.ContentTypeItem)
           .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
         if (content == null) return NotFound();
@@ -85,11 +86,13 @@ namespace DSCMS.Controllers
         if (pageValue < 1) pageValue = 1;
         ViewData["Page"] = pageValue;
 
-        // Get Contents - simplified query to avoid user relationship issues
+        // Get Contents - include ContentItems and their ContentTypeItems for proper teaser text display
         try
         {
           contentType.Contents = _context.Contents
             .Where(c => c.ContentTypeId == contentType.ContentTypeId)
+            .Include(c => c.ContentItems)
+            .ThenInclude(ci => ci.ContentTypeItem)
             .ToList();
         }
         catch (Exception ex)
