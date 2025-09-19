@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 
 namespace DSCMS.Models
 {
+  /// <summary>
+  /// Represents a content entity (such as a blog post) with metadata, relationships, and associated content items.
+  /// </summary>
+  /// <remarks>This class is used to manage content entities, including their metadata such as title, body, and
+  /// creation dates,  as well as relationships to content types, templates, and associated content items. It also
+  /// tracks the users who created and last updated the content.</remarks>
   public class Content
   {
     public int ContentId { get; set; }

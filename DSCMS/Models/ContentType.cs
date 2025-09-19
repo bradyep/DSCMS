@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 
 namespace DSCMS.Models
 {
-  public class ContentType
+    /// <summary>
+    /// Defines a certain type of content, such as "Blog Post" or "News Article". 
+    /// </summary>
+    public class ContentType
   {
     public int ContentTypeId { get; set; }
     public string Name { get; set; } = string.Empty;

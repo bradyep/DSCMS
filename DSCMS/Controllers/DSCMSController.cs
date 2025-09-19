@@ -7,10 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using DSCMS.Data;
 using DSCMS.Models;
 
-// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace DSCMS.Controllers
 {
+  /// <summary>
+  /// Responsible for handling requests related to displaying content types and individual content items.
+  /// </summary>
   public class DSCMSController : Controller
   {
     private readonly ApplicationDbContext _context;
@@ -20,7 +21,14 @@ namespace DSCMS.Controllers
       _context = context;
     }
 
-    public IActionResult Content(string contentTypeName = "blog", string contentUrl = "", string page = "") 
+    /// <summary>
+    /// Navigates to the content type or specific content item based on the provided parameters
+    /// </summary>
+    /// <param name="contentTypeName"></param>
+    /// <param name="contentUrl"></param>
+    /// <param name="page"></param>
+    /// <returns></returns>
+    public IActionResult Content(string contentTypeName = "blog", string contentUrl = "", string page = "")
     {
       string pContentTypeName = contentTypeName.ToLower();
       string pContentUrl = contentUrl.ToLower();
@@ -33,16 +41,16 @@ namespace DSCMS.Controllers
       ContentType contentType = _context.ContentTypes
         .Include(ct => ct.ContentTypeItems)
         .Where(ct => ct.Name == pContentTypeName).FirstOrDefault();
-      
+
       // If no content type found, show welcome page for first-time setup
-      if (contentType == null) 
+      if (contentType == null)
       {
         ViewData["Title"] = "Welcome to DSCMS";
         return View("~/Views/DSCMS/Welcome.cshtml");
       }
 
       if (pContentUrl.Trim() != "") // Content was requested
-      { 
+      {
         content = _context.Contents
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
@@ -52,7 +60,7 @@ namespace DSCMS.Controllers
         if (content == null) return NotFound();
         content.ContentType = contentType;
         ViewData["Title"] = content.Title ?? "Title";
-        
+
         if (content.TemplateId > 0)
         {
           template = _context.Templates
@@ -63,20 +71,20 @@ namespace DSCMS.Controllers
       else // ContentType was requested
       {
         ViewData["Title"] = contentType.Title ?? "Title";
-        
+
         if (contentType.TemplateId > 0)
         {
           template = _context.Templates
             .Include(t => t.Layout)
             .Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
         }
-        
+
         // Handle paging
         int pageValue = 0;
         Int32.TryParse(page, out pageValue);
         if (pageValue < 1) pageValue = 1;
         ViewData["Page"] = pageValue;
-        
+
         // Get Contents - simplified query to avoid user relationship issues
         try
         {
@@ -90,9 +98,9 @@ namespace DSCMS.Controllers
           contentType.Contents = new List<Content>();
           ViewData["ErrorMessage"] = "Some content could not be loaded due to data inconsistencies.";
         }
-        
+
         if (contentType.ItemsPerPage > 0 && contentType.Contents.Any())
-        { 
+        {
           ViewData["OlderContentExists"] = contentType.ItemsPerPage * pageValue < contentType.Contents.Count();
           contentType.Contents = contentType.Contents
               .OrderByDescending(x => x.CreationDate)

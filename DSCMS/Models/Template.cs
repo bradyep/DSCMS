@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace DSCMS.Models
 {
+  /// <summary>
+  /// Razor template that contains all the HTML needed to represent specific content.
+  /// </summary>
   public class Template
   {
     public int TemplateId { get; set; }
