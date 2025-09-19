@@ -38,9 +38,10 @@ namespace DSCMS.Controllers
       ViewData["ContentTypeName"] = pContentTypeName;
       ViewData["ContentUrl"] = pContentUrl;
 
+      // More robust ContentType lookup with case-insensitive comparison
       ContentType contentType = _context.ContentTypes
         .Include(ct => ct.ContentTypeItems)
-        .Where(ct => ct.Name == pContentTypeName).FirstOrDefault();
+        .Where(ct => ct.Name.ToLower() == pContentTypeName).FirstOrDefault();
 
       // If no content type found, show welcome page for first-time setup
       if (contentType == null)
@@ -58,15 +59,31 @@ namespace DSCMS.Controllers
           .ThenInclude(ci => ci.ContentTypeItem)
           .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
+          
         if (content == null) return NotFound();
         content.ContentType = contentType;
         ViewData["Title"] = content.Title ?? "Title";
 
-        if (content.TemplateId > 0)
+        // Use content's template, or fall back to ContentType's default template if content has no template
+        int templateIdToUse = content.TemplateId > 0 ? content.TemplateId : 
+                             (contentType.DefaultTemplateForContent > 0 ? contentType.DefaultTemplateForContent.Value : 0);
+        
+        // Check if we should display raw content with no template
+        if (content.TemplateId == 0 && (contentType.DefaultTemplateForContent == null || contentType.DefaultTemplateForContent == 0))
+        {
+          // Return raw HTML content with no template
+          return new ContentResult
+          {
+            Content = content.Body ?? "",
+            ContentType = "text/html"
+          };
+        }
+        
+        if (templateIdToUse > 0)
         {
           template = _context.Templates
             .Include(t => t.Layout)
-            .Where(t => t.TemplateId == content.TemplateId).FirstOrDefault();
+            .Where(t => t.TemplateId == templateIdToUse).FirstOrDefault();
         }
       }
       else // ContentType was requested
@@ -115,8 +132,18 @@ namespace DSCMS.Controllers
 
       ViewData["Layout"] = template?.Layout?.FileLocation ?? "";
 
-      // string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
+      // Determine view location
       string viewLocationToUse = template?.FileLocation ?? "/Views/Home/Index.cshtml";
+      
+      // If we're looking at individual content and no template was found, try to use a content-specific fallback
+      if (pContentUrl.Trim() != "" && template == null)
+      {
+        // Try to use a content template based on the content type name
+        string ctName = contentType.Name.ToLower();
+        string fallbackContentTemplate = $"/Views/DSCMS/Templates/Contents/Bootstrap{char.ToUpper(ctName[0])}{ctName.Substring(1)}.cshtml";
+        viewLocationToUse = fallbackContentTemplate;
+      }
+      
       if (string.IsNullOrEmpty(viewLocationToUse))
       {
         viewLocationToUse = "/Views/DSCMS/Templates/Empty.cshtml";
