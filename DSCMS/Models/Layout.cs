@@ -16,9 +16,11 @@ namespace DSCMS.Models
     public int LayoutId { get; set; }
     public string Name { get; set; } = string.Empty;
     [Display(Name = "File Location")]
+    /// <remarks>Specifies the path where the layout file is stored, which can be a relative or absolute path.</remarks>
     public string FileLocation { get; set; } = string.Empty;
     [Display(Name = "File Contents")]
-    public string FileContents { get; set; } = string.Empty;
+    /// <remarks>Holds the actual content of the layout file, which may include HTML, CSS, and Razor syntax.</remarks>
+    public string? FileContents { get; set; }
 
     public List<Template> Templates { get; set; } = new List<Template>();
   }

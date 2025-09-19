@@ -24,14 +24,24 @@
       <div class="col-md-10">
         <input asp-for="FileLocation" class="form-control" />
         <span asp-validation-for="FileLocation" class="text-danger" />
+        <small class="form-text text-muted">Path to the external layout file (e.g., /Views/DSCMS/Layouts/_BootstrapBlog.cshtml)</small>
       </div>
     </div>
     <div class="form-group">
       <label asp-for="FileContents" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input type="hidden" asp-for="FileContents" class="form-control" />
+        <textarea asp-for="FileContents" class="form-control" rows="10" placeholder="Optional: Inline layout content (leave empty to use external file)"></textarea>
         <span asp-validation-for="FileContents" class="text-danger" />
-        <span>@(Model.FileContents == null ? "False" : (Model.FileContents.Trim() != "").ToString())</span>
+        <small class="form-text text-muted">
+          @if (Model.FileContents != null)
+          {
+            <span class="text-success">Has inline content (@Model.FileContents.Length characters)</span>
+          }
+          else
+          {
+            <span class="text-info">Uses external file reference</span>
+          }
+        </small>
       </div>
     </div>
     <div class="form-group">

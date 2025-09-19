@@ -15,13 +15,13 @@
       @Html.DisplayNameFor(model => model.Name)
     </dt>
     <dd>
-      @Html.DisplayFor(model => model.Name)
+      @(Model.Name ?? "[No Name]")
     </dd>
     <dt>
       Layout
     </dt>
     <dd>
-      @Html.DisplayFor(model => model.Layout.Name)
+      @(Model.Layout?.Name ?? "[No Layout]")
     </dd>
     <dt>
       @Html.DisplayNameFor(model => model.IsForContentType)
@@ -33,13 +33,13 @@
       @Html.DisplayNameFor(model => model.FileLocation)
     </dt>
     <dd>
-      @Html.DisplayFor(model => model.FileLocation)
+      @(Model.FileLocation ?? "[No File Location]")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.FileContents)
+      Has Inline Content
     </dt>
     <dd>
-      @(Model.FileContents == null || Model.FileContents.Trim() == "" ? "False" : "True")
+      @(Model.FileContents != null ? "Yes" : "No")
     </dd>
   </dl>
 

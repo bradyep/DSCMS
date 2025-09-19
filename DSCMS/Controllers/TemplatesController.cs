@@ -48,7 +48,15 @@ namespace DSCMS.Controllers
     // GET: Templates/Create
     public IActionResult Create()
     {
-      ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name");
+      // Handle potential NULL Layout names defensively
+      var layouts = _context.Layouts.ToList();
+      var layoutItems = layouts.Select(l => new { 
+        LayoutId = l.LayoutId, 
+        Name = l.Name ?? $"Layout {l.LayoutId}" 
+      }).ToList();
+      
+      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name");
+      
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -71,7 +79,16 @@ namespace DSCMS.Controllers
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");
       }
-      ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name", template.LayoutId);
+      
+      // Handle potential NULL Layout names defensively
+      var layouts = _context.Layouts.ToList();
+      var layoutItems = layouts.Select(l => new { 
+        LayoutId = l.LayoutId, 
+        Name = l.Name ?? $"Layout {l.LayoutId}" 
+      }).ToList();
+      
+      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
+      
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -90,12 +107,20 @@ namespace DSCMS.Controllers
       }
 
       var template = await _context.Templates.SingleOrDefaultAsync(m => m.TemplateId == id);
-      // var template = await _context.Templates.Include(t => t.Layout).SingleOrDefaultAsync(m => m.TemplateId == id);
       if (template == null)
       {
         return NotFound();
       }
-      ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "Name", template.LayoutId);
+      
+      // Handle potential NULL Layout names defensively
+      var layouts = _context.Layouts.ToList();
+      var layoutItems = layouts.Select(l => new { 
+        LayoutId = l.LayoutId, 
+        Name = l.Name ?? $"Layout {l.LayoutId}" 
+      }).ToList();
+      
+      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
+      
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -137,7 +162,22 @@ namespace DSCMS.Controllers
         }
         return RedirectToAction("Index");
       }
-      ViewData["LayoutId"] = new SelectList(_context.Layouts, "LayoutId", "LayoutId", template.LayoutId);
+      
+      // Handle potential NULL Layout names defensively  
+      var layouts = _context.Layouts.ToList();
+      var layoutItems = layouts.Select(l => new { 
+        LayoutId = l.LayoutId, 
+        Name = l.Name ?? $"Layout {l.LayoutId}" 
+      }).ToList();
+      
+      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
+      
+      var types = new[]
+      {
+        new { Name = "Content", Value = 0 },
+        new { Name = "ContentType", Value = 1 }
+      };
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
       return View(template);
     }
 

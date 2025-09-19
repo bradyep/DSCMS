@@ -23,7 +23,9 @@ namespace DSCMS.Models
     public int TemplateId { get; set; }
     [ForeignKey("TemplateId")]
     public Template? Template { get; set; }
-
+    /// <summary>
+    /// Default template to use if no template is specified when creating content of this type.
+    /// </summary>
     public int? DefaultTemplateForContent { get; set; }
     [ForeignKey("DefaultTemplateForContent")]
     public Template? DefaultContentTemplate { get; set; }
