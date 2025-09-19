@@ -1,7 +1,7 @@
 ﻿@model DSCMS.Models.Content
 
 @{
-    Layout = (string) ViewData["Layout"];
+    Layout = ViewData["Layout"] as string;
 }
 
 <div class="col-sm-8 blog-main">
@@ -9,7 +9,7 @@
     <div class="blog-post">
         @*<h2 class="blog-post-title">@Model.ContentItems.Where(ci => ci.ContentTypeItem.Name == "Subject").FirstOrDefault().Value</h2>*@
         <h2 class="blog-post-title">@Model.GetValueFor("Subject")</h2>
-        <p class="blog-post-meta">@Html.DisplayFor(model => model.CreationDate) by <a href="#">@Model.CreatedByUser.DisplayName</a></p>
+        <p class="blog-post-meta">@Html.DisplayFor(model => model.CreationDate) by <a href="#">@(Model.CreatedByUser?.DisplayName ?? "Unknown")</a></p>
 
         @Html.Raw(Model.Body)
 

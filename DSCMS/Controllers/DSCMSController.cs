@@ -113,7 +113,7 @@ namespace DSCMS.Controllers
         }
       }
 
-      ViewData["Layout"] = template?.Layout?.FileLocation;
+      ViewData["Layout"] = template?.Layout?.FileLocation ?? "";
 
       // string viewLocationToUse = template.FileLocation ?? "/Views/Home/Index.cshtml";
       string viewLocationToUse = template?.FileLocation ?? "/Views/Home/Index.cshtml";
