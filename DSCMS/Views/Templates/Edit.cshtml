@@ -23,7 +23,6 @@
       <label class="control-label col-md-2">Layout</label>
       <div class="col-md-10">
         <select asp-for="LayoutId" class="form-control" asp-items="ViewBag.LayoutId"></select>
-        @*<select asp-for="Layout" class="form-control" asp-items="ViewBag.LayoutId"></select>*@
         <span asp-validation-for="LayoutId" class="text-danger" />
       </div>
     </div>
@@ -31,23 +30,32 @@
       <label asp-for="IsForContentType" class="col-md-2 control-label"></label>
       <div class="col-md-10">
         <select asp-for="IsForContentType" class="form-control" asp-items="ViewBag.Types"></select>
-        @*<input asp-for="IsForContentType" class="form-control" />*@
         <span asp-validation-for="IsForContentType" class="text-danger" />
       </div>
     </div>
     <div class="form-group">
       <label asp-for="FileLocation" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input asp-for="FileLocation" class="form-control" />
+        <input asp-for="FileLocation" class="form-control" placeholder="/Views/DSCMS/Templates/YourTemplate.cshtml" />
         <span asp-validation-for="FileLocation" class="text-danger" />
+        <small class="form-text text-muted">Path to the external template file</small>
       </div>
     </div>
     <div class="form-group">
       <label asp-for="FileContents" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input type="hidden" asp-for="FileContents" class="form-control" />
+        <textarea asp-for="FileContents" class="form-control" rows="10" placeholder="Optional: Inline template content (leave empty to use external file)"></textarea>
         <span asp-validation-for="FileContents" class="text-danger" />
-        <span>@(Model.FileContents == null || Model.FileContents.Trim() == "" ? "False" : "True")</span>
+        <small class="form-text text-muted">
+          @if (Model.FileContents != null)
+          {
+            <span class="text-success">Has inline content (@Model.FileContents.Length characters)</span>
+          }
+          else
+          {
+            <span class="text-info">Uses external file reference</span>
+          }
+        </small>
       </div>
     </div>
     <div class="form-group">

@@ -25,7 +25,7 @@
         @Html.DisplayNameFor(model => model.IsForContentType)
       </th>
       <th>
-        @Html.DisplayNameFor(model => model.FileContents)
+        Has Inline Content
       </th>
     </tr>
   </thead>
@@ -34,19 +34,26 @@
     {
       <tr>
         <td>
-          @Html.DisplayFor(modelItem => item.Name)
+          @(item.Name ?? "[No Name]")
         </td>
         <td>
-          @Html.DisplayFor(modelItem => item.Layout.Name)
+          @(item.Layout?.Name ?? "[No Layout]")
         </td>
         <td>
-          @item.FileLocation.Substring(item.FileLocation.LastIndexOf('/') + 1)
+          @if (item.FileLocation != null)
+          {
+            @item.FileLocation.Substring(item.FileLocation.LastIndexOf('/') + 1)
+          }
+          else
+          {
+            <span class="text-muted">[No File]</span>
+          }
         </td>
         <td>
           @(item.IsForContentType > 0 ? "ContentType" : "Content")
         </td>
         <td>
-          @(item.FileContents == null || item.FileContents.Trim() == "" ? "False" : "True")
+          @(item.FileContents != null ? "Yes" : "No")
         </td>
         <td>
           <a asp-action="Edit" asp-route-id="@item.TemplateId">Edit</a> |
