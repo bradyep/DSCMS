@@ -18,15 +18,37 @@ namespace DSCMS.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
+            
+            // Configure the relationship between ContentType and Template
+            builder.Entity<ContentType>()
+                .HasOne(ct => ct.Template)
+                .WithMany(t => t.ContentTypes)
+                .HasForeignKey(ct => ct.TemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ContentType>()
+                .HasOne(ct => ct.DefaultContentTemplate)
+                .WithMany(t => t.HasAsDefaultContentTemplate)
+                .HasForeignKey(ct => ct.DefaultTemplateForContent)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Content and ApplicationUser relationships
+            builder.Entity<Content>()
+                .HasOne(c => c.CreatedByUser)
+                .WithMany(u => u.CreatedContent)
+                .HasForeignKey(c => c.CreatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Content>()
+                .HasOne(c => c.LastUpdatedByUser)
+                .WithMany(u => u.UpdatedContent)
+                .HasForeignKey(c => c.LastUpdatedBy)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Layout> Layouts { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
-        new public DbSet<User> Users { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }
         public DbSet<ContentTypeItem> ContentTypeItems { get; set; }
         public DbSet<ContentItem> ContentItems { get; set; }

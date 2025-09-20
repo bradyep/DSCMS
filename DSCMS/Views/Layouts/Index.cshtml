@@ -19,7 +19,7 @@
         @Html.DisplayNameFor(model => model.FileLocation)
       </th>
       <th>
-        @Html.DisplayNameFor(model => model.FileContents)
+        Has Inline Content
       </th>
     </tr>
   </thead>
@@ -28,13 +28,13 @@
     {
       <tr>
         <td>
-          @Html.DisplayFor(modelItem => item.Name)
+          @(item.Name ?? "[No Name]")
         </td>
         <td>
-          @Html.DisplayFor(modelItem => item.FileLocation)
+          @(item.FileLocation ?? "[No File Location]")
         </td>
         <td>
-          @(item.FileContents == null ? "False" : (item.FileContents.Trim() != "").ToString())
+          @(item.FileContents != null ? "Yes" : "No")
         </td>
         <td>
           <a asp-action="Edit" asp-route-id="@item.LayoutId">Edit</a> |

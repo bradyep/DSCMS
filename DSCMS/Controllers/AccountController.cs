@@ -38,11 +38,11 @@ namespace DSCMS.Controllers
         }
 
         [TempData]
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage { get; set; }
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(string returnUrl = null)
+        public async Task<IActionResult> Login(string? returnUrl = null)
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -247,10 +247,7 @@ namespace DSCMS.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
-            //return RedirectToAction(nameof(HomeController.Index), "Home");
-            //return RedirectToAction(nameof(HomeController.Index), "Home");
             return Redirect(Url.Content("~/"));
-            //return RedirectToAction("blog");
         }
 
         [HttpPost]

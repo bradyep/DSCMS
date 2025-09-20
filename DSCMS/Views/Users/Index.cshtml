@@ -1,10 +1,10 @@
-@model IEnumerable<DSCMS.Models.User>
+@model IEnumerable<DSCMS.Models.ApplicationUser>
 
 @{
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
+<h2>Users</h2>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -19,11 +19,8 @@
                 @Html.DisplayNameFor(model => model.Email)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Password)
+                @Html.DisplayNameFor(model => model.UserName)
             </th>
-            @*<th>
-                @Html.DisplayNameFor(model => model.Username)
-            </th>*@
             <th></th>
         </tr>
     </thead>
@@ -37,15 +34,12 @@
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Password)
+                @Html.DisplayFor(modelItem => item.UserName)
             </td>
-            @*<td>
-                @Html.DisplayFor(modelItem => item.Username)
-            </td>*@
             <td>
-                <a asp-action="Edit" asp-route-id="@item.UserId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.UserId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.UserId">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
 }

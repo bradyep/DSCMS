@@ -7,25 +7,30 @@ using System.Threading.Tasks;
 
 namespace DSCMS.Models
 {
-  public class ContentType
+    /// <summary>
+    /// Defines a certain type of content, such as "Blog Post" or "News Article". 
+    /// </summary>
+    public class ContentType
   {
     public int ContentTypeId { get; set; }
-    public string Name { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
     public int ItemsPerPage { get; set; }
 
 
     [Display(Name = "Template")]
     public int TemplateId { get; set; }
     [ForeignKey("TemplateId")]
-    public Template Template { get; set; }
-
+    public Template? Template { get; set; }
+    /// <summary>
+    /// Default template to use if no template is specified when creating content of this type.
+    /// </summary>
     public int? DefaultTemplateForContent { get; set; }
     [ForeignKey("DefaultTemplateForContent")]
-    public Template DefaultContentTemplate { get; set; }
+    public Template? DefaultContentTemplate { get; set; }
 
-    public List<ContentTypeItem> ContentTypeItems { get; set; }
-    public List<Content> Contents { get; set; }
+    public List<ContentTypeItem> ContentTypeItems { get; set; } = new List<ContentTypeItem>();
+    public List<Content> Contents { get; set; } = new List<Content>();
   }
 }

@@ -1,0 +1,48 @@
+# .dockerignore
+
+# Build artifacts
+bin/
+obj/
+out/
+
+# IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Runtime data
+dscms-data/
+*.db
+
+# Logs
+logs/
+*.log
+
+# Node.js (if any)
+node_modules/
+npm-debug.log
+
+# Package files
+*.nupkg
+*.snupkg
+
+# Test results
+TestResults/
+coverage/
