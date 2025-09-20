@@ -1,22 +1,54 @@
-# Grab latest version of dotnet core
-FROM microsoft/dotnet:2.0.0-sdk
- 
-# Add everything in this directory and below to the container
-ADD . /project
+# Use multi-stage build for smaller final image
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
 
-# Install vim and sqlite3 for convenience
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "-y", "vim"]
-RUN ["apt-get", "install", "-y", "sqlite3", "libsqlite3-dev"]
+# Copy project file first for better layer caching
+COPY ["DSCMS.csproj", "."]
 
-# Restore and run our dotnet core project
-WORKDIR /project
-RUN ["dotnet", "restore"]
-ENTRYPOINT ["dotnet", "run"]
+# Restore dependencies
+RUN dotnet restore "DSCMS.csproj"
 
-# Create mount for externally held (non-container) database data file
-# VOLUME /home/myappdata/dscms
-# VOLUME /bin/Debug/netcoreapp1.0/data
-# RUN mkdir /dscms-data
-# RUN echo "hello world" > /dscms-data/greeting.txt
-# VOLUME ["/dscms-data"]
+# Copy source code
+COPY . .
+
+# Build and publish the application
+RUN dotnet publish "DSCMS.csproj" -c Release -o /app/publish --no-restore
+
+# Use runtime image for final stage
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
+# Install sqlite3 for database operations and debugging
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN groupadd -r dscms && useradd -r -g dscms dscms
+
+# Create app directory and set permissions
+WORKDIR /app
+RUN chown -R dscms:dscms /app
+
+# Create directory for SQLite database with proper permissions
+RUN mkdir -p /dscms-data && chown -R dscms:dscms /dscms-data
+
+# Copy published application
+COPY --from=build /app/publish .
+
+# Switch to non-root user
+USER dscms
+
+# Expose port
+EXPOSE 5000
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:5000
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/ || exit 1
+
+# Run the application
+ENTRYPOINT ["dotnet", "DSCMS.dll"]
