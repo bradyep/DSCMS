@@ -64,6 +64,9 @@ namespace DSCMS.Controllers
         content.ContentType = contentType;
         ViewData["Title"] = content.Title ?? "Title";
 
+        // DEBUG: Add debugging information
+        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, Body Length: {content.Body?.Length ?? 0}, Body Preview: {content.Body?.Substring(0, Math.Min(100, content.Body?.Length ?? 0)) ?? "NULL"}";
+
         // Use content's template, or fall back to ContentType's default template if content has no template
         int templateIdToUse = content.TemplateId > 0 ? content.TemplateId : 
                              (contentType.DefaultTemplateForContent > 0 ? contentType.DefaultTemplateForContent.Value : 0);
@@ -119,6 +122,7 @@ namespace DSCMS.Controllers
           // If there's an issue with content loading, just use empty list
           contentType.Contents = new List<Content>();
           ViewData["ErrorMessage"] = "Some content could not be loaded due to data inconsistencies.";
+          ViewData["ExceptionDetails"] = ex.Message;
         }
 
         if (contentType.ItemsPerPage > 0 && contentType.Contents.Any())
