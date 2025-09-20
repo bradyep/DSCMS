@@ -4,6 +4,10 @@ The Dead Simple Content Management System: a fully functional, fast and simple C
 
 ## How it Works
 
+### Configuration
+
+`appsettings.json` is used for local development and `appsettings.Production.json` is used for production deployments. The production configuration file is copied over during the docker build process.
+
 ### Routing
 
 User requests are handled by `DSCMSController.Content` which is the default route (defined in `startup.cs`) and serves up either specific content or items of a certain content type. The format is as follows: `/{contentType}/{content}`. So for example, `/blog` would display a list of blog posts, while `/blog/my-first-post` would display a specific blog post.
@@ -50,6 +54,11 @@ Browse to the `/admin` route of your DSCMS instance.
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
 7. Get the newly updated image: `sudo docker pull bradyep/dscms`
 8. Start up the the new container: `sudo docker run -d -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms`
+
+## Server
+
+* The data directory on the doker host is: `/var/lib/docker/volumes/dscms-data/_data`
+* The data directory in the docker image is `/dscms-data`
 
 ## Project Status
 
