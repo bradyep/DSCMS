@@ -14,6 +14,12 @@ User requests are handled by `DSCMSController.Content` which is the default rout
 
 ### Models
 
+Each model has its own CRUD controller and views which are mapped in `Program.cs` to fall under the `/Admin` route.
+
+The database schema is defined in `\Data\ApplicationDbContext.cs`. 
+
+The models are as follows:
+
 #### Layout
 
 Razor page that contains everything needed to represent the layout of an entire HTML page. Includes metadata, file location, and associated templates.
