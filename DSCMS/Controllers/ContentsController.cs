@@ -58,26 +58,12 @@ namespace DSCMS.Controllers
     // GET: Contents/Create
     public IActionResult Create()
     {
-      // var contentTypes = new List<ContentType>();
-      // templates.Add(new Template { Name = "", TemplateId = 0 });
       var allContentTypes = _context.ContentTypes.ToList();
-      // contentTypes.AddRange(allContentTypes);
       var ctSelectList = new SelectList(allContentTypes, "ContentTypeId", "Name");
       ViewData["ContentTypeId"] = ctSelectList;
 
-      // ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name");
-
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
-
-      /*
-      List<Template> templates = new List<Template>();
-      // templates.Add(new Template { Name = "", TemplateId = 0 });
-      templates.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
-      var tsSelectList = new SelectList(templates, "TemplateId", "Name");
-      ViewData["TemplateId"] = tsSelectList;
-      */
-
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name");
 
       // Put together a Dictionary of all ContentTypes and their DefaultTemplateForContent (if they have one)
