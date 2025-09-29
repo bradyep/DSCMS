@@ -24,9 +24,9 @@ namespace DSCMS.Controllers
     /// <summary>
     /// Navigates to the content type or specific content item based on the provided parameters
     /// </summary>
-    /// <param name="contentTypeName"></param>
-    /// <param name="contentUrl"></param>
-    /// <param name="page"></param>
+    /// <param name="contentTypeName">Display multiple pieces of Content for a given ContentType</param>
+    /// <param name="contentUrl">Display a specific piece of Content</param>
+    /// <param name="page">Used for paging when displaying a ContentType</param>
     /// <returns></returns>
     public IActionResult Content(string contentTypeName = "blog", string contentUrl = "", string page = "")
     {
@@ -50,7 +50,7 @@ namespace DSCMS.Controllers
         return View("~/Views/DSCMS/Welcome.cshtml");
       }
 
-      if (pContentUrl.Trim() != "") // Content was requested
+      if (pContentUrl.Trim() != "") // Specific Content was requested
       {
         content = _context.Contents
           .Include(c => c.CreatedByUser)

@@ -58,11 +58,10 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Configure routes using a safer approach
+// Configure routes
 app.MapControllerRoute(
     name: "Account",
     pattern: "Admin/Account/{action=Index}/{id?}",
