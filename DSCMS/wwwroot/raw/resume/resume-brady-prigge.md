@@ -4,7 +4,7 @@
 Eagan, MN 55122  
 651-235-6120  
 bradyep@gmail.com  
-http://bradyep.com/
+https://bradyep.com/
 
 ## Objective
 
@@ -43,11 +43,11 @@ January 2011 - Present
 
 #### 2011 - 2019 Projects:
 
-Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System, a fully functional, fast and simple CMS that runs on ASP.NET Core and SQLite inside an easily deployable Docker container. Developed personal [website](http://bradyep.com/), which utilizes DSCMS to deliver a hand-built, data-driven, fully admin-able, open source content management system to store development projects as well as their source code. Built [newsfeeds.fyi](http://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds in the spirit of iGoogle. Created eight video games on multiple platforms (HTML5/JavaScript, Flash, Windows Executable).
+Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System, a fully functional, fast and simple CMS that runs on ASP.NET Core and SQLite inside an easily deployable Docker container. Developed personal [website](https://bradyep.com/), which utilizes DSCMS to deliver a hand-built, data-driven, fully admin-able, open source content management system to store development projects as well as their source code. Built [newsfeeds.fyi](https://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds in the spirit of iGoogle. Created eight video games on multiple platforms (HTML5/JavaScript, Flash, Windows Executable).
 
 * Personal website is powered by DSCMS and makes use of Bootstrap for the UI
 * newsfeeds.fyi is built on a node Express backend and a React frontend, all written in TypeScript
-* [Games](http://bradyep.com/games): Shapeshifter, I Demon, One Screen Racer, The Farthest Possible Place, Catch the Bullet, Speedster, Sleepwalker, Jacks 2000
+* [Games](https://bradyep.com/games): Shapeshifter, I Demon, One Screen Racer, The Farthest Possible Place, Catch the Bullet, Speedster, Sleepwalker, Jacks 2000
 * All video games created from scratch: code, art, sounds and music
 * Aided in final push that allowed yogamother.com to complete and go live
 
@@ -140,8 +140,6 @@ Technical lead in the Scotts Company's email marketing campaigns. Responsible fo
 * Wrote scripts that edited xml files and saved the project management team a great deal of time in making site-wide changes to content in client websites
 
 **Technical Environment:** ColdFusion MX 6 and 6.1, Java, Fusebox, MVC, XML, HTML, CVS, Windows XP/2000, Dreamweaver, Vim, Perl, JEdit, SQL, MS SQL Server, JavaScript, Contribute, Photoshop
-
----
 
 ## Education
 
