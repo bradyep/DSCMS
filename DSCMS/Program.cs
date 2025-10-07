@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
-try
+try // Trying to catch the Visual Studio debug crash that occurs when ending debug sessions by closing browser window instead of through IDE
 {
     // Configure logging first
     builder.Logging.ClearProviders();
