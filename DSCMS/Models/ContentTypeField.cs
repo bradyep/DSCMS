@@ -23,6 +23,6 @@ namespace DSCMS.Models
     [Display(Name = "Content Type")]
     public int ContentTypeId { get; set; }
     public ContentType? ContentType { get; set; }
-    public List<ContentItem> ContentItems { get; set; } = new List<ContentItem>();
+    public List<ContentTypeFieldItem> ContentTypeFieldItems { get; set; } = new List<ContentTypeFieldItem>();
   }
 }

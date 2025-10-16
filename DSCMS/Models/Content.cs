@@ -46,12 +46,12 @@ namespace DSCMS.Models
     [ForeignKey("LastUpdatedBy")]
     public ApplicationUser? LastUpdatedByUser { get; set; }
 
-    public List<ContentItem> ContentItems { get; set; } = new List<ContentItem>();
+    public List<ContentTypeFieldItem> ContentTypeFieldItems { get; set; } = new List<ContentTypeFieldItem>();
 
     public string GetValueFor(string contentTypeFieldName)
     {
-      ContentItem? contentItem = this.ContentItems.Where(ci => ci.ContentTypeField!.Name == contentTypeFieldName).FirstOrDefault();
-      return contentItem == null ? "" : contentItem.Value ?? "";
+      ContentTypeFieldItem? fieldItem = this.ContentTypeFieldItems.Where(ci => ci.ContentTypeField!.Name == contentTypeFieldName).FirstOrDefault();
+      return fieldItem == null ? "" : fieldItem.Value ?? "";
     }
   }
 }

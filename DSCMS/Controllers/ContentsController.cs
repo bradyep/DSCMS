@@ -30,8 +30,8 @@ namespace DSCMS.Controllers
       _logger.LogDebug("Contents Index requested with contentType filter: {ContentType}", contentType);
 
       var contents = String.IsNullOrEmpty(contentType) ? 
-        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentItems) :
-        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentItems)
+        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentTypeFieldItems) :
+        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentTypeFieldItems)
           .Where(c => c.ContentType.Name == contentType);
 
       List<ContentType> cts = new List<ContentType>();
@@ -133,7 +133,7 @@ namespace DSCMS.Controllers
       _logger.LogDebug("Contents Edit requested for id: {ContentId}", id);
 
       var content = await _context.Contents
-        .Include(x => x.ContentItems)
+        .Include(x => x.ContentTypeFieldItems)
         .ThenInclude(x => x.ContentTypeField)
         .SingleOrDefaultAsync(m => m.ContentId == id);
       if (content == null)

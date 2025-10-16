@@ -129,9 +129,9 @@ try // Trying to catch the Visual Studio debug crash that occurs when ending deb
         defaults: new { controller = "ContentTypes" });
 
     app.MapControllerRoute(
-        name: "ContentItems",
-        pattern: "Admin/ContentItems/{action=Index}/{id?}",
-        defaults: new { controller = "ContentItems" });
+        name: "ContentTypeFieldItems",
+        pattern: "Admin/ContentTypeFieldItems/{action=Index}/{id?}",
+        defaults: new { controller = "ContentTypeFieldItems" });
 
     app.MapControllerRoute(
         name: "ContentTypeFields",

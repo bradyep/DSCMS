@@ -64,7 +64,7 @@ namespace DSCMS.Controllers
         content = _context.Contents
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
-          .Include(c => c.ContentItems)
+          .Include(c => c.ContentTypeFieldItems)
           .ThenInclude(ci => ci.ContentTypeField)
           .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
@@ -140,7 +140,7 @@ namespace DSCMS.Controllers
             .Where(c => c.ContentTypeId == contentType.ContentTypeId)
             .Include(c => c.CreatedByUser)
             .Include(c => c.LastUpdatedByUser)
-            .Include(c => c.ContentItems)
+            .Include(c => c.ContentTypeFieldItems)
             .ThenInclude(ci => ci.ContentTypeField)
             .ToList();
           
