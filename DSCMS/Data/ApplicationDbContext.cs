@@ -45,6 +45,15 @@ namespace DSCMS.Data
                 .WithMany(u => u.UpdatedContent)
                 .HasForeignKey(c => c.LastUpdatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Seed SourceTypes data
+            builder.Entity<SourceType>().HasData(
+                new SourceType { SourceTypeId = 1, Description = "RazorFile" },
+                new SourceType { SourceTypeId = 2, Description = "InlineRazor" },
+                new SourceType { SourceTypeId = 3, Description = "Markdown" },
+                new SourceType { SourceTypeId = 4, Description = "HTML" },
+                new SourceType { SourceTypeId = 5, Description = "Text" }
+            );
         }
 
         public DbSet<Layout> Layouts { get; set; }
@@ -53,6 +62,7 @@ namespace DSCMS.Data
         public DbSet<ContentType> ContentTypes { get; set; }
         public DbSet<ContentTypeField> ContentTypeFields { get; set; }
         public DbSet<ContentTypeFieldItem> ContentTypeFieldItems { get; set; }
+        public DbSet<SourceType> SourceTypes { get; set; }
 
     }
 }
