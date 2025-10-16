@@ -49,12 +49,12 @@ namespace DSCMS.Controllers
     public IActionResult Create()
     {
       // ViewData for Multiple Contents Template (for ContentType listings)
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name");
+      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name");
 
       // ViewData for Default Single Content Template
       List<Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
       var tsSelectList = new SelectList(ts, "TemplateId", "Name", ts);
       ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
       
@@ -75,14 +75,14 @@ namespace DSCMS.Controllers
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
 
       // Figure out the default single content template ID to use
       int defaultSingleTemplateIdToUse = contentType.DefaultSingleContentTemplateId ?? 0;
 
       List <Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
       var tsSelectList = new SelectList(ts, "TemplateId", "Name", defaultSingleTemplateIdToUse);
       ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
       
@@ -102,11 +102,11 @@ namespace DSCMS.Controllers
       {
         return NotFound();
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
 
       List<Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForContentType == 0).ToList());
+      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
       var tsSelectList = new SelectList(ts, "TemplateId", "Name", contentType.DefaultSingleContentTemplateId);
       ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
 

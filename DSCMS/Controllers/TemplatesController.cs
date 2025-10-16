@@ -78,7 +78,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
+    public async Task<IActionResult> Create([Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForMultipleContents")] Template template)
     {
       if (ModelState.IsValid)
       {
@@ -101,7 +101,7 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
 
       return View(template);
     }
@@ -134,7 +134,7 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
       return View(template);
     }
 
@@ -143,7 +143,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
+    public async Task<IActionResult> Edit(int id, [Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForMultipleContents")] Template template)
     {
       if (id != template.TemplateId)
       {
@@ -185,7 +185,7 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
       return View(template);
     }
 

@@ -300,7 +300,7 @@ namespace DSCMS.Controllers
           
           if (string.IsNullOrEmpty(template.FileLocation))
           {
-            var templateType = template.IsForContentType > 0 ? "ContentTypes" : "Contents";
+            var templateType = template.IsForMultipleContents > 0 ? "ContentTypes" : "Contents";
             template.FileLocation = $"/Views/DSCMS/Templates/{templateType}/Template{template.TemplateId}.cshtml";
             issues.Add("FileLocation");
             needsFix = true;
@@ -316,7 +316,7 @@ namespace DSCMS.Controllers
           else
           {
             var hasInlineContent = template.FileContents != null ? "with inline content" : "referencing external file";
-            var templateType = template.IsForContentType > 0 ? "ContentType" : "Content";
+            var templateType = template.IsForMultipleContents > 0 ? "ContentType" : "Content";
             report.AppendLine($"  Template {template.TemplateId} ({templateType}): OK ({hasInlineContent})");
           }
         }
@@ -344,7 +344,7 @@ namespace DSCMS.Controllers
             Name = "Bootstrap Blog Post Template",
             FileLocation = "/Views/DSCMS/Templates/Contents/BootstrapBlogPost.cshtml",
             FileContents = null, // References external file
-            IsForContentType = 0, // For Content
+            IsForMultipleContents = 0, // For Content
             LayoutId = (await _context.Layouts.FirstOrDefaultAsync())?.LayoutId
           };
           
@@ -354,7 +354,7 @@ namespace DSCMS.Controllers
             Name = "Bootstrap Blog Listing Template",
             FileLocation = "/Views/DSCMS/Templates/ContentTypes/BootstrapBlogContentType.cshtml", 
             FileContents = null, // References external file
-            IsForContentType = 1, // For ContentType
+            IsForMultipleContents = 1, // For ContentType
             LayoutId = (await _context.Layouts.FirstOrDefaultAsync())?.LayoutId
           };
           

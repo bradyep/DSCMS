@@ -23,10 +23,10 @@
       @(Model.Layout?.Name ?? "[No Layout]")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.IsForContentType)
+      @Html.DisplayNameFor(model => model.IsForMultipleContents)
     </dt>
     <dd>
-      @(Model.IsForContentType > 0 ? "ContentType" : "Content")
+      @(Model.IsForMultipleContents > 0 ? "ContentType" : "Content")
     </dd>
     <dt>
       @Html.DisplayNameFor(model => model.FileLocation)

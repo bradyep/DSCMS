@@ -22,7 +22,7 @@
         File Name
       </th>
       <th>
-        @Html.DisplayNameFor(model => model.IsForContentType)
+        @Html.DisplayNameFor(model => model.IsForMultipleContents)
       </th>
       <th>
         Has Inline Content
@@ -50,7 +50,7 @@
           }
         </td>
         <td>
-          @(item.IsForContentType > 0 ? "ContentType" : "Content")
+          @(item.IsForMultipleContents > 0 ? "ContentType" : "Content")
         </td>
         <td>
           @(item.FileContents != null ? "Yes" : "No")

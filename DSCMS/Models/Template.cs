@@ -18,8 +18,8 @@ namespace DSCMS.Models
     public string? FileLocation { get; set; }
     [Display(Name = "File Contents")]
     public string? FileContents { get; set; }
-    [Display(Name = "Type")]
-    public int IsForContentType { get; set; }
+    [Display(Name = "Is For Multiple Contents")]
+    public int IsForMultipleContents { get; set; }
 
     public int? LayoutId { get; set; }
     public Layout? Layout { get; set; }

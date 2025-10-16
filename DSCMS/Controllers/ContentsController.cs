@@ -79,7 +79,7 @@ namespace DSCMS.Controllers
 
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
-      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name");
+      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name");
 
       // Put together a Dictionary of all ContentTypes and their DefaultSingleContentTemplateId (if they have one)
       var contentTypeDefaultTemplateLookup = new Dictionary<int, int>();
@@ -146,7 +146,7 @@ namespace DSCMS.Controllers
       ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name", content.TemplateId);
+      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name", content.TemplateId);
       return View(content);
     }
 
