@@ -85,10 +85,10 @@ namespace DSCMS.Controllers
 
         // Use content's template, or fall back to ContentType's default template if content has no template
         int templateIdToUse = content.TemplateId > 0 ? content.TemplateId : 
-                             (contentType.DefaultTemplateForContent > 0 ? contentType.DefaultTemplateForContent.Value : 0);
+                             (contentType.DefaultSingleContentTemplateId > 0 ? contentType.DefaultSingleContentTemplateId.Value : 0);
         
         // Check if we should display raw content with no template
-        if (content.TemplateId == 0 && (contentType.DefaultTemplateForContent == null || contentType.DefaultTemplateForContent == 0))
+        if (content.TemplateId == 0 && (contentType.DefaultSingleContentTemplateId == null || contentType.DefaultSingleContentTemplateId == 0))
         {
           _logger.LogDebug("Returning raw HTML content for ContentId={ContentId}", content.ContentId);
           // Return raw HTML content with no template
@@ -120,11 +120,11 @@ namespace DSCMS.Controllers
         _logger.LogDebug("Displaying ContentType listing for: {ContentTypeName}", pContentTypeName);
         ViewData["Title"] = contentType.Title ?? "Title";
 
-        if (contentType.TemplateId > 0)
+        if (contentType.MultipleContentsTemplateId > 0)
         {
           template = _context.Templates
             .Include(t => t.Layout)
-            .Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
+            .Where(t => t.TemplateId == contentType.MultipleContentsTemplateId).FirstOrDefault();
         }
 
         // Handle paging

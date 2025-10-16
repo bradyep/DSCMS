@@ -27,17 +27,25 @@
       </div>
     </div>
     <div class="form-group">
-      <label asp-for="TemplateId" class="control-label col-md-2"></label>
+      <label asp-for="MultipleContentsTemplateId" class="control-label col-md-2"></label>
       <div class="col-md-10">
-        <select asp-for="TemplateId" class="form-control" asp-items="ViewBag.TemplateId"></select>
-        <span asp-validation-for="TemplateId" class="text-danger" />
+        <select asp-for="MultipleContentsTemplateId" class="form-control" asp-items="ViewBag.MultipleContentsTemplateId"></select>
+        <span asp-validation-for="MultipleContentsTemplateId" class="text-danger" />
       </div>
     </div>
 
     <div class="form-group">
-      <label asp-for="DefaultTemplateForContent" class="col-md-2 control-label"></label>
+      <label asp-for="DefaultSingleContentTemplateId" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <select asp-for="DefaultTemplateForContent" class="form-control" asp-items="ViewBag.DefaultTemplateId"></select>
+        <select asp-for="DefaultSingleContentTemplateId" class="form-control" asp-items="ViewBag.DefaultSingleContentTemplateId"></select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label asp-for="IsDefaultContentType" class="col-md-2 control-label"></label>
+      <div class="col-md-10">
+        <input asp-for="IsDefaultContentType" class="form-control" type="checkbox" />
+        <span asp-validation-for="IsDefaultContentType" class="text-danger" />
       </div>
     </div>
 

@@ -19,16 +19,24 @@ namespace DSCMS.Models
     public int ItemsPerPage { get; set; }
 
 
-    [Display(Name = "Template")]
-    public int TemplateId { get; set; }
-    [ForeignKey("TemplateId")]
-    public Template? Template { get; set; }
+    [Display(Name = "Multiple Contents Template")]
+    public int MultipleContentsTemplateId { get; set; }
+    [ForeignKey("MultipleContentsTemplateId")]
+    public Template? MultipleContentsTemplate { get; set; }
+    
     /// <summary>
     /// Default template to use if no template is specified when creating content of this type.
     /// </summary>
-    public int? DefaultTemplateForContent { get; set; }
-    [ForeignKey("DefaultTemplateForContent")]
-    public Template? DefaultContentTemplate { get; set; }
+    [Display(Name = "Default Single Content Template")]
+    public int? DefaultSingleContentTemplateId { get; set; }
+    [ForeignKey("DefaultSingleContentTemplateId")]
+    public Template? DefaultSingleContentTemplate { get; set; }
+    
+    /// <summary>
+    /// Indicates if this is the default content type for the system.
+    /// </summary>
+    [Display(Name = "Is Default Content Type")]
+    public bool IsDefaultContentType { get; set; } = false;
 
     public List<ContentTypeField> ContentTypeFields { get; set; } = new List<ContentTypeField>();
     public List<Content> Contents { get; set; } = new List<Content>();

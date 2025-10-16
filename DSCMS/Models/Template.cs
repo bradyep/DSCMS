@@ -25,9 +25,9 @@ namespace DSCMS.Models
     public Layout? Layout { get; set; }
     public List<Content> Contents { get; set; } = new List<Content>();
 
-    [InverseProperty("Template")]
-    public List<ContentType> ContentTypes { get; set; } = new List<ContentType>();
-    [InverseProperty("DefaultContentTemplate")]
-    public List<ContentType> HasAsDefaultContentTemplate { get; set; } = new List<ContentType>();
+    [InverseProperty("MultipleContentsTemplate")]
+    public List<ContentType> UsedAsMultipleContentsTemplate { get; set; } = new List<ContentType>();
+    [InverseProperty("DefaultSingleContentTemplate")]
+    public List<ContentType> UsedAsDefaultSingleContentTemplate { get; set; } = new List<ContentType>();
   }
 }

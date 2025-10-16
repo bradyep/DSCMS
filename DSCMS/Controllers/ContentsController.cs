@@ -81,12 +81,12 @@ namespace DSCMS.Controllers
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForContentType == 0), "TemplateId", "Name");
 
-      // Put together a Dictionary of all ContentTypes and their DefaultTemplateForContent (if they have one)
+      // Put together a Dictionary of all ContentTypes and their DefaultSingleContentTemplateId (if they have one)
       var contentTypeDefaultTemplateLookup = new Dictionary<int, int>();
-      var contentTypesWithDefaultTemplates = allContentTypes.Where(ct => ct.DefaultTemplateForContent != null).ToList();
+      var contentTypesWithDefaultTemplates = allContentTypes.Where(ct => ct.DefaultSingleContentTemplateId != null).ToList();
       foreach (var item in contentTypesWithDefaultTemplates)
       {
-        contentTypeDefaultTemplateLookup.Add(item.ContentTypeId, item.DefaultTemplateForContent ?? 0);
+        contentTypeDefaultTemplateLookup.Add(item.ContentTypeId, item.DefaultSingleContentTemplateId ?? 0);
       }
       ViewData["DefaultTemplateLookup"] = contentTypeDefaultTemplateLookup;
 

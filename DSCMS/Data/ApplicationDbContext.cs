@@ -19,17 +19,18 @@ namespace DSCMS.Data
         {
             base.OnModelCreating(builder);
             
-            // Configure the relationship between ContentType and Template
+            // Configure the relationship between ContentType and Template for multiple contents listing
             builder.Entity<ContentType>()
-                .HasOne(ct => ct.Template)
-                .WithMany(t => t.ContentTypes)
-                .HasForeignKey(ct => ct.TemplateId)
+                .HasOne(ct => ct.MultipleContentsTemplate)
+                .WithMany(t => t.UsedAsMultipleContentsTemplate)
+                .HasForeignKey(ct => ct.MultipleContentsTemplateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure the relationship for default single content template
             builder.Entity<ContentType>()
-                .HasOne(ct => ct.DefaultContentTemplate)
-                .WithMany(t => t.HasAsDefaultContentTemplate)
-                .HasForeignKey(ct => ct.DefaultTemplateForContent)
+                .HasOne(ct => ct.DefaultSingleContentTemplate)
+                .WithMany(t => t.UsedAsDefaultSingleContentTemplate)
+                .HasForeignKey(ct => ct.DefaultSingleContentTemplateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure Content and ApplicationUser relationships
