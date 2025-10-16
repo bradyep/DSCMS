@@ -582,20 +582,20 @@ namespace DSCMS.Controllers
       
       try
       {
-        // Check ContentTypeItems first
-        var contentTypeItems = await _context.ContentTypeItems
-          .Include(cti => cti.ContentType)
+        // Check ContentTypeFields first
+        var contentTypeFields = await _context.ContentTypeFields
+          .Include(ctf => ctf.ContentType)
           .ToListAsync();
-        report.AppendLine($"Total ContentTypeItems: {contentTypeItems.Count}");
+        report.AppendLine($"Total ContentTypeFields: {contentTypeFields.Count}");
         
-        foreach (var cti in contentTypeItems)
+        foreach (var ctf in contentTypeFields)
         {
-          report.AppendLine($"  ContentTypeItem: {cti.Name} (ID: {cti.ContentTypeItemId}) for ContentType: {cti.ContentType?.Name}");
+          report.AppendLine($"  ContentTypeField: {ctf.Name} (ID: {ctf.ContentTypeFieldId}) for ContentType: {ctf.ContentType?.Name}");
         }
         
         // Check ContentItems
         var contentItems = await _context.ContentItems
-          .Include(ci => ci.ContentTypeItem)
+          .Include(ci => ci.ContentTypeField)
           .Include(ci => ci.Content)
           .ToListAsync();
         report.AppendLine($"\nTotal ContentItems: {contentItems.Count}");
@@ -609,7 +609,7 @@ namespace DSCMS.Controllers
           foreach (var ci in group)
           {
             var valuePreview = ci.Value?.Length > 50 ? ci.Value.Substring(0, 50) + "..." : ci.Value ?? "NULL";
-            report.AppendLine($"    - {ci.ContentTypeItem?.Name}: \"{valuePreview}\"");
+            report.AppendLine($"    - {ci.ContentTypeField?.Name}: \"{valuePreview}\"");
           }
         }
         
@@ -624,7 +624,7 @@ namespace DSCMS.Controllers
           var blogPosts = await _context.Contents
             .Where(c => c.ContentTypeId == blogContentType.ContentTypeId)
             .Include(c => c.ContentItems)
-            .ThenInclude(ci => ci.ContentTypeItem)
+            .ThenInclude(ci => ci.ContentTypeField)
             .Take(5)
             .ToListAsync();
             
@@ -633,8 +633,8 @@ namespace DSCMS.Controllers
             report.AppendLine($"\nBlog: {blog.Title} ({blog.UrlToDisplay})");
             report.AppendLine($"  ContentItems count: {blog.ContentItems.Count}");
             
-            var teaserText = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeItem?.Name?.ToLower() == "teasertext");
-            var subject = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeItem?.Name?.ToLower() == "subject");
+            var teaserText = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeField?.Name?.ToLower() == "teasertext");
+            var subject = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeField?.Name?.ToLower() == "subject");
             
             report.AppendLine($"  TeaserText: {teaserText?.Value ?? "NOT FOUND"}");
             report.AppendLine($"  Subject: {subject?.Value ?? "NOT FOUND"}");
@@ -642,7 +642,7 @@ namespace DSCMS.Controllers
             // List all content items for this blog post
             foreach (var ci in blog.ContentItems)
             {
-              report.AppendLine($"    - {ci.ContentTypeItem?.Name}: \"{ci.Value}\"");
+              report.AppendLine($"    - {ci.ContentTypeField?.Name}: \"{ci.Value}\"");
             }
           }
         }
@@ -654,10 +654,10 @@ namespace DSCMS.Controllers
           .CountAsync();
         report.AppendLine($"Orphaned ContentItems (no matching Content): {orphanedItems}");
         
-        var orphanedTypeItems = await _context.ContentItems
-          .Where(ci => !_context.ContentTypeItems.Any(cti => cti.ContentTypeItemId == ci.ContentTypeItemId))
+        var orphanedTypeFields = await _context.ContentItems
+          .Where(ci => !_context.ContentTypeFields.Any(ctf => ctf.ContentTypeFieldId == ci.ContentTypeFieldId))
           .CountAsync();
-        report.AppendLine($"Orphaned ContentItems (no matching ContentTypeItem): {orphanedTypeItems}");
+        report.AppendLine($"Orphaned ContentItems (no matching ContentTypeField): {orphanedTypeFields}");
       }
       catch (Exception ex)
       {
@@ -679,9 +679,9 @@ namespace DSCMS.Controllers
       
       try
       {
-        // First, ensure ContentTypeItems exist for blog
+        // First, ensure ContentTypeFields exist for blog
         var blogContentType = await _context.ContentTypes
-          .Include(ct => ct.ContentTypeItems)
+          .Include(ct => ct.ContentTypeFields)
           .Where(ct => ct.Name.ToLower() == "blog")
           .FirstOrDefaultAsync();
           
@@ -693,38 +693,40 @@ namespace DSCMS.Controllers
         
         report.AppendLine($"Found blog ContentType: {blogContentType.Name} (ID: {blogContentType.ContentTypeId})");
         
-        // Check/Create ContentTypeItems
-        var subjectTypeItem = blogContentType.ContentTypeItems.FirstOrDefault(cti => cti.Name.ToLower() == "subject");
-        var teaserTypeItem = blogContentType.ContentTypeItems.FirstOrDefault(cti => cti.Name.ToLower() == "teasertext");
+        // Check/Create ContentTypeFields
+        var subjectTypeField = blogContentType.ContentTypeFields.FirstOrDefault(ctf => ctf.Name.ToLower() == "subject");
+        var teaserTypeField = blogContentType.ContentTypeFields.FirstOrDefault(ctf => ctf.Name.ToLower() == "teasertext");
         
-        if (subjectTypeItem == null)
+        if (subjectTypeField == null)
         {
-          subjectTypeItem = new ContentTypeItem
+          subjectTypeField = new ContentTypeField
           {
             Name = "Subject", 
-            ContentTypeId = blogContentType.ContentTypeId
+            ContentTypeId = blogContentType.ContentTypeId,
+            Required = false
           };
-          _context.ContentTypeItems.Add(subjectTypeItem);
-          report.AppendLine("? Created Subject ContentTypeItem");
+          _context.ContentTypeFields.Add(subjectTypeField);
+          report.AppendLine("? Created Subject ContentTypeField");
         }
         else
         {
-          report.AppendLine($"? Subject ContentTypeItem exists (ID: {subjectTypeItem.ContentTypeItemId})");
+          report.AppendLine($"? Subject ContentTypeField exists (ID: {subjectTypeField.ContentTypeFieldId})");
         }
         
-        if (teaserTypeItem == null)
+        if (teaserTypeField == null)
         {
-          teaserTypeItem = new ContentTypeItem
+          teaserTypeField = new ContentTypeField
           {
             Name = "TeaserText",
-            ContentTypeId = blogContentType.ContentTypeId
+            ContentTypeId = blogContentType.ContentTypeId,
+            Required = false
           };
-          _context.ContentTypeItems.Add(teaserTypeItem);
-          report.AppendLine("? Created TeaserText ContentTypeItem");
+          _context.ContentTypeFields.Add(teaserTypeField);
+          report.AppendLine("? Created TeaserText ContentTypeField");
         }
         else
         {
-          report.AppendLine($"? TeaserText ContentTypeItem exists (ID: {teaserTypeItem.ContentTypeItemId})");
+          report.AppendLine($"? TeaserText ContentTypeField exists (ID: {teaserTypeField.ContentTypeFieldId})");
         }
         
         await _context.SaveChangesAsync();
@@ -744,13 +746,13 @@ namespace DSCMS.Controllers
           report.AppendLine($"\nProcessing: {blog.Title} ({blog.UrlToDisplay})");
           
           // Check if Subject ContentItem exists
-          var existingSubject = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeItemId == subjectTypeItem.ContentTypeItemId);
+          var existingSubject = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeFieldId == subjectTypeField.ContentTypeFieldId);
           if (existingSubject == null)
           {
             var subjectItem = new ContentItem
             {
               ContentId = blog.ContentId,
-              ContentTypeItemId = subjectTypeItem.ContentTypeItemId,
+              ContentTypeFieldId = subjectTypeField.ContentTypeFieldId,
               Value = blog.Title ?? $"Blog Post {blog.ContentId}" // Use the blog title as subject
             };
             _context.ContentItems.Add(subjectItem);
@@ -763,7 +765,7 @@ namespace DSCMS.Controllers
           }
           
           // Check if TeaserText ContentItem exists  
-          var existingTeaser = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeItemId == teaserTypeItem.ContentTypeItemId);
+          var existingTeaser = blog.ContentItems.FirstOrDefault(ci => ci.ContentTypeFieldId == teaserTypeField.ContentTypeFieldId);
           if (existingTeaser == null)
           {
             // Generate teaser text from body content
@@ -778,7 +780,7 @@ namespace DSCMS.Controllers
             var teaserItem = new ContentItem
             {
               ContentId = blog.ContentId,
-              ContentTypeItemId = teaserTypeItem.ContentTypeItemId,
+              ContentTypeFieldId = teaserTypeField.ContentTypeFieldId,
               Value = teaserText
             };
             _context.ContentItems.Add(teaserItem);
@@ -826,7 +828,7 @@ namespace DSCMS.Controllers
       try
       {
         var allContentTypes = await _context.ContentTypes
-          .Include(ct => ct.ContentTypeItems)
+          .Include(ct => ct.ContentTypeFields)
           .ToListAsync();
           
         report.AppendLine($"Found {allContentTypes.Count} content types");
@@ -835,21 +837,22 @@ namespace DSCMS.Controllers
         {
           report.AppendLine($"\n--- Processing ContentType: {contentType.Name} ---");
           
-          // Ensure basic ContentTypeItems exist based on content type
-          var requiredTypeItems = GetRequiredContentTypeItems(contentType.Name.ToLower());
+          // Ensure basic ContentTypeFields exist based on content type
+          var requiredTypeFields = GetRequiredContentTypeItems(contentType.Name.ToLower());
           
-          foreach (var requiredItem in requiredTypeItems)
+          foreach (var requiredField in requiredTypeFields)
           {
-            var existingTypeItem = contentType.ContentTypeItems.FirstOrDefault(cti => cti.Name.ToLower() == requiredItem.ToLower());
-            if (existingTypeItem == null)
+            var existingTypeField = contentType.ContentTypeFields.FirstOrDefault(ctf => ctf.Name.ToLower() == requiredField.ToLower());
+            if (existingTypeField == null)
             {
-              var newTypeItem = new ContentTypeItem
+              var newTypeField = new ContentTypeField
               {
-                Name = requiredItem,
-                ContentTypeId = contentType.ContentTypeId
+                Name = requiredField,
+                ContentTypeId = contentType.ContentTypeId,
+                Required = false
               };
-              _context.ContentTypeItems.Add(newTypeItem);
-              report.AppendLine($"  ? Created ContentTypeItem: {requiredItem}");
+              _context.ContentTypeFields.Add(newTypeField);
+              report.AppendLine($"  ? Created ContentTypeField: {requiredField}");
             }
           }
         }
@@ -859,7 +862,7 @@ namespace DSCMS.Controllers
         // Now rebuild ContentItems for each content
         var allContents = await _context.Contents
           .Include(c => c.ContentType)
-          .ThenInclude(ct => ct.ContentTypeItems)
+          .ThenInclude(ct => ct.ContentTypeFields)
           .Include(c => c.ContentItems)
           .ToListAsync();
           
@@ -871,19 +874,19 @@ namespace DSCMS.Controllers
           
           var requiredItems = GetRequiredContentTypeItems(content.ContentType.Name.ToLower());
           
-          foreach (var requiredItemName in requiredItems)
+          foreach (var requiredFieldName in requiredItems)
           {
-            var typeItem = content.ContentType.ContentTypeItems.FirstOrDefault(cti => cti.Name.ToLower() == requiredItemName.ToLower());
-            if (typeItem == null) continue;
+            var typeField = content.ContentType.ContentTypeFields.FirstOrDefault(ctf => ctf.Name.ToLower() == requiredFieldName.ToLower());
+            if (typeField == null) continue;
             
-            var existingContentItem = content.ContentItems.FirstOrDefault(ci => ci.ContentTypeItemId == typeItem.ContentTypeItemId);
+            var existingContentItem = content.ContentItems.FirstOrDefault(ci => ci.ContentTypeFieldId == typeField.ContentTypeFieldId);
             if (existingContentItem == null)
             {
               var newContentItem = new ContentItem
               {
                 ContentId = content.ContentId,
-                ContentTypeItemId = typeItem.ContentTypeItemId,
-                Value = GenerateDefaultValue(requiredItemName, content)
+                ContentTypeFieldId = typeField.ContentTypeFieldId,
+                Value = GenerateDefaultValue(requiredFieldName, content)
               };
               _context.ContentItems.Add(newContentItem);
               totalCreatedItems++;
@@ -1034,11 +1037,11 @@ namespace DSCMS.Controllers
         int restoredContentTypeItems = 0;
         int restoredContentItems = 0;
         
-        // Restore ContentTypeItems first
+        // Restore ContentTypeFields (from old ContentTypeItems) first
         foreach (var item in backupContentTypeItems)
         {
-          var existingItem = await _context.ContentTypeItems
-            .FirstOrDefaultAsync(cti => cti.ContentTypeItemId == item.Id);
+          var existingItem = await _context.ContentTypeFields
+            .FirstOrDefaultAsync(ctf => ctf.ContentTypeFieldId == item.Id);
             
           if (existingItem == null)
           {
@@ -1048,25 +1051,26 @@ namespace DSCMS.Controllers
               
             if (contentTypeExists)
             {
-              var newContentTypeItem = new ContentTypeItem
+              var newContentTypeField = new ContentTypeField
               {
-                ContentTypeItemId = item.Id,
+                ContentTypeFieldId = item.Id,
                 Name = item.Name,
-                ContentTypeId = item.ContentTypeId
+                ContentTypeId = item.ContentTypeId,
+                Required = false // Default to not required for restored fields
               };
               
-              _context.ContentTypeItems.Add(newContentTypeItem);
+              _context.ContentTypeFields.Add(newContentTypeField);
               restoredContentTypeItems++;
             }
             else
             {
-              report.AppendLine($"WARNING: ContentType {item.ContentTypeId} not found for ContentTypeItem {item.Name}");
+              report.AppendLine($"WARNING: ContentType {item.ContentTypeId} not found for ContentTypeField {item.Name}");
             }
           }
         }
         
         await _context.SaveChangesAsync();
-        report.AppendLine($"? Restored {restoredContentTypeItems} ContentTypeItems");
+        report.AppendLine($"? Restored {restoredContentTypeItems} ContentTypeFields");
         
         // Restore ContentItems
         foreach (var item in backupContentItems)
@@ -1076,20 +1080,20 @@ namespace DSCMS.Controllers
             
           if (existingItem == null)
           {
-            // Check if Content and ContentTypeItem exist
+            // Check if Content and ContentTypeField exist
             var contentExists = await _context.Contents
               .AnyAsync(c => c.ContentId == item.ContentId);
               
-            var contentTypeItemExists = await _context.ContentTypeItems
-              .AnyAsync(cti => cti.ContentTypeItemId == item.ContentTypeItemId);
+            var contentTypeFieldExists = await _context.ContentTypeFields
+              .AnyAsync(ctf => ctf.ContentTypeFieldId == item.ContentTypeItemId);
               
-            if (contentExists && contentTypeItemExists)
+            if (contentExists && contentTypeFieldExists)
             {
               var newContentItem = new ContentItem
               {
                 ContentItemId = item.Id,
                 Value = item.Value,
-                ContentTypeItemId = item.ContentTypeItemId,
+                ContentTypeFieldId = item.ContentTypeItemId, // Map old ContentTypeItemId to new ContentTypeFieldId
                 ContentId = item.ContentId
               };
               
@@ -1100,8 +1104,8 @@ namespace DSCMS.Controllers
             {
               if (!contentExists)
                 report.AppendLine($"WARNING: Content {item.ContentId} not found for ContentItem {item.Id}");
-              if (!contentTypeItemExists)
-                report.AppendLine($"WARNING: ContentTypeItem {item.ContentTypeItemId} not found for ContentItem {item.Id}");
+              if (!contentTypeFieldExists)
+                report.AppendLine($"WARNING: ContentTypeField {item.ContentTypeItemId} not found for ContentItem {item.Id}");
             }
           }
         }
@@ -1110,7 +1114,7 @@ namespace DSCMS.Controllers
         report.AppendLine($"? Restored {restoredContentItems} ContentItems");
         
         report.AppendLine($"\n=== Restoration Summary ===");
-        report.AppendLine($"ContentTypeItems restored: {restoredContentTypeItems}");
+        report.AppendLine($"ContentTypeFields restored: {restoredContentTypeItems}");
         report.AppendLine($"ContentItems restored: {restoredContentItems}");
         
         if (restoredContentItems > 0)
@@ -1127,6 +1131,177 @@ namespace DSCMS.Controllers
       catch (Exception ex)
       {
         report.AppendLine($"ERROR: {ex.Message}");
+        report.AppendLine($"Stack trace: {ex.StackTrace}");
+      }
+      
+      return Content(report.ToString(), "text/plain");
+    }
+
+    /// <summary>
+    /// Emergency data restoration after ContentTypeItems migration
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> EmergencyDataRestoration()
+    {
+      var report = new System.Text.StringBuilder();
+      report.AppendLine("=== Emergency Data Restoration After Migration ===\n");
+      
+      try
+      {
+        var backupDbPath = Path.Combine(Directory.GetCurrentDirectory(), "DSCMS", "dscms-data", "dscms-backup.db");
+        
+        report.AppendLine($"Backup DB Path: {backupDbPath}");
+        
+        if (!System.IO.File.Exists(backupDbPath))
+        {
+          report.AppendLine("ERROR: Backup database file not found!");
+          report.AppendLine($"Please ensure the backup file exists at: {backupDbPath}");
+          return Content(report.ToString(), "text/plain");
+        }
+        
+        report.AppendLine("? Backup database file found");
+        
+        // Create connection string for backup database
+        var backupConnectionString = $"Data Source={backupDbPath}";
+        
+        using var backupConnection = new Microsoft.Data.Sqlite.SqliteConnection(backupConnectionString);
+        await backupConnection.OpenAsync();
+        
+        // Get ContentTypeItems from backup
+        var backupContentTypeItems = new List<(int Id, string Name, int ContentTypeId)>();
+        using (var cmd = backupConnection.CreateCommand())
+        {
+          cmd.CommandText = "SELECT ContentTypeItemId, Name, ContentTypeId FROM ContentTypeItems";
+          using var reader = await cmd.ExecuteReaderAsync();
+          while (await reader.ReadAsync())
+          {
+            backupContentTypeItems.Add((
+              reader.GetInt32(0), // ContentTypeItemId
+              reader.GetString(1), // Name
+              reader.GetInt32(2)  // ContentTypeId
+            ));
+          }
+        }
+        
+        report.AppendLine($"Found {backupContentTypeItems.Count} ContentTypeItems in backup");
+        
+        // Get ContentItems from backup
+        var backupContentItems = new List<(int Id, string Value, int ContentTypeItemId, int ContentId)>();
+        using (var cmd = backupConnection.CreateCommand())
+        {
+          cmd.CommandText = "SELECT ContentItemId, Value, ContentTypeItemId, ContentId FROM ContentItems";
+          using var reader = await cmd.ExecuteReaderAsync();
+          while (await reader.ReadAsync())
+          {
+            var value = reader.IsDBNull(1) ? "" : reader.GetString(1); // Value
+            backupContentItems.Add((
+              reader.GetInt32(0), // ContentItemId
+              value,
+              reader.GetInt32(2), // ContentTypeItemId
+              reader.GetInt32(3)  // ContentId
+            ));
+          }
+        }
+        
+        report.AppendLine($"Found {backupContentItems.Count} ContentItems in backup");
+        
+        await backupConnection.CloseAsync();
+        
+        // Clear existing (empty) data first
+        var existingFields = await _context.ContentTypeFields.ToListAsync();
+        var existingItems = await _context.ContentItems.ToListAsync();
+        
+        _context.ContentTypeFields.RemoveRange(existingFields);
+        _context.ContentItems.RemoveRange(existingItems);
+        await _context.SaveChangesAsync();
+        
+        report.AppendLine($"Cleared {existingFields.Count} ContentTypeFields and {existingItems.Count} ContentItems");
+        
+        // Now restore ContentTypeFields (from old ContentTypeItems)
+        int restoredFields = 0;
+        foreach (var item in backupContentTypeItems)
+        {
+          // Check if ContentType exists
+          var contentTypeExists = await _context.ContentTypes
+            .AnyAsync(ct => ct.ContentTypeId == item.ContentTypeId);
+            
+          if (contentTypeExists)
+          {
+            var newContentTypeField = new ContentTypeField
+            {
+              ContentTypeFieldId = item.Id,
+              Name = item.Name,
+              ContentTypeId = item.ContentTypeId,
+              Required = false // Default to not required for restored fields
+            };
+            
+            _context.ContentTypeFields.Add(newContentTypeField);
+            restoredFields++;
+          }
+          else
+          {
+            report.AppendLine($"WARNING: ContentType {item.ContentTypeId} not found for ContentTypeField {item.Name}");
+          }
+        }
+        
+        await _context.SaveChangesAsync();
+        report.AppendLine($"? Restored {restoredFields} ContentTypeFields");
+        
+        // Now restore ContentItems
+        int restoredItems = 0;
+        foreach (var item in backupContentItems)
+        {
+          // Check if Content and ContentTypeField exist
+          var contentExists = await _context.Contents
+            .AnyAsync(c => c.ContentId == item.ContentId);
+            
+          var contentTypeFieldExists = await _context.ContentTypeFields
+            .AnyAsync(ctf => ctf.ContentTypeFieldId == item.ContentTypeItemId);
+            
+          if (contentExists && contentTypeFieldExists)
+          {
+            var newContentItem = new ContentItem
+            {
+              ContentItemId = item.Id,
+              Value = item.Value,
+              ContentTypeFieldId = item.ContentTypeItemId, // Map old ContentTypeItemId to new ContentTypeFieldId
+              ContentId = item.ContentId
+            };
+            
+            _context.ContentItems.Add(newContentItem);
+            restoredItems++;
+          }
+          else
+          {
+            if (!contentExists)
+              report.AppendLine($"WARNING: Content {item.ContentId} not found for ContentItem {item.Id}");
+            if (!contentTypeFieldExists)
+              report.AppendLine($"WARNING: ContentTypeField {item.ContentTypeItemId} not found for ContentItem {item.Id}");
+          }
+        }
+        
+        await _context.SaveChangesAsync();
+        report.AppendLine($"? Restored {restoredItems} ContentItems");
+        
+        report.AppendLine($"\n=== Emergency Restoration Summary ===");
+        report.AppendLine($"ContentTypeFields restored: {restoredFields}");
+        report.AppendLine($"ContentItems restored: {restoredItems}");
+        
+        if (restoredItems > 0 || restoredFields > 0)
+        {
+          report.AppendLine("\n? Emergency data restoration completed successfully!");
+          report.AppendLine("? Your ContentTypeFields and ContentItems have been restored from backup");
+          report.AppendLine("? All content should now display properly with their associated fields");
+          report.AppendLine("\n?? Test your content at: /blog or /Admin/Contents");
+        }
+        else
+        {
+          report.AppendLine("\n?? No data was restored - please check if backup contains the expected data");
+        }
+      }
+      catch (Exception ex)
+      {
+        report.AppendLine($"? ERROR: {ex.Message}");
         report.AppendLine($"Stack trace: {ex.StackTrace}");
       }
       
@@ -1176,27 +1351,27 @@ namespace DSCMS.Controllers
         await backupConnection.CloseAsync();
         
         // Count items in current database
-        var currentContentTypeItemCount = await _context.ContentTypeItems.CountAsync();
+        var currentContentTypeFieldCount = await _context.ContentTypeFields.CountAsync();
         var currentContentItemCount = await _context.ContentItems.CountAsync();
         
         report.AppendLine("=== Comparison Results ===");
-        report.AppendLine($"ContentTypeItems - Backup: {backupContentTypeItemCount}, Current: {currentContentTypeItemCount}");
+        report.AppendLine($"ContentTypeFields (was ContentTypeItems) - Backup: {backupContentTypeItemCount}, Current: {currentContentTypeFieldCount}");
         report.AppendLine($"ContentItems - Backup: {backupContentItemCount}, Current: {currentContentItemCount}");
         
-        var missingContentTypeItems = backupContentTypeItemCount - currentContentTypeItemCount;
+        var missingContentTypeFields = backupContentTypeItemCount - currentContentTypeFieldCount;
         var missingContentItems = backupContentItemCount - currentContentItemCount;
         
-        if (missingContentTypeItems > 0)
-          report.AppendLine($"? Missing {missingContentTypeItems} ContentTypeItems");
+        if (missingContentTypeFields > 0)
+          report.AppendLine($"? Missing {missingContentTypeFields} ContentTypeFields");
         else
-          report.AppendLine("? All ContentTypeItems present");
+          report.AppendLine("? All ContentTypeFields present");
           
         if (missingContentItems > 0)
           report.AppendLine($"? Missing {missingContentItems} ContentItems");
         else
           report.AppendLine("? All ContentItems present");
           
-        if (missingContentTypeItems > 0 || missingContentItems > 0)
+        if (missingContentTypeFields > 0 || missingContentItems > 0)
         {
           report.AppendLine("\nRecommendation: Run /Diagnostics/RestoreContentItemsFromBackup to restore missing data");
         }

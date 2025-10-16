@@ -50,7 +50,7 @@ namespace DSCMS.Data
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }
-        public DbSet<ContentTypeItem> ContentTypeItems { get; set; }
+        public DbSet<ContentTypeField> ContentTypeFields { get; set; }
         public DbSet<ContentItem> ContentItems { get; set; }
 
     }

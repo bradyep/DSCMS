@@ -46,7 +46,7 @@ namespace DSCMS.Controllers
 
       // More robust ContentType lookup with case-insensitive comparison
       ContentType contentType = _context.ContentTypes
-        .Include(ct => ct.ContentTypeItems)
+        .Include(ct => ct.ContentTypeFields)
         .Where(ct => ct.Name.ToLower() == pContentTypeName).FirstOrDefault();
 
       // If no content type found, show welcome page for first-time setup
@@ -65,7 +65,7 @@ namespace DSCMS.Controllers
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
           .Include(c => c.ContentItems)
-          .ThenInclude(ci => ci.ContentTypeItem)
+          .ThenInclude(ci => ci.ContentTypeField)
           .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
           
@@ -133,7 +133,7 @@ namespace DSCMS.Controllers
         if (pageValue < 1) pageValue = 1;
         ViewData["Page"] = pageValue;
 
-        // Get Contents - include ContentItems and their ContentTypeItems for proper teaser text display
+        // Get Contents - include ContentItems and their ContentTypeFields for proper teaser text display
         try
         {
           contentType.Contents = _context.Contents
@@ -141,7 +141,7 @@ namespace DSCMS.Controllers
             .Include(c => c.CreatedByUser)
             .Include(c => c.LastUpdatedByUser)
             .Include(c => c.ContentItems)
-            .ThenInclude(ci => ci.ContentTypeItem)
+            .ThenInclude(ci => ci.ContentTypeField)
             .ToList();
           
           _logger.LogDebug("Loaded {ContentCount} contents for ContentType {ContentTypeId}", 

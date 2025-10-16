@@ -97,7 +97,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentType = await _context.ContentTypes.Include(ct => ct.ContentTypeItems).SingleOrDefaultAsync(m => m.ContentTypeId == id);
+      var contentType = await _context.ContentTypes.Include(ct => ct.ContentTypeFields).SingleOrDefaultAsync(m => m.ContentTypeId == id);
       if (contentType == null)
       {
         return NotFound();

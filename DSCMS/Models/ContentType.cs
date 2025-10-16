@@ -30,7 +30,7 @@ namespace DSCMS.Models
     [ForeignKey("DefaultTemplateForContent")]
     public Template? DefaultContentTemplate { get; set; }
 
-    public List<ContentTypeItem> ContentTypeItems { get; set; } = new List<ContentTypeItem>();
+    public List<ContentTypeField> ContentTypeFields { get; set; } = new List<ContentTypeField>();
     public List<Content> Contents { get; set; } = new List<Content>();
   }
 }

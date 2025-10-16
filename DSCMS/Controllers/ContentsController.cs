@@ -134,7 +134,7 @@ namespace DSCMS.Controllers
 
       var content = await _context.Contents
         .Include(x => x.ContentItems)
-        .ThenInclude(x => x.ContentTypeItem)
+        .ThenInclude(x => x.ContentTypeField)
         .SingleOrDefaultAsync(m => m.ContentId == id);
       if (content == null)
       {

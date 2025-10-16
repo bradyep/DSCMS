@@ -48,9 +48,9 @@ namespace DSCMS.Models
 
     public List<ContentItem> ContentItems { get; set; } = new List<ContentItem>();
 
-    public string GetValueFor(string contentTypeItemName)
+    public string GetValueFor(string contentTypeFieldName)
     {
-      ContentItem? contentItem = this.ContentItems.Where(ci => ci.ContentTypeItem!.Name == contentTypeItemName).FirstOrDefault();
+      ContentItem? contentItem = this.ContentItems.Where(ci => ci.ContentTypeField!.Name == contentTypeFieldName).FirstOrDefault();
       return contentItem == null ? "" : contentItem.Value ?? "";
     }
   }

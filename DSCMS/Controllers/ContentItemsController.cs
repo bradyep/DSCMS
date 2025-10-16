@@ -24,7 +24,7 @@ namespace DSCMS.Controllers
     // GET: ContentItems
     public async Task<IActionResult> Index()
     {
-      var applicationDbContext = _context.ContentItems.Include(c => c.Content).Include(c => c.ContentTypeItem);
+      var applicationDbContext = _context.ContentItems.Include(c => c.Content).Include(c => c.ContentTypeField);
       return View(await applicationDbContext.ToListAsync());
     }
 
@@ -53,12 +53,12 @@ namespace DSCMS.Controllers
       {
         content = _context.Contents.Include(c => c.ContentType).Where(c => c.ContentId == id).FirstOrDefault();
         ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", id);
-        ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems.Where(c => c.ContentTypeId == content.ContentTypeId), "ContentTypeItemId", "Name");
+        ViewData["ContentTypeFieldId"] = new SelectList(_context.ContentTypeFields.Where(c => c.ContentTypeId == content.ContentTypeId), "ContentTypeFieldId", "Name");
       }
       else
       {
         ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay");
-        ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name");
+        ViewData["ContentTypeFieldId"] = new SelectList(_context.ContentTypeFields, "ContentTypeFieldId", "Name");
       }
       return View();
     }
@@ -68,7 +68,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ContentItemId,ContentId,ContentTypeItemId,Value")] ContentItem contentItem)
+    public async Task<IActionResult> Create([Bind("ContentItemId,ContentId,ContentTypeFieldId,Value")] ContentItem contentItem)
     {
       Content content = _context.Contents.Where(x => x.ContentId == contentItem.ContentId).FirstOrDefault();
 
@@ -82,7 +82,7 @@ namespace DSCMS.Controllers
         return RedirectToAction("Edit", "Contents", new { id = content.ContentId });
       }
       ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "ContentId", contentItem.ContentId);
-      ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "ContentTypeItemId", contentItem.ContentTypeItemId);
+      ViewData["ContentTypeFieldId"] = new SelectList(_context.ContentTypeFields, "ContentTypeFieldId", "ContentTypeFieldId", contentItem.ContentTypeFieldId);
       return View(contentItem);
     }
 
@@ -100,7 +100,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
       ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", contentItem.ContentId);
-      ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name", contentItem.ContentTypeItemId);
+      ViewData["ContentTypeFieldId"] = new SelectList(_context.ContentTypeFields, "ContentTypeFieldId", "Name", contentItem.ContentTypeFieldId);
       return View(contentItem);
     }
 
@@ -109,7 +109,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("ContentItemId,ContentId,ContentTypeItemId,Value")] ContentItem contentItem)
+    public async Task<IActionResult> Edit(int id, [Bind("ContentItemId,ContentId,ContentTypeFieldId,Value")] ContentItem contentItem)
     {
       if (id != contentItem.ContentItemId)
       {
@@ -139,7 +139,7 @@ namespace DSCMS.Controllers
         return RedirectToAction("Edit", "Contents", new { id = contentItem.ContentId });
       }
       ViewData["ContentId"] = new SelectList(_context.Contents, "ContentId", "UrlToDisplay", contentItem.ContentId);
-      ViewData["ContentTypeItemId"] = new SelectList(_context.ContentTypeItems, "ContentTypeItemId", "Name", contentItem.ContentTypeItemId);
+      ViewData["ContentTypeFieldId"] = new SelectList(_context.ContentTypeFields, "ContentTypeFieldId", "Name", contentItem.ContentTypeFieldId);
       return View(contentItem);
     }
 
