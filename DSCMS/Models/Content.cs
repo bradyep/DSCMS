@@ -10,8 +10,8 @@ namespace DSCMS.Models
   /// <summary>
   /// Represents a content entity (such as a blog post) with metadata, relationships, and associated content items.
   /// </summary>
-  /// <remarks>This class is used to manage content entities, including their metadata such as title, body, and
-  /// creation dates,  as well as relationships to content types, templates, and associated content items. It also
+  /// <remarks>This class is used to manage content entities, including their metadata such as title, body source, and
+  /// creation dates, as well as relationships to content types, templates, and associated content items. It also
   /// tracks the users who created and last updated the content.</remarks>
   public class Content
   {
@@ -20,8 +20,19 @@ namespace DSCMS.Models
     [RegularExpression(@"^[a-z0-9-]+$"), Required, StringLength(100)]
     public string UrlToDisplay { get; set; } = string.Empty;
     public string? Title { get; set; }
+    
+    [Display(Name = "Body Source")]
     [DataType(DataType.MultilineText)]
-    public string? Body { get; set; }
+    public string? BodySource { get; set; }
+    
+    [Display(Name = "Body Source Type")]
+    public int BodySourceTypeId { get; set; }
+    [ForeignKey("BodySourceTypeId")]
+    public SourceType? BodySourceType { get; set; }
+    
+    [Display(Name = "Display Order")]
+    public int? DisplayOrder { get; set; }
+    
     [Display(Name = "Creation Date")]
     [DataType(DataType.Date)]
     [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]

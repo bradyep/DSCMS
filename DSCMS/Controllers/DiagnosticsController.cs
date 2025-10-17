@@ -409,8 +409,8 @@ namespace DSCMS.Controllers
           report.AppendLine($"\n  Content ID: {content.ContentId}");
           report.AppendLine($"    Title: {content.Title}");
           report.AppendLine($"    URL: {content.UrlToDisplay}");
-          report.AppendLine($"    Body Length: {content.Body?.Length ?? 0}");
-          report.AppendLine($"    Body Preview: {content.Body?.Substring(0, Math.Min(100, content.Body?.Length ?? 0)) ?? "NULL"}");
+          report.AppendLine($"    Body Length: {content.BodySource?.Length ?? 0}");
+          report.AppendLine($"    Body Preview: {content.BodySource?.Substring(0, Math.Min(100, content.BodySource?.Length ?? 0)) ?? "NULL"}");
           report.AppendLine($"    CreatedBy: {content.CreatedBy} (User: {content.CreatedByUser?.DisplayName ?? "NULL"})");
           report.AppendLine($"    LastUpdatedBy: {content.LastUpdatedBy} (User: {content.LastUpdatedByUser?.DisplayName ?? "NULL"})");
           report.AppendLine($"    ContentTypeId: {content.ContentTypeId}");
@@ -455,7 +455,7 @@ namespace DSCMS.Controllers
           report.AppendLine($"Blog posts found: {blogContents.Count}");
           foreach (var blog in blogContents)
           {
-            report.AppendLine($"  {blog.UrlToDisplay}: Body={blog.Body?.Length ?? 0} chars");
+            report.AppendLine($"  {blog.UrlToDisplay}: Body={blog.BodySource?.Length ?? 0} chars");
           }
         }
       }
@@ -770,10 +770,10 @@ namespace DSCMS.Controllers
           {
             // Generate teaser text from body content
             string teaserText = "Read more..."; // Default
-            if (!string.IsNullOrEmpty(blog.Body))
+            if (!string.IsNullOrEmpty(blog.BodySource))
             {
               // Extract first 150 characters of text content, removing HTML tags
-              var plainText = System.Text.RegularExpressions.Regex.Replace(blog.Body, "<.*?>", "");
+              var plainText = System.Text.RegularExpressions.Regex.Replace(blog.BodySource, "<.*?>", "");
               teaserText = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
             }
             
@@ -931,7 +931,7 @@ namespace DSCMS.Controllers
       {
         "subject" => content.Title ?? $"Content {content.ContentId}",
         "name" => content.Title ?? $"Content {content.ContentId}",
-        "teasertext" => GenerateTeaserText(content.Body),
+        "teasertext" => GenerateTeaserText(content.BodySource),
         "projecturl" => "#",
         "screenshot" => "/images/placeholder.png",
         _ => $"Default {itemName}"

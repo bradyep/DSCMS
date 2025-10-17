@@ -60,6 +60,13 @@ namespace DSCMS.Data
                 .HasForeignKey(l => l.SourceTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
             
+            // Configure Content and SourceType relationship
+            builder.Entity<Content>()
+                .HasOne(c => c.BodySourceType)
+                .WithMany()
+                .HasForeignKey(c => c.BodySourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
             // Seed SourceTypes data
             builder.Entity<SourceType>().HasData(
                 new SourceType { SourceTypeId = 1, Description = "RazorFile" },
