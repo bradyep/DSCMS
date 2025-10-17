@@ -14,10 +14,15 @@ namespace DSCMS.Models
   {
     public int TemplateId { get; set; }
     public string? Name { get; set; }
-    [Display(Name = "File Location")]
-    public string? FileLocation { get; set; }
-    [Display(Name = "File Contents")]
-    public string? FileContents { get; set; }
+    
+    [Display(Name = "Template Source")]
+    public string? TemplateSource { get; set; }
+    
+    [Display(Name = "Source Type")]
+    public int SourceTypeId { get; set; }
+    [ForeignKey("SourceTypeId")]
+    public SourceType? SourceType { get; set; }
+    
     [Display(Name = "Is For Multiple Contents")]
     public int IsForMultipleContents { get; set; }
 

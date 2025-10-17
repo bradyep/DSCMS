@@ -64,13 +64,13 @@ namespace DSCMS.Controllers
                     hasChanges = true;
                 }
                 
-                if (string.IsNullOrEmpty(layout.FileLocation))
+                if (string.IsNullOrEmpty(layout.LayoutSource))
                 {
-                    layout.FileLocation = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
+                    layout.LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
                     hasChanges = true;
                 }
                 
-                // FileContents can be null - that's acceptable, so we don't fix it
+                // LayoutSource can be null - that's acceptable, so we don't fix it
             }
             
             if (hasChanges)
@@ -87,8 +87,8 @@ namespace DSCMS.Controllers
                 var defaultLayout = new Layout
                 {
                     Name = "Bootstrap Blog Layout",
-                    FileLocation = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml", 
-                    FileContents = null // Reference external file, no inline content needed
+                    LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
+                    SourceTypeId = 1 // RazorFile
                 };
                 
                 _context.Layouts.Add(defaultLayout);
@@ -123,7 +123,7 @@ namespace DSCMS.Controllers
         // POST: Layouts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("LayoutId,Name,FileLocation,FileContents")] Layout layout)
+        public async Task<IActionResult> Create([Bind("LayoutId,Name,LayoutSource,SourceTypeId")] Layout layout)
         {
             if (ModelState.IsValid)
             {
@@ -153,7 +153,7 @@ namespace DSCMS.Controllers
         // POST: Layouts/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("LayoutId,Name,FileLocation,FileContents")] Layout layout)
+        public async Task<IActionResult> Edit(int id, [Bind("LayoutId,Name,LayoutSource,SourceTypeId")] Layout layout)
         {
             if (id != layout.LayoutId)
             {

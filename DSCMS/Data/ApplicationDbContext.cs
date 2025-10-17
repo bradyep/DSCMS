@@ -46,6 +46,20 @@ namespace DSCMS.Data
                 .HasForeignKey(c => c.LastUpdatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
             
+            // Configure Template and SourceType relationship
+            builder.Entity<Template>()
+                .HasOne(t => t.SourceType)
+                .WithMany()
+                .HasForeignKey(t => t.SourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Layout and SourceType relationship
+            builder.Entity<Layout>()
+                .HasOne(l => l.SourceType)
+                .WithMany()
+                .HasForeignKey(l => l.SourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
             // Seed SourceTypes data
             builder.Entity<SourceType>().HasData(
                 new SourceType { SourceTypeId = 1, Description = "RazorFile" },

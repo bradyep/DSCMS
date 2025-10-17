@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -170,10 +170,10 @@ namespace DSCMS.Controllers
         }
       }
 
-      ViewData["Layout"] = template?.Layout?.FileLocation ?? "";
+      ViewData["Layout"] = template?.Layout?.LayoutSource ?? "";
 
       // Determine view location
-      string viewLocationToUse = template?.FileLocation ?? "/Views/Home/Index.cshtml";
+      string viewLocationToUse = template?.TemplateSource ?? "/Views/Home/Index.cshtml";
       
       // If we're looking at individual content and no template was found, try to use a content-specific fallback
       if (pContentUrl.Trim() != "" && template == null)

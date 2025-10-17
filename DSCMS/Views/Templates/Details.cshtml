@@ -29,24 +29,24 @@
       @(Model.IsForMultipleContents > 0 ? "ContentType" : "Content")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.FileLocation)
+      @Html.DisplayNameFor(model => model.TemplateSource)
     </dt>
     <dd>
-      @(Model.FileLocation ?? "[No File Location]")
+      @(Model.TemplateSource ?? "[No File Location]")
     </dd>
     <dt>
       Has Inline Content
     </dt>
     <dd>
-      @(Model.FileContents != null ? "Yes" : "No")
+      @(Model.TemplateSource != null ? "Yes" : "No")
     </dd>
-    @if (Model.FileContents != null)
+    @if (Model.TemplateSource != null)
     {
       <dt>
         Content Preview
       </dt>
       <dd>
-        <pre style="max-height: 200px; overflow-y: auto; background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;">@Model.FileContents</pre>
+        <pre style="max-height: 200px; overflow-y: auto; background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;">@Model.TemplateSource</pre>
       </dd>
     }
   </dl>

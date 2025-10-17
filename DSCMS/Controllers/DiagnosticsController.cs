@@ -163,9 +163,9 @@ namespace DSCMS.Controllers
             needsFix = true;
           }
           
-          if (string.IsNullOrEmpty(layout.FileLocation))
+          if (string.IsNullOrEmpty(layout.LayoutSource))
           {
-            layout.FileLocation = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
+            layout.LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
             issues.Add("FileLocation");
             needsFix = true;
           }
@@ -179,7 +179,7 @@ namespace DSCMS.Controllers
           }
           else
           {
-            var hasInlineContent = layout.FileContents != null ? "with inline content" : "referencing external file";
+            var hasInlineContent = layout.SourceTypeId == 2 ? "with inline content" : "referencing external file";
             report.AppendLine($"  Layout {layout.LayoutId}: OK ({hasInlineContent})");
           }
         }
@@ -204,8 +204,8 @@ namespace DSCMS.Controllers
           var sampleLayout = new Layout
           {
             Name = "Bootstrap Blog Layout",
-            FileLocation = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
-            FileContents = null // This layout references an external file, so no inline content
+            LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
+            SourceTypeId = 1 // RazorFile
           };
           
           _context.Layouts.Add(sampleLayout);
@@ -244,8 +244,8 @@ namespace DSCMS.Controllers
           var sampleLayout = new Layout
           {
             Name = "Bootstrap Blog Layout",
-            FileLocation = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
-            FileContents = null // This layout references an external file, so no inline content needed
+            LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
+            SourceTypeId = 1 // RazorFile
           };
           
           _context.Layouts.Add(sampleLayout);
@@ -298,15 +298,15 @@ namespace DSCMS.Controllers
             needsFix = true;
           }
           
-          if (string.IsNullOrEmpty(template.FileLocation))
+          if (string.IsNullOrEmpty(template.TemplateSource))
           {
             var templateType = template.IsForMultipleContents > 0 ? "ContentTypes" : "Contents";
-            template.FileLocation = $"/Views/DSCMS/Templates/{templateType}/Template{template.TemplateId}.cshtml";
-            issues.Add("FileLocation");
+            template.TemplateSource = $"/Views/DSCMS/Templates/{templateType}/Template{template.TemplateId}.cshtml";
+            issues.Add("TemplateSource");
             needsFix = true;
           }
           
-          // FileContents can be null - that's acceptable for templates that reference external files
+          // TemplateSource can be null - that's acceptable for templates that reference external files
           
           if (needsFix)
           {
@@ -315,7 +315,7 @@ namespace DSCMS.Controllers
           }
           else
           {
-            var hasInlineContent = template.FileContents != null ? "with inline content" : "referencing external file";
+            var hasInlineContent = template.TemplateSource != null ? "with inline content" : "referencing external file";
             var templateType = template.IsForMultipleContents > 0 ? "ContentType" : "Content";
             report.AppendLine($"  Template {template.TemplateId} ({templateType}): OK ({hasInlineContent})");
           }
@@ -342,8 +342,8 @@ namespace DSCMS.Controllers
           var sampleContentTemplate = new Template
           {
             Name = "Bootstrap Blog Post Template",
-            FileLocation = "/Views/DSCMS/Templates/Contents/BootstrapBlogPost.cshtml",
-            FileContents = null, // References external file
+            TemplateSource = "/Views/DSCMS/Templates/Contents/BootstrapBlogPost.cshtml",
+            SourceTypeId = 1, // RazorFile
             IsForMultipleContents = 0, // For Content
             LayoutId = (await _context.Layouts.FirstOrDefaultAsync())?.LayoutId
           };
@@ -352,8 +352,8 @@ namespace DSCMS.Controllers
           var sampleContentTypeTemplate = new Template
           {
             Name = "Bootstrap Blog Listing Template",
-            FileLocation = "/Views/DSCMS/Templates/ContentTypes/BootstrapBlogContentType.cshtml", 
-            FileContents = null, // References external file
+            TemplateSource = "/Views/DSCMS/Templates/ContentTypes/BootstrapBlogContentType.cshtml", 
+            SourceTypeId = 1, // RazorFile
             IsForMultipleContents = 1, // For ContentType
             LayoutId = (await _context.Layouts.FirstOrDefaultAsync())?.LayoutId
           };

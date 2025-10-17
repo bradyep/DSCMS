@@ -34,22 +34,22 @@
       </div>
     </div>
     <div class="form-group">
-      <label asp-for="FileLocation" class="col-md-2 control-label"></label>
+      <label asp-for="TemplateSource" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <input asp-for="FileLocation" class="form-control" placeholder="/Views/DSCMS/Templates/YourTemplate.cshtml" />
-        <span asp-validation-for="FileLocation" class="text-danger" />
+        <input asp-for="TemplateSource" class="form-control" placeholder="/Views/DSCMS/Templates/YourTemplate.cshtml" />
+        <span asp-validation-for="TemplateSource" class="text-danger" />
         <small class="form-text text-muted">Path to the external template file</small>
       </div>
     </div>
     <div class="form-group">
-      <label asp-for="FileContents" class="col-md-2 control-label"></label>
+      <label asp-for="TemplateSource" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        <textarea asp-for="FileContents" class="form-control" rows="10" placeholder="Optional: Inline template content (leave empty to use external file)"></textarea>
-        <span asp-validation-for="FileContents" class="text-danger" />
+        <textarea asp-for="TemplateSource" class="form-control" rows="10" placeholder="Optional: Inline template content (leave empty to use external file)"></textarea>
+        <span asp-validation-for="TemplateSource" class="text-danger" />
         <small class="form-text text-muted">
-          @if (Model.FileContents != null)
+          @if (Model.TemplateSource != null)
           {
-            <span class="text-success">Has inline content (@Model.FileContents.Length characters)</span>
+            <span class="text-success">Has inline content (@Model.TemplateSource.Length characters)</span>
           }
           else
           {

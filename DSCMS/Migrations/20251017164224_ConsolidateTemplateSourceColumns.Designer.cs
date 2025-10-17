@@ -3,6 +3,7 @@ using System;
 using DSCMS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DSCMS.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017164224_ConsolidateTemplateSourceColumns")]
+    partial class ConsolidateTemplateSourceColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -224,7 +227,10 @@ namespace DSCMS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("LayoutSource")
+                    b.Property<string>("FileContents")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileLocation")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -232,12 +238,7 @@ namespace DSCMS.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("SourceTypeId")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("LayoutId");
-
-                    b.HasIndex("SourceTypeId");
 
                     b.ToTable("Layouts");
                 });
@@ -522,17 +523,6 @@ namespace DSCMS.Migrations
                     b.Navigation("Content");
 
                     b.Navigation("ContentTypeField");
-                });
-
-            modelBuilder.Entity("DSCMS.Models.Layout", b =>
-                {
-                    b.HasOne("DSCMS.Models.SourceType", "SourceType")
-                        .WithMany()
-                        .HasForeignKey("SourceTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("SourceType");
                 });
 
             modelBuilder.Entity("DSCMS.Models.Template", b =>

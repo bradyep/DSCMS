@@ -40,9 +40,9 @@
           @(item.Layout?.Name ?? "[No Layout]")
         </td>
         <td>
-          @if (item.FileLocation != null)
+          @if (item.TemplateSource != null)
           {
-            @item.FileLocation.Substring(item.FileLocation.LastIndexOf('/') + 1)
+            @item.TemplateSource.Substring(item.TemplateSource.LastIndexOf('/') + 1)
           }
           else
           {
@@ -53,7 +53,7 @@
           @(item.IsForMultipleContents > 0 ? "ContentType" : "Content")
         </td>
         <td>
-          @(item.FileContents != null ? "Yes" : "No")
+          @(item.TemplateSource != null ? "Yes" : "No")
         </td>
         <td>
           <a asp-action="Edit" asp-route-id="@item.TemplateId">Edit</a> |
