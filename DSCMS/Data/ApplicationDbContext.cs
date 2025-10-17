@@ -19,17 +19,18 @@ namespace DSCMS.Data
         {
             base.OnModelCreating(builder);
             
-            // Configure the relationship between ContentType and Template
+            // Configure the relationship between ContentType and Template for multiple contents listing
             builder.Entity<ContentType>()
-                .HasOne(ct => ct.Template)
-                .WithMany(t => t.ContentTypes)
-                .HasForeignKey(ct => ct.TemplateId)
+                .HasOne(ct => ct.MultipleContentsTemplate)
+                .WithMany(t => t.UsedAsMultipleContentsTemplate)
+                .HasForeignKey(ct => ct.MultipleContentsTemplateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure the relationship for default single content template
             builder.Entity<ContentType>()
-                .HasOne(ct => ct.DefaultContentTemplate)
-                .WithMany(t => t.HasAsDefaultContentTemplate)
-                .HasForeignKey(ct => ct.DefaultTemplateForContent)
+                .HasOne(ct => ct.DefaultSingleContentTemplate)
+                .WithMany(t => t.UsedAsDefaultSingleContentTemplate)
+                .HasForeignKey(ct => ct.DefaultSingleContentTemplateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure Content and ApplicationUser relationships
@@ -44,14 +45,45 @@ namespace DSCMS.Data
                 .WithMany(u => u.UpdatedContent)
                 .HasForeignKey(c => c.LastUpdatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Template and SourceType relationship
+            builder.Entity<Template>()
+                .HasOne(t => t.SourceType)
+                .WithMany()
+                .HasForeignKey(t => t.SourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Layout and SourceType relationship
+            builder.Entity<Layout>()
+                .HasOne(l => l.SourceType)
+                .WithMany()
+                .HasForeignKey(l => l.SourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Configure Content and SourceType relationship
+            builder.Entity<Content>()
+                .HasOne(c => c.BodySourceType)
+                .WithMany()
+                .HasForeignKey(c => c.BodySourceTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Seed SourceTypes data
+            builder.Entity<SourceType>().HasData(
+                new SourceType { SourceTypeId = 1, Description = "RazorFile" },
+                new SourceType { SourceTypeId = 2, Description = "InlineRazor" },
+                new SourceType { SourceTypeId = 3, Description = "Markdown" },
+                new SourceType { SourceTypeId = 4, Description = "HTML" },
+                new SourceType { SourceTypeId = 5, Description = "Text" }
+            );
         }
 
         public DbSet<Layout> Layouts { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }
-        public DbSet<ContentTypeItem> ContentTypeItems { get; set; }
-        public DbSet<ContentItem> ContentItems { get; set; }
+        public DbSet<ContentTypeField> ContentTypeFields { get; set; }
+        public DbSet<ContentTypeFieldItem> ContentTypeFieldItems { get; set; }
+        public DbSet<SourceType> SourceTypes { get; set; }
 
     }
 }

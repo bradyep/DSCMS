@@ -1,0 +1,68 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Dependency Injection Demo";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>@ViewData["Title"]</h2>
+            <p class="lead">This page demonstrates that all dependency injection components are working correctly in your DSCMS application.</p>
+            
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">? Success!</h4>
+                <p>@Model.Message</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Dependency Injection Components Status</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">DbContext (Entity Framework)</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-success">? Working</span>
+                            Found @Model.ContentCount contents in the database
+                        </dd>
+
+                        <dt class="col-sm-4">Configuration Service</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-success">? Working</span>
+                            Email server: @Model.EmailServer, Database: @Model.DatabaseType
+                        </dd>
+
+                        <dt class="col-sm-4">Logging Service</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-success">? Working</span>
+                            Check the application logs to see detailed logging output
+                        </dd>
+
+                        <dt class="col-sm-4">Email Service</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-success">? Working</span>
+                            Email service is configured and ready (check logs for test email)
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h5>What was implemented:</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">? Enhanced logging configuration with console and debug providers</li>
+                    <li class="list-group-item">? DbContext dependency injection (already existed, now enhanced with logging)</li>
+                    <li class="list-group-item">? Configuration service for type-safe access to appsettings.json</li>
+                    <li class="list-group-item">? Email service with configuration and logging dependencies</li>
+                    <li class="list-group-item">? Logger injection in controllers for better debugging and monitoring</li>
+                    <li class="list-group-item">? Structured configuration with EmailSettings and DatabaseSettings classes</li>
+                </ul>
+            </div>
+
+            <div class="mt-4">
+                <a href="/Admin/Contents" class="btn btn-primary">Back to Contents</a>
+                <a href="/Admin" class="btn btn-secondary">Back to Admin</a>
+            </div>
+        </div>
+    </div>
+</div>

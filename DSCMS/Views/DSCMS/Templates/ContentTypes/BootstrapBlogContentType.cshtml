@@ -1,4 +1,4 @@
-﻿@model DSCMS.Models.ContentType
+@model DSCMS.Models.ContentType
 
 @{
   Layout = (string)ViewData["Layout"];
@@ -18,12 +18,12 @@
         <h2 class="blog-post-title">@item.GetValueFor("Subject")</h2>
         <p class="blog-post-meta">@Html.DisplayFor(x => item.CreationDate) by <a href="#">@(item.CreatedByUser?.DisplayName ?? "Unknown")</a></p>
 
-        @*@Html.Raw(item.Body)*@
+        @*@Html.Raw(item.BodySource)*@
         @*@item.GetValueFor("TeaserText")*@
         @Html.Raw(item.GetValueFor("TeaserText"))
 
         <div style="float: right; margin-top: 35px;">
-          @if (item.Body != null && item.Body.Trim() != "")
+          @if (item.BodySource != null && item.BodySource.Trim() != "")
           {
             <a href="blog/@item.UrlToDisplay">Read More</a>
             @*<a asp-action="@item.UrlToDisplay" >Read More</a>*@

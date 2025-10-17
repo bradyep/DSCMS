@@ -24,22 +24,22 @@
       @(Model.Layout?.Name ?? "[No Layout]")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.IsForContentType)
+      @Html.DisplayNameFor(model => model.IsForMultipleContents)
     </dt>
     <dd>
-      @(Model.IsForContentType > 0 ? "ContentType" : "Content")
+      @(Model.IsForMultipleContents > 0 ? "ContentType" : "Content")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.FileLocation)
+      @Html.DisplayNameFor(model => model.TemplateSource)
     </dt>
     <dd>
-      @(Model.FileLocation ?? "[No File Location]")
+      @(Model.TemplateSource ?? "[No File Location]")
     </dd>
     <dt>
       Has Inline Content
     </dt>
     <dd>
-      @(Model.FileContents != null ? "Yes" : "No")
+      @(Model.TemplateSource != null ? "Yes" : "No")
     </dd>
   </dl>
 

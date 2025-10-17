@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +21,7 @@ namespace DSCMS.Controllers
     public async Task<IActionResult> Index()
     {
       var applicationDbContext = _context.Templates.Include(t => t.Layout);
+
       return View(await applicationDbContext.ToListAsync());
     }
 
@@ -45,6 +42,10 @@ namespace DSCMS.Controllers
       return View(template);
     }
 
+    /// <summary>
+    /// Displays the Create Template view
+    /// </summary>
+    /// <returns></returns>
     // GET: Templates/Create
     public IActionResult Create()
     {
@@ -63,15 +64,21 @@ namespace DSCMS.Controllers
         new { Name = "ContentType", Value = 1 }
       };
       ViewData["Types"] = new SelectList(types, "Value", "Name");
+
       return View();
     }
 
+    /// <summary>
+    /// Processes the Create Template form submission
+    /// </summary>
+    /// <param name="template"></param>
+    /// <returns></returns>
     // POST: Templates/Create
     // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
+    public async Task<IActionResult> Create([Bind("TemplateId,TemplateSource,TemplateSource,LayoutId,Name,IsForMultipleContents")] Template template)
     {
       if (ModelState.IsValid)
       {
@@ -94,7 +101,8 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
+
       return View(template);
     }
 
@@ -126,7 +134,7 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
       return View(template);
     }
 
@@ -135,7 +143,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("TemplateId,FileContents,FileLocation,LayoutId,Name,IsForContentType")] Template template)
+    public async Task<IActionResult> Edit(int id, [Bind("TemplateId,TemplateSource,TemplateSource,LayoutId,Name,IsForMultipleContents")] Template template)
     {
       if (id != template.TemplateId)
       {
@@ -177,7 +185,7 @@ namespace DSCMS.Controllers
         new { Name = "Content", Value = 0 },
         new { Name = "ContentType", Value = 1 }
       };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForContentType));
+      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
       return View(template);
     }
 

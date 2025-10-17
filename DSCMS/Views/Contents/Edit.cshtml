@@ -13,12 +13,12 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="ContentId" />
     <div class="form-group">
-      <label asp-for="Body" class="col-md-2 control-label"></label>
+      <label asp-for="BodySource" class="col-md-2 control-label"></label>
       <div class="col-md-10">
-        @*<input asp-for="Body" class="form-control" />*@
-        @*<textarea asp-for="Body" class="form-control" />*@
-        @Html.TextAreaFor(m => m.Body, new { @class = "form-control", rows = 20 })
-        <span asp-validation-for="Body" class="text-danger" />
+        @*<input asp-for="BodySource" class="form-control" />*@
+        @*<textarea asp-for="BodySource" class="form-control" />*@
+        @Html.TextAreaFor(m => m.BodySource, new { @class = "form-control", rows = 20 })
+        <span asp-validation-for="BodySource" class="text-danger" />
       </div>
     </div>
     <div class="form-group">
@@ -78,10 +78,10 @@
       </div>
     </div>
 
-    <h4>Content Items</h4>
+    <h4>Content Type Field Items</h4>
 
     <p>
-      <a asp-controller="ContentItems" asp-action="Create" asp-route-id="@Model.ContentId">Create New Content Item</a>
+      <a asp-controller="ContentTypeFieldItems" asp-action="Create" asp-route-id="@Model.ContentId">Create New Field Item</a>
     </p>
     <table class="table">
       <thead>
@@ -97,18 +97,18 @@
         </tr>
       </thead>
       <tbody>
-        @foreach (var item in Model.ContentItems)
+        @foreach (var item in Model.ContentTypeFieldItems)
         {
           <tr>
             <td>
-              @Html.DisplayFor(modelItem => item.ContentTypeItem.Name)
+              @Html.DisplayFor(modelItem => item.ContentTypeField.Name)
             </td>
             <td>
               @Html.DisplayFor(modelItem => item.Value)
             </td>
             <td>
-              <a asp-controller="ContentItems" asp-action="Edit" asp-route-id="@item.ContentItemId">Edit</a> |
-              <a asp-controller="ContentItems" asp-action="Delete" asp-route-id="@item.ContentItemId">Delete</a>
+              <a asp-controller="ContentTypeFieldItems" asp-action="Edit" asp-route-id="@item.ContentTypeFieldItemId">Edit</a> |
+              <a asp-controller="ContentTypeFieldItems" asp-action="Delete" asp-route-id="@item.ContentTypeFieldItemId">Delete</a>
             </td>
           </tr>
         }

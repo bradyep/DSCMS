@@ -16,7 +16,7 @@
         @Html.DisplayNameFor(model => model.Name)
       </th>
       <th>
-        @Html.DisplayNameFor(model => model.FileLocation)
+        @Html.DisplayNameFor(model => model.LayoutSource)
       </th>
       <th>
         Has Inline Content
@@ -31,10 +31,10 @@
           @(item.Name ?? "[No Name]")
         </td>
         <td>
-          @(item.FileLocation ?? "[No File Location]")
+          @(item.LayoutSource ?? "[No File Location]")
         </td>
         <td>
-          @(item.FileContents != null ? "Yes" : "No")
+          @(item.LayoutSource != null ? "Yes" : "No")
         </td>
         <td>
           <a asp-action="Edit" asp-route-id="@item.LayoutId">Edit</a> |

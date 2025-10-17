@@ -1,4 +1,4 @@
-@model DSCMS.Models.ContentTypeItem
+@model DSCMS.Models.ContentTypeField
 
 @{
     ViewData["Title"] = "Details";
@@ -7,7 +7,7 @@
 <h2>Details</h2>
 
 <div>
-    <h4>ContentTypeItem</h4>
+    <h4>ContentTypeField</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
@@ -16,9 +16,15 @@
         <dd>
             @Html.DisplayFor(model => model.Name)
         </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Required)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Required)
+        </dd>
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.ContentTypeItemId">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model.ContentTypeFieldId">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

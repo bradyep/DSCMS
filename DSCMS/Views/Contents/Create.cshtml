@@ -12,12 +12,12 @@
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="form-group">
-            <label asp-for="Body" class="col-md-2 control-label"></label>
+            <label asp-for="BodySource" class="col-md-2 control-label"></label>
             <div class="col-md-10">
-                @*<input asp-for="Body" class="form-control" />
-                <span asp-validation-for="Body" class="text-danger" />*@
-                @Html.TextAreaFor(m => m.Body, new { @class = "form-control", rows = 20 })
-                <span asp-validation-for="Body" class="text-danger" />
+                @*<input asp-for="BodySource" class="form-control" />
+                <span asp-validation-for="BodySource" class="text-danger" />*@
+                @Html.TextAreaFor(m => m.BodySource, new { @class = "form-control", rows = 20 })
+                <span asp-validation-for="BodySource" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
