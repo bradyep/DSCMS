@@ -13,12 +13,26 @@ namespace DSCMS.Models
     public class ContentType
   {
     public int ContentTypeId { get; set; }
+    /// <summary>
+    /// Used for url when displaying multiple contents of this type.
+    /// </summary>
     public string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// Displays a title for this content type.
+    /// </summary>
     public string Title { get; set; } = string.Empty;
+    /// <summary>
+    /// Can be used to display a paragraph for this content type.
+    /// </summary>
     public string Description { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the number of items to display per page in a paginated list. If set to 0 displays all items on a single page.
+    /// </summary>
     public int ItemsPerPage { get; set; }
 
-
+    /// <summary>
+    /// Template used to display multiple contents
+    /// </summary>
     [Display(Name = "Multiple Contents Template")]
     public int MultipleContentsTemplateId { get; set; }
     [ForeignKey("MultipleContentsTemplateId")]

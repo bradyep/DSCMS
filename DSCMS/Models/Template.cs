@@ -22,7 +22,9 @@ namespace DSCMS.Models
     public int SourceTypeId { get; set; }
     [ForeignKey("SourceTypeId")]
     public SourceType? SourceType { get; set; }
-    
+    /// <summary>
+    /// If true this template is designed to handle multiple contents at once (e.g., a list of blog posts).
+    /// </summary>
     [Display(Name = "Is For Multiple Contents")]
     public int IsForMultipleContents { get; set; }
 

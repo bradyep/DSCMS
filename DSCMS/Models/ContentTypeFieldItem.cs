@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace DSCMS.Models
 {
   /// <summary>
-  /// Represents an actual value for a content type field (e.g., blog post teaser text "my first post"). 
-  /// Associates a specific content item with a content type field and stores its value.
+  /// Represents an actual value for a content type field (e.g., blog post teaser text "my first post").
   /// </summary>
   public class ContentTypeFieldItem
   {

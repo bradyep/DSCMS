@@ -7,11 +7,8 @@ using System.Threading.Tasks;
 namespace DSCMS.Models
 {
   /// <summary>
-  /// Represents a field associated with a specific content type (such as teaser text for a blog post), including its metadata and related content.
+  /// Represents a field associated with a specific content type (such as teaser text for a blog post).
   /// </summary>
-  /// <remarks>This class is used to define and manage fields that belong to a particular content type.  It
-  /// includes properties for identifying the field, associating it with a content type, and linking related content
-  /// items.</remarks>
   public class ContentTypeField
   {
     public int ContentTypeFieldId { get; set; }
