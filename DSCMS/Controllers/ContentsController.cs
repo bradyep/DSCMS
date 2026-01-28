@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using DSCMS.Data;
 using DSCMS.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 
 namespace DSCMS.Controllers
 {
@@ -80,6 +80,7 @@ namespace DSCMS.Controllers
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name");
+      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", (int)SourceTypeEnum.HTML);
 
       // Put together a Dictionary of all ContentTypes and their DefaultSingleContentTemplateId (if they have one)
       var contentTypeDefaultTemplateLookup = new Dictionary<int, int>();
@@ -98,7 +99,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ContentId,Body,ContentTypeId,CreatedBy,LastUpdatedBy,TemplateId,Title,UrlToDisplay")] Content content)
+    public async Task<IActionResult> Create([Bind("ContentId,BodySource,BodySourceTypeId,ContentTypeId,CreatedBy,LastUpdatedBy,TemplateId,Title,UrlToDisplay")] Content content)
     {
       _logger.LogDebug("Contents Create POST received for title: {ContentTitle}", content.Title);
 
@@ -118,6 +119,7 @@ namespace DSCMS.Controllers
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
@@ -147,6 +149,7 @@ namespace DSCMS.Controllers
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
@@ -155,7 +158,7 @@ namespace DSCMS.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("ContentId,Body,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,Title,UrlToDisplay")] Content content)
+    public async Task<IActionResult> Edit(int id, [Bind("ContentId,BodySource,BodySourceTypeId,ContentTypeId,CreatedBy,CreationDate,LastUpdatedBy,LastUpdatedDate,TemplateId,Title,UrlToDisplay")] Content content)
     {
       if (id != content.ContentId)
       {
@@ -186,6 +189,17 @@ namespace DSCMS.Controllers
             throw;
           }
         }
+        catch (DbUpdateException ex)
+        {
+          _logger.LogError(ex, "Database update exception updating content: {ContentId}", content.ContentId);
+          ModelState.AddModelError("", "Unable to save changes. Please ensure all required fields have valid values.");
+          ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
+          ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
+          ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
+          ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
+          ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
+          return View(content);
+        }
         return RedirectToAction("Index");
       }
 
@@ -194,6 +208,7 @@ namespace DSCMS.Controllers
       ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
       ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
       ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
