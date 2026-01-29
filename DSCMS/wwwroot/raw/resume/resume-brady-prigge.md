@@ -12,7 +12,7 @@ Senior software engineering position
 
 ## Summary
 
-Over fifteen years of professional experience successfully building reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin. What can I build for you?
+Over fifteen years of professional experience successfully building reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin Educational Resources. What can I build for you?
 
 * Full Stack - has performed the roles of: Senior Software Engineer (equal parts frontend and backend work), Application Architect, Database Administrator, Project Manager and Graphic Designer
 * Quickly and repeatedly promoted in every place of employment
@@ -35,7 +35,7 @@ Over fifteen years of professional experience successfully building reliable, us
 Eagan, MN  
 August 2024 - Present  
 
-Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System; a fully functional, fast and simple CMS that supports multiple types of user-defined content. Developed personal [website](https://bradyep.com/), which utilizes DSCMS to deliver a hand-built, data-driven, fully admin-able, open source content management system to store development projects as well as their source code. Built [newsfeeds.fyi](https://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds. Also created software projects for the community of the VR game Beat Saber.
+Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System; a fully functional, fast and simple CMS that supports multiple types of user-defined content, layouts and templates. Developed personal [website](https://bradyep.com/), which utilizes DSCMS to deliver a data-driven, fully admin-able website to display and manage blog posts as well as developed projects and games. Built [newsfeeds.fyi](https://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds. Also created software projects for the community of the VR game Beat Saber.
 
 * DSCMS runs on ASP.NET Core and SQLite inside an easily deployable Docker container
 * newsfeeds.fyi is built on a node Express backend and a React frontend, all written in TypeScript
@@ -47,8 +47,8 @@ Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Manag
 
 ---
 
-**Senior Software Engineer**
-Mackin (Burnsville, MN)  
+**Senior Software Engineer**  
+Mackin Educational Resources (Burnsville, MN)  
 May 2018 - May 2022  
 
 Developed and launched Mackin Search, an Amazon-style website ([mackin.com](https://home.mackin.com/)) that lets schools easily find, track and buy different types of resources (books, eBooks, audiobooks, etc.). Lead developer for the Mackin VIA frontend, an Apple Books-style mobile and web application that allowed students to consume eBooks and audiobooks. Lead Reading Metrics initiative: a multi-year project that allowed fine-grained tracking of how students interacted with Mackin products and services. Lead developer for the Mackin eBook and audiobook conversion software; responsible for converting raw material from publishers (PDF, EPUB, .wav, .mp3) into Mackin eBooks and audiobooks. Also wrote software that generated previews for these resources in addition to tools that allowed Mackin QA to easily review converted material before being offered to customers. Lead development on large image compression project to cut down on resource file sizes and server load on both newly converted material as well as live resources.
@@ -62,7 +62,7 @@ Developed and launched Mackin Search, an Amazon-style website ([mackin.com](http
 
 ---
 
-**Senior Software Engineer (formerly Software Engineer)**
+**Senior Software Engineer (formerly Software Engineer)**  
 L3Harris Technologies (formerly Aerosim), Research and Development Group (Burnsville, MN)  
 May 2013 - May 2018  
 
@@ -93,7 +93,7 @@ Developed cross repository search functionality for [SODA](http://www.nbsusa.com
 
 ---
 
-**Project Champion (formerly Software Engineer, formerly Business Applications Developer)**
+**Project Champion (formerly Software Engineer, formerly Business Applications Developer)**  
 Staywell Health Management (St. Paul, MN)  
 May 2006 - April 2008  
 
