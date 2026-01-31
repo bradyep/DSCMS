@@ -12,18 +12,18 @@ Senior software engineering position
 
 ## Summary
 
-Over fifteen years of professional experience successfully building reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin Educational Resources. What can I build for you?
+Over fifteen years of professional experience successfully building secure, reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin Educational Resources. What can I build for you?
 
 * Full Stack - has performed the roles of: Senior Software Engineer (equal parts frontend and backend work), Application Architect, Database Administrator, Project Manager and Graphic Designer
 * Quickly and repeatedly promoted in every place of employment
 * Proven record of bringing about significant improvements to existing systems and procedures
 * Effective in communicating with both technical and non-technical personnel
-* Experienced in working with and without AI assisted software development tools
+* Experienced in working with AI assisted software development tools
 
 ## Skills (most-used listed first)
 
 * Languages: C#, TypeScript, JavaScript, SQL, HTML5, CSS3, Swift, Clojure
-* Frameworks: .NET 10, Node.js, ASP.NET/MVC, React, AngularJS, Cordova, Jest
+* Frameworks: .NET 10, Node.js, ASP.NET/MVC, React, AngularJS, Cordova, Electron, Jest
 * Libraries/Misc.: webpack, JSON, gulp, Azure, AWS, MobX, Bootstrap
 * Software: Visual Studio Code, Rider, Git, Visual Studio 2026, SQL Server Management Studio, npm, Docker, Microsoft Office, Photoshop
 * Databases/ORM: SQL Server, Elasticsearch, Entity Framework, SQLite, Redis, Oracle
@@ -51,14 +51,14 @@ Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Manag
 Mackin Educational Resources (Burnsville, MN)  
 May 2018 - May 2022  
 
-Developed and launched Mackin Search, an Amazon-style website ([mackin.com](https://home.mackin.com/)) that lets schools easily find, track and buy different types of resources (books, eBooks, audiobooks, etc.). Lead developer for the Mackin VIA frontend, an Apple Books-style mobile and web application that allowed students to consume eBooks and audiobooks. Lead Reading Metrics initiative: a multi-year project that allowed fine-grained tracking of how students interacted with Mackin products and services. Lead developer for the Mackin eBook and audiobook conversion software; responsible for converting raw material from publishers (PDF, EPUB, .wav, .mp3) into Mackin eBooks and audiobooks. Also wrote software that generated previews for these resources in addition to tools that allowed Mackin QA to easily review converted material before being offered to customers. Lead development on large image compression project to cut down on resource file sizes and server load on both newly converted material as well as live resources.
+Developed and launched Mackin Search, an Amazon-style website ([mackin.com](https://home.mackin.com/)) that lets schools easily find, track and buy different types of resources (books, eBooks, audiobooks, etc.). Lead developer for the Mackin VIA client, an Apple Books-style mobile and web e-reader application that allowed students to consume eBooks and audiobooks. Lead Reading Metrics initiative: a multi-year project that allowed fine-grained tracking of exactly how students interacted with Mackin resources. Lead developer for Mackin conversion software; responsible for converting raw material from publishers (PDF, EPUB, .wav, .mp3) into Mackin-formatted eBooks and audiobooks. Also wrote software that generated shortened previews of these resources in addition to tools that allowed Mackin QA to easily review converted material before being offered to customers. Lead development on large image compression project to cut down on resource file sizes and server load on both newly converted material as well as live resources.
 
-* Wrote and maintained software that could be compared to products from Amazon or Apple in terms of functionality and complexity
-* Client software had to handle wide variety of use cases: full functionality for audiobooks when device is locked/asleep, students accessing same resource on different devices, support for going online or offline at any moment, TTS support, DRM
-* Delivered products to iOS, Chromebooks and Android as well as Windows, macOS, and web
-* Wrote and updated documentation for developers, business stake-holders and end users
+* VIA client is a full-featured e-reader that supports checking in/out, downloading, bookmarks, content navigation and links, accessibility settings, read-alongs, highlighting and note taking
+* VIA software also handles a wide variety of use cases: full functionality for audiobooks when device is locked/asleep, students accessing same resource on different devices, support for going online or offline at any moment, mobile TTS support, DRM, generated pagination
+* Delivered products to iOS, Android and Chromebooks as well as Windows, macOS, and web
+* Wrote and updated highly-detailed documentation for developers and business stake-holders
 
-**Technical Environment:** C#, TypeScript, Visual Studio Code, SQL, JavaScript, webpack, gulp, Rider, .NET 5 and 6, React, AngularJS, Swift, Elasticsearch/Kibana, Redis, SQL Server Management Studio, Jira, Git, Bitbucket, Mattermost, Jasmine/Karma
+**Technical Environment:** C#, TypeScript, Visual Studio Code, SQL, JavaScript, webpack, gulp, Rider, .NET 5 and 6, React, AngularJS, Cordova, Electron, Swift, Elasticsearch/Kibana, Redis, SQL Server Management Studio, Jira, Git, Bitbucket, Mattermost, Jasmine/Karma
 
 ---
 
