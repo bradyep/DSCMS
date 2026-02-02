@@ -54,7 +54,7 @@ Browse to the `/admin` route of your DSCMS instance.
 
 1. Put together the new container with `docker build -t bradyep/dscms .`
 2. Push the new container to docker hub with: `docker push bradyep/dscms`
-3. Log on to the remove server: `ssh bradyep@66.228.49.247`
+3. Log on to the remote server: `ssh bradyep@66.228.49.247`
 4. Stop the currently running nffyi container: `sudo docker stop [id]`
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
@@ -63,16 +63,16 @@ Browse to the `/admin` route of your DSCMS instance.
 
 ## Server
 
-* The data directory on the doker host is: `/var/lib/docker/volumes/dscms-data/_data`
+* The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
 
 ## Project Status
 
-This project is currently in active development. Currently updating to modern ASP.NET Core standards and practices. 
+This project is currently in active development.
 
-Certain parts of the system are still hard-coded, overly tied to my personal webiste and need to be made dynamic. 
+Certain parts of the system are still hard-coded, overly tied to my personal webiste and need to be made dynamic.
 
-Although the system is currently focused on blog posts, the goal is to make it a fully functional CMS that can handle multiple content types and taxonomies.
+Although the system is currently focused on blog posts, the goal is to make it a fully functional CMS that can handle different types of websites.
 
 ## License
 

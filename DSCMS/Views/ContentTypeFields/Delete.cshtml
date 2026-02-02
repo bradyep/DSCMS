@@ -1,4 +1,4 @@
-@model DSCMS.Models.ContentItem
+@model DSCMS.Models.ContentTypeField
 
 @{
     ViewData["Title"] = "Delete";
@@ -8,18 +8,25 @@
 
 <h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>ContentItem</h4>
+    <h4>ContentTypeField</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
-            @Html.DisplayNameFor(model => model.Value)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Value)
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Required)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.Required)
         </dd>
     </dl>
     
     <form asp-action="Delete">
+        <input type="hidden" asp-for="ContentTypeFieldId" />
         <div class="form-actions no-color">
             <input type="submit" value="Delete" class="btn btn-default" /> |
             <a asp-action="Index">Back to List</a>

@@ -1,5 +1,5 @@
 # Use multi-stage build for smaller final image
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project file first for better layer caching
@@ -15,7 +15,7 @@ COPY . .
 RUN dotnet publish "DSCMS.csproj" -c Release -o /app/publish --no-restore
 
 # Use runtime image for final stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 
 # Install sqlite3 for database operations and debugging
 RUN apt-get update && apt-get install -y \

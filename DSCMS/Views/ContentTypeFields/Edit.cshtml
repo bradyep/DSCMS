@@ -1,4 +1,4 @@
-@model DSCMS.Models.ContentTypeItem
+@model DSCMS.Models.ContentTypeField
 
 @{
     ViewData["Title"] = "Edit";
@@ -8,10 +8,10 @@
 
 <form asp-action="Edit">
     <div class="form-horizontal">
-        <h4>ContentTypeItem</h4>
+        <h4>ContentTypeField</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="ContentTypeItemId" />
+    <input type="hidden" asp-for="ContentTypeFieldId" />
         <div class="form-group">
             <label asp-for="ContentTypeId" class="control-label col-md-2"></label>
             <div class="col-md-10">
@@ -24,6 +24,13 @@
             <div class="col-md-10">
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Required" class="col-md-2 control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Required" class="form-control" type="checkbox" />
+                <span asp-validation-for="Required" class="text-danger" />
             </div>
         </div>
         <div class="form-group">

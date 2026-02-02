@@ -14,20 +14,27 @@ namespace DSCMS.Models
   {
     public int TemplateId { get; set; }
     public string? Name { get; set; }
-    [Display(Name = "File Location")]
-    public string? FileLocation { get; set; }
-    [Display(Name = "File Contents")]
-    public string? FileContents { get; set; }
-    [Display(Name = "Type")]
-    public int IsForContentType { get; set; }
+    
+    [Display(Name = "Template Source")]
+    public string? TemplateSource { get; set; }
+    
+    [Display(Name = "Source Type")]
+    public int SourceTypeId { get; set; }
+    [ForeignKey("SourceTypeId")]
+    public SourceType? SourceType { get; set; }
+    /// <summary>
+    /// If true this template is designed to handle multiple contents at once (e.g., a list of blog posts).
+    /// </summary>
+    [Display(Name = "Is For Multiple Contents")]
+    public int IsForMultipleContents { get; set; }
 
     public int? LayoutId { get; set; }
     public Layout? Layout { get; set; }
     public List<Content> Contents { get; set; } = new List<Content>();
 
-    [InverseProperty("Template")]
-    public List<ContentType> ContentTypes { get; set; } = new List<ContentType>();
-    [InverseProperty("DefaultContentTemplate")]
-    public List<ContentType> HasAsDefaultContentTemplate { get; set; } = new List<ContentType>();
+    [InverseProperty("MultipleContentsTemplate")]
+    public List<ContentType> UsedAsMultipleContentsTemplate { get; set; } = new List<ContentType>();
+    [InverseProperty("DefaultSingleContentTemplate")]
+    public List<ContentType> UsedAsDefaultSingleContentTemplate { get; set; } = new List<ContentType>();
   }
 }

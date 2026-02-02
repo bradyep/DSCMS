@@ -1,4 +1,4 @@
-@model IEnumerable<DSCMS.Models.ContentItem>
+@model IEnumerable<DSCMS.Models.ContentTypeFieldItem>
 
 @{
     ViewData["Title"] = "Index";
@@ -25,9 +25,9 @@
                 @Html.DisplayFor(modelItem => item.Value)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ContentItemId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ContentItemId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ContentItemId">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.ContentTypeFieldItemId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.ContentTypeFieldItemId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.ContentTypeFieldItemId">Delete</a>
             </td>
         </tr>
 }

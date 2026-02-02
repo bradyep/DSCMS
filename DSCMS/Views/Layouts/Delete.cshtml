@@ -18,16 +18,16 @@
       @(Model.Name ?? "[No Name]")
     </dd>
     <dt>
-      @Html.DisplayNameFor(model => model.FileLocation)
+      @Html.DisplayNameFor(model => model.LayoutSource)
     </dt>
     <dd>
-      @(Model.FileLocation ?? "[No File Location]")
+      @(Model.LayoutSource ?? "[No File Location]")
     </dd>
     <dt>
       Has Inline Content
     </dt>
     <dd>
-      @(Model.FileContents != null ? "Yes" : "No")
+      @(Model.LayoutSource != null ? "Yes" : "No")
     </dd>
   </dl>
 

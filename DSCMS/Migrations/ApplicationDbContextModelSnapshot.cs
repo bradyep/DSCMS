@@ -90,8 +90,11 @@ namespace DSCMS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Body")
+                    b.Property<string>("BodySource")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("BodySourceTypeId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("ContentTypeId")
                         .HasColumnType("INTEGER");
@@ -101,6 +104,9 @@ namespace DSCMS.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("TEXT");
+
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("TEXT");
@@ -121,6 +127,8 @@ namespace DSCMS.Migrations
 
                     b.HasKey("ContentId");
 
+                    b.HasIndex("BodySourceTypeId");
+
                     b.HasIndex("ContentTypeId");
 
                     b.HasIndex("CreatedBy");
@@ -132,52 +140,31 @@ namespace DSCMS.Migrations
                     b.ToTable("Contents");
                 });
 
-            modelBuilder.Entity("DSCMS.Models.ContentItem", b =>
-                {
-                    b.Property<int>("ContentItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ContentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ContentTypeItemId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ContentItemId");
-
-                    b.HasIndex("ContentId");
-
-                    b.HasIndex("ContentTypeItemId");
-
-                    b.ToTable("ContentItems");
-                });
-
             modelBuilder.Entity("DSCMS.Models.ContentType", b =>
                 {
                     b.Property<int>("ContentTypeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("DefaultTemplateForContent")
+                    b.Property<int?>("DefaultSingleContentTemplateId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsDefaultContentType")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("ItemsPerPage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MultipleContentsTemplateId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("TemplateId")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -185,16 +172,16 @@ namespace DSCMS.Migrations
 
                     b.HasKey("ContentTypeId");
 
-                    b.HasIndex("DefaultTemplateForContent");
+                    b.HasIndex("DefaultSingleContentTemplateId");
 
-                    b.HasIndex("TemplateId");
+                    b.HasIndex("MultipleContentsTemplateId");
 
                     b.ToTable("ContentTypes");
                 });
 
-            modelBuilder.Entity("DSCMS.Models.ContentTypeItem", b =>
+            modelBuilder.Entity("DSCMS.Models.ContentTypeField", b =>
                 {
-                    b.Property<int>("ContentTypeItemId")
+                    b.Property<int>("ContentTypeFieldId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
@@ -205,11 +192,38 @@ namespace DSCMS.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("ContentTypeItemId");
+                    b.Property<bool>("Required")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ContentTypeFieldId");
 
                     b.HasIndex("ContentTypeId");
 
-                    b.ToTable("ContentTypeItems");
+                    b.ToTable("ContentTypeFields");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.ContentTypeFieldItem", b =>
+                {
+                    b.Property<int>("ContentTypeFieldItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ContentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ContentTypeFieldId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ContentTypeFieldItemId");
+
+                    b.HasIndex("ContentId");
+
+                    b.HasIndex("ContentTypeFieldId");
+
+                    b.ToTable("ContentTypeFieldItems");
                 });
 
             modelBuilder.Entity("DSCMS.Models.Layout", b =>
@@ -218,11 +232,7 @@ namespace DSCMS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("FileContents")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileLocation")
+                    b.Property<string>("LayoutSource")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -230,9 +240,57 @@ namespace DSCMS.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SourceTypeId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("LayoutId");
 
+                    b.HasIndex("SourceTypeId");
+
                     b.ToTable("Layouts");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.SourceType", b =>
+                {
+                    b.Property<int>("SourceTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("SourceTypeId");
+
+                    b.ToTable("SourceTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            SourceTypeId = 1,
+                            Description = "RazorFile"
+                        },
+                        new
+                        {
+                            SourceTypeId = 2,
+                            Description = "InlineRazor"
+                        },
+                        new
+                        {
+                            SourceTypeId = 3,
+                            Description = "Markdown"
+                        },
+                        new
+                        {
+                            SourceTypeId = 4,
+                            Description = "HTML"
+                        },
+                        new
+                        {
+                            SourceTypeId = 5,
+                            Description = "Text"
+                        });
                 });
 
             modelBuilder.Entity("DSCMS.Models.Template", b =>
@@ -241,13 +299,7 @@ namespace DSCMS.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("FileContents")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileLocation")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("IsForContentType")
+                    b.Property<int>("IsForMultipleContents")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("LayoutId")
@@ -256,9 +308,17 @@ namespace DSCMS.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("SourceTypeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TemplateSource")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("TemplateId");
 
                     b.HasIndex("LayoutId");
+
+                    b.HasIndex("SourceTypeId");
 
                     b.ToTable("Templates");
                 });
@@ -393,6 +453,12 @@ namespace DSCMS.Migrations
 
             modelBuilder.Entity("DSCMS.Models.Content", b =>
                 {
+                    b.HasOne("DSCMS.Models.SourceType", "BodySourceType")
+                        .WithMany()
+                        .HasForeignKey("BodySourceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("DSCMS.Models.ContentType", "ContentType")
                         .WithMany("Contents")
                         .HasForeignKey("ContentTypeId")
@@ -415,6 +481,8 @@ namespace DSCMS.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("BodySourceType");
+
                     b.Navigation("ContentType");
 
                     b.Navigation("CreatedByUser");
@@ -424,52 +492,63 @@ namespace DSCMS.Migrations
                     b.Navigation("Template");
                 });
 
-            modelBuilder.Entity("DSCMS.Models.ContentItem", b =>
-                {
-                    b.HasOne("DSCMS.Models.Content", "Content")
-                        .WithMany("ContentItems")
-                        .HasForeignKey("ContentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DSCMS.Models.ContentTypeItem", "ContentTypeItem")
-                        .WithMany("ContentItems")
-                        .HasForeignKey("ContentTypeItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Content");
-
-                    b.Navigation("ContentTypeItem");
-                });
-
             modelBuilder.Entity("DSCMS.Models.ContentType", b =>
                 {
-                    b.HasOne("DSCMS.Models.Template", "DefaultContentTemplate")
-                        .WithMany("HasAsDefaultContentTemplate")
-                        .HasForeignKey("DefaultTemplateForContent")
+                    b.HasOne("DSCMS.Models.Template", "DefaultSingleContentTemplate")
+                        .WithMany("UsedAsDefaultSingleContentTemplate")
+                        .HasForeignKey("DefaultSingleContentTemplateId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("DSCMS.Models.Template", "Template")
-                        .WithMany("ContentTypes")
-                        .HasForeignKey("TemplateId")
+                    b.HasOne("DSCMS.Models.Template", "MultipleContentsTemplate")
+                        .WithMany("UsedAsMultipleContentsTemplate")
+                        .HasForeignKey("MultipleContentsTemplateId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("DefaultContentTemplate");
+                    b.Navigation("DefaultSingleContentTemplate");
 
-                    b.Navigation("Template");
+                    b.Navigation("MultipleContentsTemplate");
                 });
 
-            modelBuilder.Entity("DSCMS.Models.ContentTypeItem", b =>
+            modelBuilder.Entity("DSCMS.Models.ContentTypeField", b =>
                 {
                     b.HasOne("DSCMS.Models.ContentType", "ContentType")
-                        .WithMany("ContentTypeItems")
+                        .WithMany("ContentTypeFields")
                         .HasForeignKey("ContentTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ContentType");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.ContentTypeFieldItem", b =>
+                {
+                    b.HasOne("DSCMS.Models.Content", "Content")
+                        .WithMany("ContentTypeFieldItems")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DSCMS.Models.ContentTypeField", "ContentTypeField")
+                        .WithMany("ContentTypeFieldItems")
+                        .HasForeignKey("ContentTypeFieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("ContentTypeField");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.Layout", b =>
+                {
+                    b.HasOne("DSCMS.Models.SourceType", "SourceType")
+                        .WithMany()
+                        .HasForeignKey("SourceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SourceType");
                 });
 
             modelBuilder.Entity("DSCMS.Models.Template", b =>
@@ -478,7 +557,15 @@ namespace DSCMS.Migrations
                         .WithMany("Templates")
                         .HasForeignKey("LayoutId");
 
+                    b.HasOne("DSCMS.Models.SourceType", "SourceType")
+                        .WithMany()
+                        .HasForeignKey("SourceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Layout");
+
+                    b.Navigation("SourceType");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -541,19 +628,19 @@ namespace DSCMS.Migrations
 
             modelBuilder.Entity("DSCMS.Models.Content", b =>
                 {
-                    b.Navigation("ContentItems");
+                    b.Navigation("ContentTypeFieldItems");
                 });
 
             modelBuilder.Entity("DSCMS.Models.ContentType", b =>
                 {
-                    b.Navigation("ContentTypeItems");
+                    b.Navigation("ContentTypeFields");
 
                     b.Navigation("Contents");
                 });
 
-            modelBuilder.Entity("DSCMS.Models.ContentTypeItem", b =>
+            modelBuilder.Entity("DSCMS.Models.ContentTypeField", b =>
                 {
-                    b.Navigation("ContentItems");
+                    b.Navigation("ContentTypeFieldItems");
                 });
 
             modelBuilder.Entity("DSCMS.Models.Layout", b =>
@@ -563,11 +650,11 @@ namespace DSCMS.Migrations
 
             modelBuilder.Entity("DSCMS.Models.Template", b =>
                 {
-                    b.Navigation("ContentTypes");
-
                     b.Navigation("Contents");
 
-                    b.Navigation("HasAsDefaultContentTemplate");
+                    b.Navigation("UsedAsDefaultSingleContentTemplate");
+
+                    b.Navigation("UsedAsMultipleContentsTemplate");
                 });
 #pragma warning restore 612, 618
         }

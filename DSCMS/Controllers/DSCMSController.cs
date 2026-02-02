@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using DSCMS.Data;
 using DSCMS.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DSCMS.Controllers
 {
@@ -15,10 +16,12 @@ namespace DSCMS.Controllers
   public class DSCMSController : Controller
   {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<DSCMSController> _logger;
 
-    public DSCMSController(ApplicationDbContext context)
+    public DSCMSController(ApplicationDbContext context, ILogger<DSCMSController> logger)
     {
       _context = context;
+      _logger = logger;
     }
 
     /// <summary>
@@ -30,6 +33,9 @@ namespace DSCMS.Controllers
     /// <returns></returns>
     public IActionResult Content(string contentTypeName = "blog", string contentUrl = "", string page = "")
     {
+      _logger.LogDebug("Content requested: ContentTypeName={ContentTypeName}, ContentUrl={ContentUrl}, Page={Page}", 
+        contentTypeName, contentUrl, page);
+
       string pContentTypeName = contentTypeName.ToLower();
       string pContentUrl = contentUrl.ToLower();
       Content content = null;
@@ -40,44 +46,55 @@ namespace DSCMS.Controllers
 
       // More robust ContentType lookup with case-insensitive comparison
       ContentType contentType = _context.ContentTypes
-        .Include(ct => ct.ContentTypeItems)
+        .Include(ct => ct.ContentTypeFields)
         .Where(ct => ct.Name.ToLower() == pContentTypeName).FirstOrDefault();
 
       // If no content type found, show welcome page for first-time setup
       if (contentType == null)
       {
+        _logger.LogWarning("ContentType '{ContentTypeName}' not found, showing welcome page", pContentTypeName);
         ViewData["Title"] = "Welcome to DSCMS";
         return View("~/Views/DSCMS/Welcome.cshtml");
       }
+
+      _logger.LogDebug("Found ContentType: {ContentTypeId} - {ContentTypeName}", contentType.ContentTypeId, contentType.Name);
 
       if (pContentUrl.Trim() != "") // Specific Content was requested
       {
         content = _context.Contents
           .Include(c => c.CreatedByUser)
           .Include(c => c.LastUpdatedByUser)
-          .Include(c => c.ContentItems)
-          .ThenInclude(ci => ci.ContentTypeItem)
+          .Include(c => c.ContentTypeFieldItems)
+          .ThenInclude(ci => ci.ContentTypeField)
           .Where(c => c.UrlToDisplay == pContentUrl && c.ContentTypeId == contentType.ContentTypeId)
           .FirstOrDefault();
           
-        if (content == null) return NotFound();
+        if (content == null) 
+        {
+          _logger.LogWarning("Content not found: ContentUrl={ContentUrl}, ContentType={ContentTypeId}", pContentUrl, contentType.ContentTypeId);
+          return NotFound();
+        }
+
+        _logger.LogDebug("Found Content: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
+        
         content.ContentType = contentType;
         ViewData["Title"] = content.Title ?? "Title";
 
         // DEBUG: Add debugging information
-        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, Body Length: {content.Body?.Length ?? 0}, Body Preview: {content.Body?.Substring(0, Math.Min(100, content.Body?.Length ?? 0)) ?? "NULL"}";
+        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, BodySource Length: {content.BodySource?.Length ?? 0}, BodySource Preview: {content.BodySource?.Substring(0, Math.Min(100, content.BodySource?.Length ?? 0)) ?? "NULL"}";
 
         // Use content's template, or fall back to ContentType's default template if content has no template
         int templateIdToUse = content.TemplateId > 0 ? content.TemplateId : 
-                             (contentType.DefaultTemplateForContent > 0 ? contentType.DefaultTemplateForContent.Value : 0);
+                             (contentType.DefaultSingleContentTemplateId > 0 ? contentType.DefaultSingleContentTemplateId.Value : 0);
         
         // Check if we should display raw content with no template
-        if (content.TemplateId == 0 && (contentType.DefaultTemplateForContent == null || contentType.DefaultTemplateForContent == 0))
+        if (content.TemplateId == 0 && (contentType.DefaultSingleContentTemplateId == null || contentType.DefaultSingleContentTemplateId == 0))
         {
+          _logger.LogDebug("Returning raw HTML content for ContentId={ContentId}", content.ContentId);
           // Return raw HTML content with no template
           return new ContentResult
           {
-            Content = content.Body ?? "",
+            Content = content.BodySource ?? "",
             ContentType = "text/html"
           };
         }
@@ -87,17 +104,27 @@ namespace DSCMS.Controllers
           template = _context.Templates
             .Include(t => t.Layout)
             .Where(t => t.TemplateId == templateIdToUse).FirstOrDefault();
+          
+          if (template != null)
+          {
+            _logger.LogDebug("Using template: {TemplateId} - {TemplateName}", template.TemplateId, template.Name);
+          }
+          else
+          {
+            _logger.LogWarning("Template not found: TemplateId={TemplateId}", templateIdToUse);
+          }
         }
       }
       else // ContentType was requested
       {
+        _logger.LogDebug("Displaying ContentType listing for: {ContentTypeName}", pContentTypeName);
         ViewData["Title"] = contentType.Title ?? "Title";
 
-        if (contentType.TemplateId > 0)
+        if (contentType.MultipleContentsTemplateId > 0)
         {
           template = _context.Templates
             .Include(t => t.Layout)
-            .Where(t => t.TemplateId == contentType.TemplateId).FirstOrDefault();
+            .Where(t => t.TemplateId == contentType.MultipleContentsTemplateId).FirstOrDefault();
         }
 
         // Handle paging
@@ -106,19 +133,23 @@ namespace DSCMS.Controllers
         if (pageValue < 1) pageValue = 1;
         ViewData["Page"] = pageValue;
 
-        // Get Contents - include ContentItems and their ContentTypeItems for proper teaser text display
+        // Get Contents - include ContentItems and their ContentTypeFields for proper teaser text display
         try
         {
           contentType.Contents = _context.Contents
             .Where(c => c.ContentTypeId == contentType.ContentTypeId)
             .Include(c => c.CreatedByUser)
             .Include(c => c.LastUpdatedByUser)
-            .Include(c => c.ContentItems)
-            .ThenInclude(ci => ci.ContentTypeItem)
+            .Include(c => c.ContentTypeFieldItems)
+            .ThenInclude(ci => ci.ContentTypeField)
             .ToList();
+          
+          _logger.LogDebug("Loaded {ContentCount} contents for ContentType {ContentTypeId}", 
+            contentType.Contents.Count, contentType.ContentTypeId);
         }
         catch (Exception ex)
         {
+          _logger.LogError(ex, "Error loading contents for ContentType {ContentTypeId}", contentType.ContentTypeId);
           // If there's an issue with content loading, just use empty list
           contentType.Contents = new List<Content>();
           ViewData["ErrorMessage"] = "Some content could not be loaded due to data inconsistencies.";
@@ -133,13 +164,16 @@ namespace DSCMS.Controllers
               .Skip((pageValue - 1) * contentType.ItemsPerPage)
               .Take(contentType.ItemsPerPage)
               .ToList();
+          
+          _logger.LogDebug("Applied paging: Page={Page}, ItemsPerPage={ItemsPerPage}, ResultCount={ResultCount}", 
+            pageValue, contentType.ItemsPerPage, contentType.Contents.Count);
         }
       }
 
-      ViewData["Layout"] = template?.Layout?.FileLocation ?? "";
+      ViewData["Layout"] = template?.Layout?.LayoutSource ?? "";
 
       // Determine view location
-      string viewLocationToUse = template?.FileLocation ?? "/Views/Home/Index.cshtml";
+      string viewLocationToUse = template?.TemplateSource ?? "/Views/Home/Index.cshtml";
       
       // If we're looking at individual content and no template was found, try to use a content-specific fallback
       if (pContentUrl.Trim() != "" && template == null)
@@ -148,12 +182,16 @@ namespace DSCMS.Controllers
         string ctName = contentType.Name.ToLower();
         string fallbackContentTemplate = $"/Views/DSCMS/Templates/Contents/Bootstrap{char.ToUpper(ctName[0])}{ctName.Substring(1)}.cshtml";
         viewLocationToUse = fallbackContentTemplate;
+        _logger.LogDebug("Using fallback content template: {ViewLocation}", viewLocationToUse);
       }
       
       if (string.IsNullOrEmpty(viewLocationToUse))
       {
         viewLocationToUse = "/Views/DSCMS/Templates/Empty.cshtml";
+        _logger.LogDebug("Using empty template: {ViewLocation}", viewLocationToUse);
       }
+
+      _logger.LogDebug("Rendering view: {ViewLocation}", viewLocationToUse);
 
       if (pContentUrl.Trim() != "") // Content was requested
         return View(viewLocationToUse, content);

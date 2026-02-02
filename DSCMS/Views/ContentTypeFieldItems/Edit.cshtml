@@ -1,26 +1,29 @@
-@model DSCMS.Models.ContentItem
+@model DSCMS.Models.ContentTypeFieldItem
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Edit";
 }
 
-<h2>Create</h2>
+<h2>Edit</h2>
 
-<form asp-action="Create">
+<form asp-action="Edit">
     <div class="form-horizontal">
-        <h4>ContentItem</h4>
+        <h4>ContentTypeFieldItem</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="ContentTypeFieldItemId" />
         <div class="form-group">
-            <label asp-for="ContentId" class="col-md-2 control-label"></label>
+            <label asp-for="ContentId" class="control-label col-md-2"></label>
             <div class="col-md-10">
-                <select asp-for="ContentId" class ="form-control" asp-items="ViewBag.ContentId"></select>
+                <select asp-for="ContentId" class="form-control" asp-items="ViewBag.ContentId"></select>
+                <span asp-validation-for="ContentId" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="ContentTypeItemId" class="col-md-2 control-label"></label>
+            <label asp-for="ContentTypeFieldId" class="control-label col-md-2"></label>
             <div class="col-md-10">
-                <select asp-for="ContentTypeItemId" class ="form-control" asp-items="ViewBag.ContentTypeItemId"></select>
+                <select asp-for="ContentTypeFieldId" class="form-control" asp-items="ViewBag.ContentTypeFieldId"></select>
+                <span asp-validation-for="ContentTypeFieldId" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
@@ -32,7 +35,7 @@
         </div>
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-default" />
             </div>
         </div>
     </div>

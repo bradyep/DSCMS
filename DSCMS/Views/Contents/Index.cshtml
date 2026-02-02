@@ -31,7 +31,7 @@
         @Html.DisplayNameFor(model => model.UrlToDisplay)
       </th>
       <th>
-        @Html.DisplayNameFor(model => model.Body)
+        @Html.DisplayNameFor(model => model.BodySource)
       </th>
       @*<th>
             @Html.DisplayNameFor(model => model.CreationDate)
@@ -56,7 +56,7 @@
           @Html.DisplayFor(modelItem => item.UrlToDisplay)
         </td>
         <td>
-          @(item.Body == null || item.Body.Trim() == "" ? "False" : "True")
+          @(item.BodySource == null || item.BodySource.Trim() == "" ? "False" : "True")
         </td>
         @*<td>
               @Html.DisplayFor(modelItem => item.CreationDate)

@@ -8,69 +8,61 @@ https://bradyep.com/
 
 ## Objective
 
-Senior or Principal software engineering position in the Twin Cities metro area
+Senior software engineering position
 
 ## Summary
 
-Over fifteen years of experience successfully building reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin. What can I build for you?
+Over fifteen years of professional experience successfully building secure, reliable, user-friendly, maintainable, well-tested enterprise software (including mobile and web applications) used by millions for The Scotts Company, United HealthCare, Wells Fargo, Southwest Airlines and Mackin Educational Resources. What can I build for you?
 
-* Full Stack - has performed the roles of: Senior Software Engineer (equal parts frontend and backend work), Application Architect, Database Administrator, Graphic Designer and Project Manager
+* Full Stack - has performed the roles of: Senior Software Engineer (equal parts frontend and backend work), Application Architect, Database Administrator, Project Manager and Graphic Designer
 * Quickly and repeatedly promoted in every place of employment
-* Proven record bringing about significant improvements to existing systems and procedures
+* Proven record of bringing about significant improvements to existing systems and procedures
 * Effective in communicating with both technical and non-technical personnel
-* Experienced in working with and without AI assisted software development tools
+* Experienced in working with AI assisted software development tools
 
 ## Skills (most-used listed first)
 
-* Languages: C#, TypeScript, JavaScript, SQL, HTML, CSS, Swift, Clojure
-* Frameworks: .NET, Node.js, ASP.NET/MVC, React, AngularJS, Cordova, Jest
+* Languages: C#, TypeScript, JavaScript, SQL, HTML5, CSS3, Swift, Clojure
+* Frameworks: .NET 10, Node.js, ASP.NET/MVC, React, AngularJS, Cordova, Electron, Jest
 * Libraries/Misc.: webpack, JSON, gulp, Azure, AWS, MobX, Bootstrap
-* Software: Visual Studio Code, Rider, Git, Visual Studio, SQL Server Management Studio, npm, Docker, Microsoft Office, Photoshop
+* Software: Visual Studio Code, Rider, Git, Visual Studio 2026, SQL Server Management Studio, npm, Docker, Microsoft Office, Photoshop
 * Databases/ORM: SQL Server, Elasticsearch, Entity Framework, SQLite, Redis, Oracle
 * Operating Systems: macOS, Windows and Linux (can work from prompt and script on all three)
 
 ## Experience
 
-**Consulting and Open Source Work**  
+**Open Source Work**  
 Eagan, MN  
-January 2011 - Present  
+August 2024 - Present  
 
-#### 2024-2025 software projects for the community of the VR game Beat Saber:
+Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System; a fully functional, fast and simple CMS that supports multiple types of user-defined content, layouts and templates. Developed personal [website](https://bradyep.com/), which utilizes DSCMS to deliver a data-driven, fully admin-able website to display and manage blog posts as well as developed projects and games. Built [newsfeeds.fyi](https://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds. Also created software projects for the community of the VR game Beat Saber.
 
+* DSCMS runs on ASP.NET Core and SQLite inside an easily deployable Docker container
+* newsfeeds.fyi is built on a node Express backend and a React frontend, all written in TypeScript
 * Created [check-map-plays](https://github.com/bradyep/check-bs-map-plays) - a feature-rich Node.js application that tracks play statistics for community-created Beat Saber maps
 * Made [changes](https://github.com/bradyep/beatleader-server/commit/b742b730f118c8e9e3ec01d74a6df559a00f7893) to the open source [BeatLeader](https://beatleader.com/) server code in order to display different game mode types in embedded replay images
 * Created [bs-custom-song-utilities](https://github.com/bradyep/bs-custom-song-utilities), a Powershell script that helps Beat Saber players manage custom songs stored on their hard drive
 
-#### 2011 - 2019 Projects:
-
-Created [DSCMS](https://github.com/bradyep/DSCMS): The Dead Simple Content Management System, a fully functional, fast and simple CMS that runs on ASP.NET Core and SQLite inside an easily deployable Docker container. Developed personal [website](https://bradyep.com/), which utilizes DSCMS to deliver a hand-built, data-driven, fully admin-able, open source content management system to store development projects as well as their source code. Built [newsfeeds.fyi](https://newsfeeds.fyi/), a customizable "home page" with user-selected newsfeeds in the spirit of iGoogle. Created eight video games on multiple platforms (HTML5/JavaScript, Flash, Windows Executable).
-
-* Personal website is powered by DSCMS and makes use of Bootstrap for the UI
-* newsfeeds.fyi is built on a node Express backend and a React frontend, all written in TypeScript
-* [Games](https://bradyep.com/games): Shapeshifter, I Demon, One Screen Racer, The Farthest Possible Place, Catch the Bullet, Speedster, Sleepwalker, Jacks 2000
-* All video games created from scratch: code, art, sounds and music
-* Aided in final push that allowed yogamother.com to complete and go live
-
-**Technical Environment:** TypeScript, JavaScript, C#, SQL, .NET 9, Asp.net MVC, Node.js, npm, Bootstrap, Entity Framework, Visual Studio, Visual Studio Code, Docker, AWS, Phaser, Adobe Flash Professional, Adobe Flash Builder, Git, Joomla, PHP, Photoshop, Autodesk Sketchbook Pro
+**Technical Environment:** TypeScript, JavaScript, C#, SQL, .NET 10, Asp.net MVC, Node.js, npm, PowerShell, Bootstrap, Entity Framework, Visual Studio 2026, Visual Studio Code, Docker, Git, Photoshop
 
 ---
 
-**Senior Software Engineer**
-Mackin (Burnsville, MN)  
+**Senior Software Engineer**  
+Mackin Educational Resources (Burnsville, MN)  
 May 2018 - May 2022  
 
-Developed and launched Mackin Search, an Amazon-style website ([mackin.com](https://home.mackin.com/)) that lets schools easily find, track and buy different types of resources (books, eBooks, audiobooks, etc.). Lead developer for the Mackin VIA frontend, an Apple Books-style mobile and web application that allowed students to consume eBooks and audiobooks. Lead Reading Metrics initiative: a multi-year project that allowed fine-grained tracking of how students interacted with Mackin products and services. Lead developer for the Mackin eBook and audiobook conversion software; responsible for converting raw material from publishers into Mackin eBooks and audiobooks. Also wrote software that generated previews for these resources in addition to tools that allowed Mackin QA to easily review converted material before being offered to customers. Lead development on large image compression project to cut down on resource file sizes and server load on both newly converted material as well as live resources.
+Developed and launched Mackin Search, an Amazon-style website ([mackin.com](https://home.mackin.com/)) that lets schools easily find, track and buy different types of resources (books, eBooks, audiobooks, etc.). Lead developer for the Mackin VIA client, an Apple Books-style mobile and web e-reader application that allowed students to consume eBooks and audiobooks. Lead Reading Metrics initiative: a multi-year project that allowed fine-grained tracking of exactly how students interacted with Mackin resources. Lead developer for Mackin conversion software; responsible for converting raw material from publishers (PDF, EPUB, .wav, .mp3) into Mackin-formatted eBooks and audiobooks. Also wrote software that generated shortened previews of these resources in addition to tools that allowed Mackin QA to easily review converted material before being offered to customers. Lead development on large image compression project to cut down on resource file sizes and server load on both newly converted material as well as live resources.
 
-* Wrote and maintained software that could be compared to products from Amazon or Apple in terms of functionality and complexity
-* Client software had to handle wide variety of use cases: full functionality for audiobooks when device is locked/asleep, students accessing same resource on different devices, support for going online or offline at any moment, TTS support, DRM
-* Delivered products to iOS, Chromebooks and Android as well as Windows, macOS, and web
-* Wrote and updated documentation for developers, business stake-holders and end users
+* VIA client is a full-featured e-reader that supports checking in/out, downloading, bookmarks, content navigation and links, accessibility settings, read-alongs, highlighting and note taking
+* VIA software also handles a wide variety of use cases: full functionality for audiobooks when device is locked/asleep, students accessing same resource on different devices, support for going online or offline at any moment, mobile TTS support, DRM, generated pagination
+* Delivered products to iOS, Android and Chromebooks as well as Windows, macOS, and web
+* Wrote and updated highly-detailed documentation for developers and business stake-holders
 
-**Technical Environment:** C#, TypeScript, Visual Studio Code, SQL, JavaScript, webpack, gulp, Rider, .NET 5, React, AngularJS, Swift, Elasticsearch/Kibana, Redis, SQL Server Management Studio, Jira, Git, Bitbucket, Mattermost, Jasmine/Karma
+**Technical Environment:** C#, TypeScript, Visual Studio Code, SQL, JavaScript, webpack, gulp, Rider, .NET 5 and 6, React, AngularJS, Cordova, Electron, Swift, Elasticsearch/Kibana, Redis, SQL Server Management Studio, Jira, Git, Bitbucket, Mattermost, Jasmine/Karma
 
 ---
 
-**Senior Software Engineer (formerly Software Engineer)**
+**Senior Software Engineer (formerly Software Engineer)**  
 L3Harris Technologies (formerly Aerosim), Research and Development Group (Burnsville, MN)  
 May 2013 - May 2018  
 
@@ -101,7 +93,7 @@ Developed cross repository search functionality for [SODA](http://www.nbsusa.com
 
 ---
 
-**Project Champion (formerly Software Engineer, formerly Business Applications Developer)**
+**Project Champion (formerly Software Engineer, formerly Business Applications Developer)**  
 Staywell Health Management (St. Paul, MN)  
 May 2006 - April 2008  
 
