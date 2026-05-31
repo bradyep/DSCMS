@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
+		Run-E2ETests.ps1 = Run-E2ETests.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSCMS.Tests", "DSCMS.Tests\DSCMS.Tests.csproj", "{A54C725B-FC26-4879-BA67-F6DA1CE1D507}"
