@@ -9,8 +9,6 @@
     populateSelect('ContentTypeId', options.contentTypes);
     populateSelect('TemplateId', options.templates);
     populateSelect('BodySourceTypeId', options.sourceTypes);
-    populateSelect('CreatedBy', options.users);
-    populateSelect('LastUpdatedBy', options.users);
 
     // Store default template lookup
     window.defaultTemplateLookup = options.defaultTemplateLookup;
@@ -49,8 +47,6 @@ document.getElementById('createForm').addEventListener('submit', async function(
     bodySource: document.getElementById('BodySource').value,
     bodySourceTypeId: parseInt(document.getElementById('BodySourceTypeId').value),
     contentTypeId: parseInt(document.getElementById('ContentTypeId').value),
-    createdBy: document.getElementById('CreatedBy').value,
-    lastUpdatedBy: document.getElementById('LastUpdatedBy').value,
     templateId: parseInt(document.getElementById('TemplateId').value),
     title: document.getElementById('Title').value,
     urlToDisplay: document.getElementById('UrlToDisplay').value

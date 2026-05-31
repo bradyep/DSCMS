@@ -22,14 +22,11 @@
     populateSelect('ContentTypeId', options.contentTypes, content.contentTypeId);
     populateSelect('TemplateId', options.templates, content.templateId);
     populateSelect('BodySourceTypeId', options.sourceTypes, content.bodySourceTypeId);
-    populateSelect('CreatedBy', options.users, content.createdBy);
-    populateSelect('LastUpdatedBy', options.users, content.lastUpdatedBy);
 
     // Populate form fields
     document.getElementById('BodySource').value = content.bodySource || '';
     document.getElementById('Title').value = content.title || '';
     document.getElementById('UrlToDisplay').value = content.urlToDisplay || '';
-    document.getElementById('CreationDate').value = content.creationDate;
 
     // Populate field items table if present
     if (content.contentTypeFieldItems && content.contentTypeFieldItems.length > 0) {
@@ -78,9 +75,6 @@ document.getElementById('editForm').addEventListener('submit', async function(e)
     bodySource: document.getElementById('BodySource').value,
     bodySourceTypeId: parseInt(document.getElementById('BodySourceTypeId').value),
     contentTypeId: parseInt(document.getElementById('ContentTypeId').value),
-    createdBy: document.getElementById('CreatedBy').value,
-    creationDate: document.getElementById('CreationDate').value,
-    lastUpdatedBy: document.getElementById('LastUpdatedBy').value,
     templateId: parseInt(document.getElementById('TemplateId').value),
     title: document.getElementById('Title').value,
     urlToDisplay: document.getElementById('UrlToDisplay').value

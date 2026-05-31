@@ -6,7 +6,6 @@ namespace DSCMS.Models.DTOs;
 public class ContentFormOptionsDto
 {
     public List<LookupItemDto> ContentTypes { get; set; } = new();
-    public List<LookupItemDto> Users { get; set; } = new();
     public List<LookupItemDto> Templates { get; set; } = new();
     public List<LookupItemDto> SourceTypes { get; set; } = new();
     public Dictionary<int, int> DefaultTemplateLookup { get; set; } = new();

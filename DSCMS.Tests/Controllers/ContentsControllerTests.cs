@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using DSCMS.Controllers;
 using DSCMS.Models;
 using DSCMS.Models.DTOs;
 using DSCMS.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,7 +17,6 @@ public class ContentsControllerTests
     private readonly Mock<IContentTypeRepository> _contentTypeRepo;
     private readonly Mock<ITemplateRepository> _templateRepo;
     private readonly Mock<ISourceTypeRepository> _sourceTypeRepo;
-    private readonly Mock<IUserRepository> _userRepo;
     private readonly Mock<ILogger<ContentsController>> _logger;
     private readonly ContentsController _controller;
 
@@ -25,7 +26,6 @@ public class ContentsControllerTests
         _contentTypeRepo = new Mock<IContentTypeRepository>();
         _templateRepo = new Mock<ITemplateRepository>();
         _sourceTypeRepo = new Mock<ISourceTypeRepository>();
-        _userRepo = new Mock<IUserRepository>();
         _logger = new Mock<ILogger<ContentsController>>();
 
         _controller = new ContentsController(
@@ -33,8 +33,14 @@ public class ContentsControllerTests
             _contentTypeRepo.Object,
             _templateRepo.Object,
             _sourceTypeRepo.Object,
-            _userRepo.Object,
             _logger.Object);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.NameIdentifier, "test-user-id") }, "TestAuth"));
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = user }
+        };
     }
 
     [Fact]
@@ -118,8 +124,6 @@ public class ContentsControllerTests
             BodySource = "Test content",
             BodySourceTypeId = 1,
             ContentTypeId = 2,
-            CreatedBy = "user1",
-            LastUpdatedBy = "user1",
             TemplateId = 3,
             Title = "New Post",
             UrlToDisplay = "new-post"
@@ -171,9 +175,6 @@ public class ContentsControllerTests
             BodySource = "Updated",
             BodySourceTypeId = 1,
             ContentTypeId = 2,
-            CreatedBy = "user1",
-            CreationDate = existingContent.CreationDate,
-            LastUpdatedBy = "user2",
             TemplateId = 3,
             Title = "Updated Title",
             UrlToDisplay = "updated"
@@ -198,9 +199,6 @@ public class ContentsControllerTests
             BodySource = "Test",
             BodySourceTypeId = 1,
             ContentTypeId = 2,
-            CreatedBy = "user1",
-            CreationDate = DateTime.Now,
-            LastUpdatedBy = "user1",
             TemplateId = 3,
             Title = "Test",
             UrlToDisplay = "test"
@@ -234,9 +232,6 @@ public class ContentsControllerTests
             BodySource = "Updated",
             BodySourceTypeId = 1,
             ContentTypeId = 2,
-            CreatedBy = "user1",
-            CreationDate = existingContent.CreationDate,
-            LastUpdatedBy = "user1",
             TemplateId = 3,
             Title = "Updated",
             UrlToDisplay = "updated"
@@ -283,10 +278,6 @@ public class ContentsControllerTests
             new ContentType { ContentTypeId = 1, Name = "Blog", DefaultSingleContentTemplateId = 5 },
             new ContentType { ContentTypeId = 2, Name = "Page" }
         };
-        var users = new List<ApplicationUser> 
-        { 
-            new ApplicationUser { Id = "1", DisplayName = "User 1" } 
-        };
         var templates = new List<Template> 
         { 
             new Template { TemplateId = 5, Name = "Default" } 
@@ -297,7 +288,6 @@ public class ContentsControllerTests
         };
 
         _contentTypeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(contentTypes);
-        _userRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(users);
         _templateRepo.Setup(r => r.GetByIsForMultipleContentsAsync(0)).ReturnsAsync(templates);
         _sourceTypeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(sourceTypes);
 
@@ -306,7 +296,6 @@ public class ContentsControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var dto = Assert.IsType<ContentFormOptionsDto>(okResult.Value);
         Assert.Equal(2, dto.ContentTypes.Count);
-        Assert.Single(dto.Users);
         Assert.Single(dto.Templates);
         Assert.Single(dto.SourceTypes);
         Assert.Single(dto.DefaultTemplateLookup);

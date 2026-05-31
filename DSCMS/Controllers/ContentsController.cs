@@ -18,7 +18,6 @@ public class ContentsController : ControllerBase
   private readonly IContentTypeRepository _contentTypeRepository;
   private readonly ITemplateRepository _templateRepository;
   private readonly ISourceTypeRepository _sourceTypeRepository;
-  private readonly IUserRepository _userRepository;
   private readonly ILogger<ContentsController> _logger;
 
   public ContentsController(
@@ -26,14 +25,12 @@ public class ContentsController : ControllerBase
     IContentTypeRepository contentTypeRepository,
     ITemplateRepository templateRepository,
     ISourceTypeRepository sourceTypeRepository,
-    IUserRepository userRepository,
     ILogger<ContentsController> logger)
   {
     _contentRepository = contentRepository;
     _contentTypeRepository = contentTypeRepository;
     _templateRepository = templateRepository;
     _sourceTypeRepository = sourceTypeRepository;
-    _userRepository = userRepository;
     _logger = logger;
   }
 
@@ -169,9 +166,7 @@ public class ContentsController : ControllerBase
     content.BodySource = dto.BodySource;
     content.BodySourceTypeId = dto.BodySourceTypeId;
     content.ContentTypeId = dto.ContentTypeId;
-    content.CreatedBy = dto.CreatedBy;
-    content.CreationDate = dto.CreationDate;
-    content.LastUpdatedBy = dto.LastUpdatedBy;
+    content.LastUpdatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier);
     content.LastUpdatedDate = DateTime.Now;
     content.TemplateId = dto.TemplateId;
     content.Title = dto.Title;
@@ -245,7 +240,6 @@ public class ContentsController : ControllerBase
     _logger.LogDebug("API GetFormOptions requested");
 
     var contentTypes = await _contentTypeRepository.GetAllAsync();
-    var users = await _userRepository.GetAllAsync();
     var templates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
     var sourceTypes = await _sourceTypeRepository.GetAllAsync();
 
@@ -259,14 +253,13 @@ public class ContentsController : ControllerBase
     var dto = new ContentFormOptionsDto
     {
       ContentTypes = contentTypes.Select(ct => new LookupItemDto { Id = ct.ContentTypeId, Name = ct.Name ?? "" }).ToList(),
-      Users = users.Select(u => new LookupItemDto { Id = 0, Name = u.DisplayName ?? "" }).ToList(),
       Templates = templates.Select(t => new LookupItemDto { Id = t.TemplateId, Name = t.Name ?? "" }).ToList(),
       SourceTypes = sourceTypes.Select(st => new LookupItemDto { Id = st.SourceTypeId, Name = st.Description ?? "" }).ToList(),
       DefaultTemplateLookup = defaultTemplateLookup
     };
 
-    _logger.LogInformation("Returning form options with {ContentTypeCount} content types, {UserCount} users, {TemplateCount} templates", 
-      dto.ContentTypes.Count, dto.Users.Count, dto.Templates.Count);
+    _logger.LogInformation("Returning form options with {ContentTypeCount} content types, {TemplateCount} templates",
+      dto.ContentTypes.Count, dto.Templates.Count);
 
     return Ok(dto);
   }

@@ -56,7 +56,7 @@ namespace DSCMS.Tests.Controllers
             _itemRepo.Verify(r => r.AddAsync(item), Times.Once);
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Edit", redirect.ActionName);
-            Assert.Equal("Contents", redirect.ControllerName);
+            Assert.Equal("ContentsView", redirect.ControllerName);
             Assert.Equal(7, redirect.RouteValues!["id"]);
         }
 
@@ -90,7 +90,7 @@ namespace DSCMS.Tests.Controllers
             _itemRepo.Verify(r => r.DeleteAsync(direct), Times.Once);
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal("Edit", redirect.ActionName);
-            Assert.Equal("Contents", redirect.ControllerName);
+            Assert.Equal("ContentsView", redirect.ControllerName);
             Assert.Equal(11, redirect.RouteValues!["id"]);
         }
 
