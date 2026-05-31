@@ -58,6 +58,11 @@ namespace DSCMS.Controllers
       if (id > 0)
       {
         var content = await _contentRepository.GetByIdWithContentTypeAsync(id.Value);
+        if (content == null)
+        {
+          return NotFound();
+        }
+
         ViewData["ContentId"] = new SelectList(allContents, "ContentId", "UrlToDisplay", id);
         var fieldsForType = await _contentTypeFieldRepository.GetByContentTypeIdAsync(content.ContentTypeId);
         ViewData["ContentTypeFieldId"] = new SelectList(fieldsForType, "ContentTypeFieldId", "Name");
@@ -79,6 +84,10 @@ namespace DSCMS.Controllers
     public async Task<IActionResult> Create([Bind("ContentTypeFieldItemId,ContentId,ContentTypeFieldId,Value")] ContentTypeFieldItem contentTypeFieldItem)
     {
       var content = await _contentRepository.GetByIdAsync(contentTypeFieldItem.ContentId);
+      if (content == null)
+      {
+        return NotFound();
+      }
 
       if (ModelState.IsValid)
       {
@@ -177,6 +186,12 @@ namespace DSCMS.Controllers
     {
       var fieldItem = await _contentTypeFieldItemRepository.GetByIdWithContentAsync(id);
       var contentTypeFieldItem = await _contentTypeFieldItemRepository.GetByIdAsync(id);
+
+      if (fieldItem == null || fieldItem.Content == null || contentTypeFieldItem == null)
+      {
+        return NotFound();
+      }
+
       await _contentTypeFieldItemRepository.DeleteAsync(contentTypeFieldItem);
       return RedirectToAction("Edit", "Contents", new { id = fieldItem.Content.ContentId });
     }

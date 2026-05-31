@@ -71,6 +71,10 @@ namespace DSCMS.Controllers
     public async Task<IActionResult> Create([Bind("ContentTypeFieldId,ContentTypeId,Name,Required")] ContentTypeField contentTypeField)
     {
       var ct = await _contentTypeRepository.GetByIdAsync(contentTypeField.ContentTypeId);
+      if (ct == null)
+      {
+        return NotFound();
+      }
 
       if (ModelState.IsValid)
       {
@@ -163,6 +167,12 @@ namespace DSCMS.Controllers
     {
       var ctf = await _contentTypeFieldRepository.GetByIdWithContentTypeAsync(id);
       var contentTypeField = await _contentTypeFieldRepository.GetByIdAsync(id);
+
+      if (ctf == null || ctf.ContentType == null || contentTypeField == null)
+      {
+        return NotFound();
+      }
+
       await _contentTypeFieldRepository.DeleteAsync(contentTypeField);
       return RedirectToAction("Edit", "ContentTypes", new { id = ctf.ContentType.ContentTypeId });
     }
