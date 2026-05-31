@@ -66,6 +66,49 @@ Browse to the `/admin` route of your DSCMS instance.
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
 
+## Testing
+
+The solution contains a single test project, `DSCMS.Tests`, which houses both unit tests and end-to-end (E2E) browser tests.
+
+### Unit Tests
+
+Controller-level unit tests live under `DSCMS.Tests/Controllers/` and use [xUnit](https://xunit.net/) with [Moq](https://github.com/moq/moq4). They test routing logic and controller behaviour in isolation and can be run at any time without a running app.
+
+```powershell
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers"
+```
+
+### E2E Tests (Playwright)
+
+End-to-end tests live under `DSCMS.Tests/E2E/` and use [Microsoft Playwright](https://playwright.dev/dotnet/) to drive a real Chromium browser against the running application. They cover:
+
+- Blog page loads by default, posts are visible, and pagination works
+- Games, Projects, and About sections load with the correct content
+
+The fixture automatically starts the app before the first test runs and shuts it down afterwards, so no manual setup is needed from VS Test Explorer or the CLI.
+
+**One-time browser install** (per machine, or after a Playwright version bump):
+
+```powershell
+pwsh DSCMS.Tests\bin\Debug\net10.0\playwright.ps1 install chromium
+```
+
+**Run E2E tests:**
+
+```powershell
+# Using the convenience script (starts and stops the app automatically)
+pwsh .\Run-E2ETests.ps1
+
+# Or directly via dotnet test (fixture handles the app lifecycle)
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
+```
+
+**Watch the tests run in a real browser window:**
+
+```powershell
+$env:HEADED = "1"; dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
+```
+
 ## Project Status
 
 This project is currently in active development.
