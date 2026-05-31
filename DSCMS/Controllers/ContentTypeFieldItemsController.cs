@@ -92,7 +92,7 @@ namespace DSCMS.Controllers
       if (ModelState.IsValid)
       {
         await _contentTypeFieldItemRepository.AddAsync(contentTypeFieldItem);
-        return RedirectToAction("Edit", "Contents", new { id = content.ContentId });
+        return RedirectToAction("Edit", "ContentsView", new { id = content.ContentId });
       }
 
       var allContents = await _contentRepository.GetAllSimpleAsync();
@@ -152,7 +152,7 @@ namespace DSCMS.Controllers
             throw;
           }
         }
-        return RedirectToAction("Edit", "Contents", new { id = contentTypeFieldItem.ContentId });
+        return RedirectToAction("Edit", "ContentsView", new { id = contentTypeFieldItem.ContentId });
       }
 
       var allContents = await _contentRepository.GetAllSimpleAsync();
@@ -193,7 +193,7 @@ namespace DSCMS.Controllers
       }
 
       await _contentTypeFieldItemRepository.DeleteAsync(contentTypeFieldItem);
-      return RedirectToAction("Edit", "Contents", new { id = fieldItem.Content.ContentId });
+      return RedirectToAction("Edit", "ContentsView", new { id = fieldItem.Content.ContentId });
     }
   }
 }

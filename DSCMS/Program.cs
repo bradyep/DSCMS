@@ -121,7 +121,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "Contents",
     pattern: "Admin/Contents/{action=Index}/{id?}",
-    defaults: new { controller = "Contents" });
+    defaults: new { controller = "ContentsView" });
 
 app.MapControllerRoute(
     name: "Users",
