@@ -3,7 +3,7 @@
 # Starts the DSCMS app, runs Playwright E2E tests, then shuts the app down.
 
 param(
-    [string]$Url        = "http://localhost:5000",
+    [string]$Url        = "http://localhost:5099",
     [int]   $TimeoutSec = 30
 )
 
@@ -13,16 +13,47 @@ $testProject = Join-Path $projectRoot "DSCMS.Tests"
 $exitCode    = 0
 
 # ---------------------------------------------------------------------------
-# 1. Start the app
+# 1. Build the app first so "dotnet run --no-build" starts almost instantly
+# ---------------------------------------------------------------------------
+Write-Host "`n>> Building DSCMS ..." -ForegroundColor Cyan
+
+dotnet build $appProject --configuration Debug -nologo -consoleLoggerParameters:NoSummary | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Build failed." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host ">> Build succeeded." -ForegroundColor Green
+
+# ---------------------------------------------------------------------------
+# 2. Free the port if something is already bound to it
+# ---------------------------------------------------------------------------
+$port = ([System.Uri]$Url).Port
+Write-Host "`n>> Checking port $port ..." -ForegroundColor Cyan
+
+$owners = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue |
+    Select-Object -ExpandProperty OwningProcess |
+    Sort-Object -Unique
+
+if ($owners) {
+    foreach ($ownerId in $owners) {
+        Write-Host "   Killing PID $ownerId on port $port" -ForegroundColor Yellow
+        Stop-Process -Id $ownerId -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 1   # give the OS a moment to release the socket
+}
+
+# ---------------------------------------------------------------------------
+# 3. Start the app (no rebuild needed — starts in ~2-3 s)
 # ---------------------------------------------------------------------------
 Write-Host "`n>> Starting DSCMS on $Url ..." -ForegroundColor Cyan
 
 $appProcess = Start-Process dotnet `
-    -ArgumentList "run --project `"$appProject`" --urls `"$Url`"" `
+    -ArgumentList "run --project `"$appProject`" --no-build --urls `"$Url`"" `
     -PassThru -NoNewWindow
 
 # ---------------------------------------------------------------------------
-# 2. Wait until the app is responding
+# 4. Wait until the app is responding
 # ---------------------------------------------------------------------------
 Write-Host ">> Waiting for app to be ready (timeout: ${TimeoutSec}s) ..." -ForegroundColor Cyan
 
@@ -49,7 +80,7 @@ if (-not $ready) {
 Write-Host ">> App is ready." -ForegroundColor Green
 
 # ---------------------------------------------------------------------------
-# 3. Run E2E tests
+# 5. Run E2E tests
 # ---------------------------------------------------------------------------
 Write-Host "`n>> Running E2E tests ...`n" -ForegroundColor Cyan
 
@@ -57,7 +88,7 @@ dotnet test $testProject --filter "FullyQualifiedName~E2E" --no-build --logger "
 $exitCode = $LASTEXITCODE
 
 # ---------------------------------------------------------------------------
-# 4. Shut down the app
+# 6. Shut down the app
 # ---------------------------------------------------------------------------
 Write-Host "`n>> Stopping DSCMS ..." -ForegroundColor Cyan
 
@@ -71,7 +102,7 @@ Get-Process -Name "dotnet" -ErrorAction SilentlyContinue |
 Write-Host ">> Done." -ForegroundColor Cyan
 
 # ---------------------------------------------------------------------------
-# 5. Report and exit with the test exit code
+# 7. Report and exit with the test exit code
 # ---------------------------------------------------------------------------
 if ($exitCode -eq 0) {
     Write-Host "`nAll E2E tests passed.`n" -ForegroundColor Green
