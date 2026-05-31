@@ -7,20 +7,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using DSCMS.Data;
 using DSCMS.Models;
+using DSCMS.Repositories.Interfaces;
 
 namespace DSCMS.Controllers
 {
   [Authorize]
   public class ContentsController : Controller
   {
-    private readonly ApplicationDbContext _context;
+    private readonly IContentRepository _contentRepository;
+    private readonly IContentTypeRepository _contentTypeRepository;
+    private readonly ITemplateRepository _templateRepository;
+    private readonly ISourceTypeRepository _sourceTypeRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<ContentsController> _logger;
 
-    public ContentsController(ApplicationDbContext context, ILogger<ContentsController> logger)
+    public ContentsController(
+      IContentRepository contentRepository,
+      IContentTypeRepository contentTypeRepository,
+      ITemplateRepository templateRepository,
+      ISourceTypeRepository sourceTypeRepository,
+      IUserRepository userRepository,
+      ILogger<ContentsController> logger)
     {
-      _context = context;
+      _contentRepository = contentRepository;
+      _contentTypeRepository = contentTypeRepository;
+      _templateRepository = templateRepository;
+      _sourceTypeRepository = sourceTypeRepository;
+      _userRepository = userRepository;
       _logger = logger;
     }
 
@@ -29,19 +43,14 @@ namespace DSCMS.Controllers
     {
       _logger.LogDebug("Contents Index requested with contentType filter: {ContentType}", contentType);
 
-      var contents = String.IsNullOrEmpty(contentType) ? 
-        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentTypeFieldItems) :
-        _context.Contents.Include(c => c.ContentType).Include(c => c.CreatedByUser).Include(c => c.LastUpdatedByUser).Include(c => c.Template).Include(c => c.ContentTypeFieldItems)
-          .Where(c => c.ContentType.Name == contentType);
+      var result = await _contentRepository.GetAllWithDetailsAsync(contentType);
+      _logger.LogInformation("Returning {ContentCount} contents for type '{ContentType}'", result.Count, contentType ?? "all");
 
+      var allContentTypes = await _contentTypeRepository.GetAllAsync();
       List<ContentType> cts = new List<ContentType>();
       cts.Add(new ContentType { Name = "" });
-      cts.AddRange(_context.ContentTypes.ToList());
-      var ctSelectList = new SelectList(cts, "Name", "Name", contentType);
-      ViewData["ContentType"] = ctSelectList;
-
-      var result = await contents.ToListAsync();
-      _logger.LogInformation("Returning {ContentCount} contents for type '{ContentType}'", result.Count, contentType ?? "all");
+      cts.AddRange(allContentTypes);
+      ViewData["ContentType"] = new SelectList(cts, "Name", "Name", contentType);
 
       return View(result);
     }
@@ -57,7 +66,7 @@ namespace DSCMS.Controllers
 
       _logger.LogDebug("Contents Details requested for id: {ContentId}", id);
 
-      var content = await _context.Contents.SingleOrDefaultAsync(m => m.ContentId == id);
+      var content = await _contentRepository.GetByIdAsync(id.Value);
       if (content == null)
       {
         _logger.LogWarning("Content not found with id: {ContentId}", id);
@@ -69,18 +78,22 @@ namespace DSCMS.Controllers
     }
 
     // GET: Contents/Create
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
       _logger.LogDebug("Contents Create form requested");
 
-      var allContentTypes = _context.ContentTypes.ToList();
-      var ctSelectList = new SelectList(allContentTypes, "ContentTypeId", "Name");
-      ViewData["ContentTypeId"] = ctSelectList;
+      var allContentTypes = await _contentTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(allContentTypes, "ContentTypeId", "Name");
 
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName");
-      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name");
-      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", (int)SourceTypeEnum.HTML);
+      var users = await _userRepository.GetAllAsync();
+      ViewData["CreatedBy"] = new SelectList(users, "Id", "DisplayName");
+      ViewData["LastUpdatedBy"] = new SelectList(users, "Id", "DisplayName");
+
+      var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
+      ViewData["TemplateId"] = new SelectList(singleContentTemplates, "TemplateId", "Name");
+
+      var sourceTypes = await _sourceTypeRepository.GetAllAsync();
+      ViewData["BodySourceTypeId"] = new SelectList(sourceTypes, "SourceTypeId", "Description", (int)SourceTypeEnum.HTML);
 
       // Put together a Dictionary of all ContentTypes and their DefaultSingleContentTemplateId (if they have one)
       var contentTypeDefaultTemplateLookup = new Dictionary<int, int>();
@@ -107,19 +120,22 @@ namespace DSCMS.Controllers
       {
         content.CreationDate = DateTime.Now;
         content.LastUpdatedDate = DateTime.Now;
-        _context.Add(content);
-        await _context.SaveChangesAsync();
+        await _contentRepository.AddAsync(content);
 
         _logger.LogInformation("Created new content: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
         return RedirectToAction("Index");
       }
 
       _logger.LogWarning("Model state invalid for content creation: {ContentTitle}", content.Title);
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
-      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
+      var contentTypes = await _contentTypeRepository.GetAllAsync();
+      var users = await _userRepository.GetAllAsync();
+      var sourceTypes = await _sourceTypeRepository.GetAllAsync();
+      var allTemplates = await _templateRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(contentTypes, "ContentTypeId", "Name", content.ContentTypeId);
+      ViewData["CreatedBy"] = new SelectList(users, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(users, "Id", "DisplayName", content.LastUpdatedBy);
+      ViewData["TemplateId"] = new SelectList(allTemplates, "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(sourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
@@ -134,10 +150,7 @@ namespace DSCMS.Controllers
 
       _logger.LogDebug("Contents Edit requested for id: {ContentId}", id);
 
-      var content = await _context.Contents
-        .Include(x => x.ContentTypeFieldItems)
-        .ThenInclude(x => x.ContentTypeField)
-        .SingleOrDefaultAsync(m => m.ContentId == id);
+      var content = await _contentRepository.GetByIdWithFieldItemsAsync(id.Value);
       if (content == null)
       {
         _logger.LogWarning("Content not found for edit with id: {ContentId}", id);
@@ -145,11 +158,15 @@ namespace DSCMS.Controllers
       }
 
       _logger.LogDebug("Loading edit form for content: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 0), "TemplateId", "Name", content.TemplateId);
-      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
+      var contentTypes = await _contentTypeRepository.GetAllAsync();
+      var users = await _userRepository.GetAllAsync();
+      var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
+      var sourceTypes = await _sourceTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(contentTypes, "ContentTypeId", "Name", content.ContentTypeId);
+      ViewData["CreatedBy"] = new SelectList(users, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(users, "Id", "DisplayName", content.LastUpdatedBy);
+      ViewData["TemplateId"] = new SelectList(singleContentTemplates, "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(sourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
@@ -173,14 +190,13 @@ namespace DSCMS.Controllers
         content.LastUpdatedDate = DateTime.Now;
         try
         {
-          _context.Update(content);
-          await _context.SaveChangesAsync();
+          await _contentRepository.UpdateAsync(content);
           _logger.LogInformation("Updated content: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
         }
         catch (DbUpdateConcurrencyException ex)
         {
           _logger.LogError(ex, "Concurrency exception updating content: {ContentId}", content.ContentId);
-          if (!ContentExists(content.ContentId))
+          if (!await _contentRepository.ExistsAsync(content.ContentId))
           {
             return NotFound();
           }
@@ -193,22 +209,30 @@ namespace DSCMS.Controllers
         {
           _logger.LogError(ex, "Database update exception updating content: {ContentId}", content.ContentId);
           ModelState.AddModelError("", "Unable to save changes. Please ensure all required fields have valid values.");
-          ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-          ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
-          ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
-          ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
-          ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
+          var contentTypes = await _contentTypeRepository.GetAllAsync();
+          var users = await _userRepository.GetAllAsync();
+          var allTemplates = await _templateRepository.GetAllAsync();
+          var sourceTypes = await _sourceTypeRepository.GetAllAsync();
+          ViewData["ContentTypeId"] = new SelectList(contentTypes, "ContentTypeId", "Name", content.ContentTypeId);
+          ViewData["CreatedBy"] = new SelectList(users, "Id", "DisplayName", content.CreatedBy);
+          ViewData["LastUpdatedBy"] = new SelectList(users, "Id", "DisplayName", content.LastUpdatedBy);
+          ViewData["TemplateId"] = new SelectList(allTemplates, "TemplateId", "Name", content.TemplateId);
+          ViewData["BodySourceTypeId"] = new SelectList(sourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
           return View(content);
         }
         return RedirectToAction("Index");
       }
 
       _logger.LogWarning("Model state invalid for content edit: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", content.ContentTypeId);
-      ViewData["CreatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.CreatedBy);
-      ViewData["LastUpdatedBy"] = new SelectList(_context.Users, "Id", "DisplayName", content.LastUpdatedBy);
-      ViewData["TemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", content.TemplateId);
-      ViewData["BodySourceTypeId"] = new SelectList(_context.SourceTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
+      var cts = await _contentTypeRepository.GetAllAsync();
+      var allUsers = await _userRepository.GetAllAsync();
+      var templates = await _templateRepository.GetAllAsync();
+      var srcTypes = await _sourceTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(cts, "ContentTypeId", "Name", content.ContentTypeId);
+      ViewData["CreatedBy"] = new SelectList(allUsers, "Id", "DisplayName", content.CreatedBy);
+      ViewData["LastUpdatedBy"] = new SelectList(allUsers, "Id", "DisplayName", content.LastUpdatedBy);
+      ViewData["TemplateId"] = new SelectList(templates, "TemplateId", "Name", content.TemplateId);
+      ViewData["BodySourceTypeId"] = new SelectList(srcTypes, "SourceTypeId", "Description", content.BodySourceTypeId);
       return View(content);
     }
 
@@ -223,7 +247,7 @@ namespace DSCMS.Controllers
 
       _logger.LogDebug("Contents Delete requested for id: {ContentId}", id);
 
-      var content = await _context.Contents.SingleOrDefaultAsync(m => m.ContentId == id);
+      var content = await _contentRepository.GetByIdAsync(id.Value);
       if (content == null)
       {
         _logger.LogWarning("Content not found for delete with id: {ContentId}", id);
@@ -241,11 +265,10 @@ namespace DSCMS.Controllers
     {
       _logger.LogDebug("Contents Delete POST confirmed for id: {ContentId}", id);
 
-      var content = await _context.Contents.SingleOrDefaultAsync(m => m.ContentId == id);
+      var content = await _contentRepository.GetByIdAsync(id);
       if (content != null)
       {
-        _context.Contents.Remove(content);
-        await _context.SaveChangesAsync();
+        await _contentRepository.DeleteAsync(content);
         _logger.LogInformation("Deleted content: {ContentId} - {ContentTitle}", content.ContentId, content.Title);
       }
       else
@@ -254,11 +277,6 @@ namespace DSCMS.Controllers
       }
 
       return RedirectToAction("Index");
-    }
-
-    private bool ContentExists(int id)
-    {
-      return _context.Contents.Any(e => e.ContentId == id);
     }
   }
 }

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DSCMS.Data;
 using DSCMS.Models;
+using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -15,19 +15,19 @@ namespace DSCMS.Controllers
     [Authorize]
     public class UsersController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UsersController(IUserRepository userRepository, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _userRepository = userRepository;
             _userManager = userManager;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            return View(await _userRepository.GetAllAsync());
         }
 
         // GET: Users/Details/5
@@ -38,7 +38,7 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -64,7 +64,7 @@ namespace DSCMS.Controllers
                 {
                     user.UserName = user.Email;
                 }
-                
+
                 var result = await _userManager.CreateAsync(user, password ?? "DefaultPassword123!");
                 if (result.Succeeded)
                 {
@@ -89,7 +89,7 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -117,7 +117,7 @@ namespace DSCMS.Controllers
                         existingUser.DisplayName = user.DisplayName;
                         existingUser.Email = user.Email;
                         existingUser.UserName = user.UserName ?? user.Email;
-                        
+
                         var result = await _userManager.UpdateAsync(existingUser);
                         if (!result.Succeeded)
                         {
@@ -131,7 +131,7 @@ namespace DSCMS.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await UserExistsAsync(user.Id))
+                    if (!await _userRepository.ExistsAsync(user.Id))
                     {
                         return NotFound();
                     }
@@ -153,7 +153,7 @@ namespace DSCMS.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -167,22 +167,17 @@ namespace DSCMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user != null)
             {
                 var result = await _userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                 {
-                    // Handle errors if needed
                     return RedirectToAction("Index");
                 }
             }
             return RedirectToAction("Index");
         }
-
-        private async Task<bool> UserExistsAsync(string id)
-        {
-            return await _context.Users.AnyAsync(e => e.Id == id);
-        }
     }
 }
+

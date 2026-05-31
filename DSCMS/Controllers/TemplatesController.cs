@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DSCMS.Data;
 using DSCMS.Models;
+using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace DSCMS.Controllers
@@ -10,19 +10,19 @@ namespace DSCMS.Controllers
   [Authorize]
   public class TemplatesController : Controller
   {
-    private readonly ApplicationDbContext _context;
+    private readonly ITemplateRepository _templateRepository;
+    private readonly ILayoutRepository _layoutRepository;
 
-    public TemplatesController(ApplicationDbContext context)
+    public TemplatesController(ITemplateRepository templateRepository, ILayoutRepository layoutRepository)
     {
-      _context = context;
+      _templateRepository = templateRepository;
+      _layoutRepository = layoutRepository;
     }
 
     // GET: Templates
     public async Task<IActionResult> Index()
     {
-      var applicationDbContext = _context.Templates.Include(t => t.Layout);
-
-      return View(await applicationDbContext.ToListAsync());
+      return View(await _templateRepository.GetAllWithLayoutAsync());
     }
 
     // GET: Templates/Details/5
@@ -33,7 +33,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var template = await _context.Templates.Include(t => t.Layout).SingleOrDefaultAsync(m => m.TemplateId == id);
+      var template = await _templateRepository.GetByIdWithLayoutAsync(id.Value);
       if (template == null)
       {
         return NotFound();
@@ -47,17 +47,12 @@ namespace DSCMS.Controllers
     /// </summary>
     /// <returns></returns>
     // GET: Templates/Create
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-      // Handle potential NULL Layout names defensively
-      var layouts = _context.Layouts.ToList();
-      var layoutItems = layouts.Select(l => new { 
-        LayoutId = l.LayoutId, 
-        Name = l.Name ?? $"Layout {l.LayoutId}" 
-      }).ToList();
-      
+      var layouts = await _layoutRepository.GetAllAsync();
+      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
       ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name");
-      
+
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -82,20 +77,14 @@ namespace DSCMS.Controllers
     {
       if (ModelState.IsValid)
       {
-        _context.Add(template);
-        await _context.SaveChangesAsync();
+        await _templateRepository.AddAsync(template);
         return RedirectToAction("Index");
       }
-      
-      // Handle potential NULL Layout names defensively
-      var layouts = _context.Layouts.ToList();
-      var layoutItems = layouts.Select(l => new { 
-        LayoutId = l.LayoutId, 
-        Name = l.Name ?? $"Layout {l.LayoutId}" 
-      }).ToList();
-      
+
+      var layouts = await _layoutRepository.GetAllAsync();
+      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
       ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-      
+
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -114,21 +103,16 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var template = await _context.Templates.SingleOrDefaultAsync(m => m.TemplateId == id);
+      var template = await _templateRepository.GetByIdAsync(id.Value);
       if (template == null)
       {
         return NotFound();
       }
-      
-      // Handle potential NULL Layout names defensively
-      var layouts = _context.Layouts.ToList();
-      var layoutItems = layouts.Select(l => new { 
-        LayoutId = l.LayoutId, 
-        Name = l.Name ?? $"Layout {l.LayoutId}" 
-      }).ToList();
-      
+
+      var layouts = await _layoutRepository.GetAllAsync();
+      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
       ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-      
+
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -154,12 +138,11 @@ namespace DSCMS.Controllers
       {
         try
         {
-          _context.Update(template);
-          await _context.SaveChangesAsync();
+          await _templateRepository.UpdateAsync(template);
         }
         catch (DbUpdateConcurrencyException)
         {
-          if (!TemplateExists(template.TemplateId))
+          if (!await _templateRepository.ExistsAsync(template.TemplateId))
           {
             return NotFound();
           }
@@ -170,16 +153,11 @@ namespace DSCMS.Controllers
         }
         return RedirectToAction("Index");
       }
-      
-      // Handle potential NULL Layout names defensively  
-      var layouts = _context.Layouts.ToList();
-      var layoutItems = layouts.Select(l => new { 
-        LayoutId = l.LayoutId, 
-        Name = l.Name ?? $"Layout {l.LayoutId}" 
-      }).ToList();
-      
+
+      var layouts = await _layoutRepository.GetAllAsync();
+      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
       ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-      
+
       var types = new[]
       {
         new { Name = "Content", Value = 0 },
@@ -197,7 +175,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var template = await _context.Templates.Include(t => t.Layout).SingleOrDefaultAsync(m => m.TemplateId == id);
+      var template = await _templateRepository.GetByIdWithLayoutAsync(id.Value);
       if (template == null)
       {
         return NotFound();
@@ -211,15 +189,14 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-      var template = await _context.Templates.SingleOrDefaultAsync(m => m.TemplateId == id);
-      _context.Templates.Remove(template);
-      await _context.SaveChangesAsync();
+      var template = await _templateRepository.GetByIdAsync(id);
+      if (template != null)
+      {
+        await _templateRepository.DeleteAsync(template);
+      }
       return RedirectToAction("Index");
-    }
-
-    private bool TemplateExists(int id)
-    {
-      return _context.Templates.Any(e => e.TemplateId == id);
     }
   }
 }
+
+

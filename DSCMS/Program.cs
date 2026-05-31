@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using DSCMS.Data;
 using DSCMS.Models;
 using DSCMS.Services;
+using DSCMS.Repositories.Interfaces;
+using DSCMS.Repositories.Implementations;
 using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +40,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 //builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Add repositories
+builder.Services.AddScoped<IContentRepository, ContentRepository>();
+builder.Services.AddScoped<IContentTypeRepository, ContentTypeRepository>();
+builder.Services.AddScoped<ILayoutRepository, LayoutRepository>();
+builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
+builder.Services.AddScoped<IContentTypeFieldRepository, ContentTypeFieldRepository>();
+builder.Services.AddScoped<IContentTypeFieldItemRepository, ContentTypeFieldItemRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISourceTypeRepository, SourceTypeRepository>();
 
 // Add MVC and Razor Pages
 builder.Services.AddControllersWithViews();

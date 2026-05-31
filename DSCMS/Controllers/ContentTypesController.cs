@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DSCMS.Data;
 using DSCMS.Models;
+using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace DSCMS.Controllers
@@ -14,18 +14,19 @@ namespace DSCMS.Controllers
   [Authorize]
   public class ContentTypesController : Controller
   {
-    private readonly ApplicationDbContext _context;
+    private readonly IContentTypeRepository _contentTypeRepository;
+    private readonly ITemplateRepository _templateRepository;
 
-    public ContentTypesController(ApplicationDbContext context)
+    public ContentTypesController(IContentTypeRepository contentTypeRepository, ITemplateRepository templateRepository)
     {
-      _context = context;
+      _contentTypeRepository = contentTypeRepository;
+      _templateRepository = templateRepository;
     }
 
     // GET: ContentTypes
     public async Task<IActionResult> Index()
     {
-      var applicationDbContext = _context.ContentTypes.Include(c => c.MultipleContentsTemplate);
-      return View(await applicationDbContext.ToListAsync());
+      return View(await _contentTypeRepository.GetAllWithTemplateAsync());
     }
 
     // GET: ContentTypes/Details/5
@@ -36,7 +37,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentType = await _context.ContentTypes.Include(ct => ct.MultipleContentsTemplate).SingleOrDefaultAsync(m => m.ContentTypeId == id);
+      var contentType = await _contentTypeRepository.GetByIdWithTemplateAsync(id.Value);
       if (contentType == null)
       {
         return NotFound();
@@ -46,18 +47,17 @@ namespace DSCMS.Controllers
     }
 
     // GET: ContentTypes/Create
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-      // ViewData for Multiple Contents Template (for ContentType listings)
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name");
+      var multipleContentsTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(1);
+      ViewData["MultipleContentsTemplateId"] = new SelectList(multipleContentsTemplates, "TemplateId", "Name");
 
-      // ViewData for Default Single Content Template
+      var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
       List<Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", ts);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
-      
+      ts.AddRange(singleContentTemplates);
+      ViewData["DefaultSingleContentTemplateId"] = new SelectList(ts, "TemplateId", "Name", ts);
+
       return View();
     }
 
@@ -71,21 +71,20 @@ namespace DSCMS.Controllers
       if (contentType.DefaultSingleContentTemplateId < 1) contentType.DefaultSingleContentTemplateId = null;
       if (ModelState.IsValid)
       {
-        _context.Add(contentType);
-        await _context.SaveChangesAsync();
+        await _contentTypeRepository.AddAsync(contentType);
         return RedirectToAction("Index");
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
 
-      // Figure out the default single content template ID to use
+      var multipleContentsTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(1);
+      ViewData["MultipleContentsTemplateId"] = new SelectList(multipleContentsTemplates, "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+
       int defaultSingleTemplateIdToUse = contentType.DefaultSingleContentTemplateId ?? 0;
-
-      List <Template> ts = new List<Template>();
+      var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
+      List<Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", defaultSingleTemplateIdToUse);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
-      
+      ts.AddRange(singleContentTemplates);
+      ViewData["DefaultSingleContentTemplateId"] = new SelectList(ts, "TemplateId", "Name", defaultSingleTemplateIdToUse);
+
       return View(contentType);
     }
 
@@ -97,18 +96,20 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentType = await _context.ContentTypes.Include(ct => ct.ContentTypeFields).SingleOrDefaultAsync(m => m.ContentTypeId == id);
+      var contentType = await _contentTypeRepository.GetByIdWithFieldsAsync(id.Value);
       if (contentType == null)
       {
         return NotFound();
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
 
+      var multipleContentsTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(1);
+      ViewData["MultipleContentsTemplateId"] = new SelectList(multipleContentsTemplates, "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+
+      var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
       List<Template> ts = new List<Template>();
       ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", contentType.DefaultSingleContentTemplateId);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
+      ts.AddRange(singleContentTemplates);
+      ViewData["DefaultSingleContentTemplateId"] = new SelectList(ts, "TemplateId", "Name", contentType.DefaultSingleContentTemplateId);
 
       return View(contentType);
     }
@@ -129,12 +130,11 @@ namespace DSCMS.Controllers
       {
         try
         {
-          _context.Update(contentType);
-          await _context.SaveChangesAsync();
+          await _contentTypeRepository.UpdateAsync(contentType);
         }
         catch (DbUpdateConcurrencyException)
         {
-          if (!ContentTypeExists(contentType.ContentTypeId))
+          if (!await _contentTypeRepository.ExistsAsync(contentType.ContentTypeId))
           {
             return NotFound();
           }
@@ -145,7 +145,9 @@ namespace DSCMS.Controllers
         }
         return RedirectToAction("Index");
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+
+      var allTemplates = await _templateRepository.GetAllAsync();
+      ViewData["MultipleContentsTemplateId"] = new SelectList(allTemplates, "TemplateId", "Name", contentType.MultipleContentsTemplateId);
       return View(contentType);
     }
 
@@ -157,7 +159,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentType = await _context.ContentTypes.Include(ct => ct.MultipleContentsTemplate).SingleOrDefaultAsync(m => m.ContentTypeId == id);
+      var contentType = await _contentTypeRepository.GetByIdWithTemplateAsync(id.Value);
       if (contentType == null)
       {
         return NotFound();
@@ -171,15 +173,12 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-      var contentType = await _context.ContentTypes.SingleOrDefaultAsync(m => m.ContentTypeId == id);
-      _context.ContentTypes.Remove(contentType);
-      await _context.SaveChangesAsync();
+      var contentType = await _contentTypeRepository.GetByIdAsync(id);
+      if (contentType != null)
+      {
+        await _contentTypeRepository.DeleteAsync(contentType);
+      }
       return RedirectToAction("Index");
-    }
-
-    private bool ContentTypeExists(int id)
-    {
-      return _context.ContentTypes.Any(e => e.ContentTypeId == id);
     }
   }
 }
