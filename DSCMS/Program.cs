@@ -111,12 +111,12 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "Layouts",
     pattern: "Admin/Layouts/{action=Index}/{id?}",
-    defaults: new { controller = "Layouts" });
+    defaults: new { controller = "LayoutsView" });
 
 app.MapControllerRoute(
     name: "Templates",
     pattern: "Admin/Templates/{action=Index}/{id?}",
-    defaults: new { controller = "Templates" });
+    defaults: new { controller = "TemplatesView" });
 
 app.MapControllerRoute(
     name: "Contents",
@@ -126,12 +126,12 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "Users",
     pattern: "Admin/Users/{action=Index}/{id?}",
-    defaults: new { controller = "Users" });
+    defaults: new { controller = "UsersView" });
 
 app.MapControllerRoute(
     name: "ContentTypes",
     pattern: "Admin/ContentTypes/{action=Index}/{id?}",
-    defaults: new { controller = "ContentTypes" });
+    defaults: new { controller = "ContentTypesView" });
 
 app.MapControllerRoute(
     name: "ContentTypeFieldItems",
@@ -151,7 +151,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "DefaultAdmin",
     pattern: "Admin",
-    defaults: new { controller = "Layouts", action = "Index" });
+    defaults: new { controller = "LayoutsView", action = "Index" });
 
 // Add explicit route for Diagnostics controller before the catch-all route
 app.MapControllerRoute(

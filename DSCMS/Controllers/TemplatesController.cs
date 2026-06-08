@@ -1,201 +1,212 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DSCMS.Models;
-using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using DSCMS.Models;
+using DSCMS.Models.DTOs;
+using DSCMS.Repositories.Interfaces;
 
-namespace DSCMS.Controllers
+namespace DSCMS.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class TemplatesController : ControllerBase
 {
-  [Authorize]
-  public class TemplatesController : Controller
+  private readonly ITemplateRepository _templateRepository;
+  private readonly ILayoutRepository _layoutRepository;
+  private readonly ILogger<TemplatesController> _logger;
+
+  public TemplatesController(
+    ITemplateRepository templateRepository,
+    ILayoutRepository layoutRepository,
+    ILogger<TemplatesController> logger)
   {
-    private readonly ITemplateRepository _templateRepository;
-    private readonly ILayoutRepository _layoutRepository;
+    _templateRepository = templateRepository;
+    _layoutRepository = layoutRepository;
+    _logger = logger;
+  }
 
-    public TemplatesController(ITemplateRepository templateRepository, ILayoutRepository layoutRepository)
+  // GET: api/templates
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<TemplateListDto>>> GetAll()
+  {
+    _logger.LogDebug("API GetAll templates requested");
+
+    var templates = await _templateRepository.GetAllWithLayoutAsync();
+
+    var dtos = templates.Select(t => new TemplateListDto
     {
-      _templateRepository = templateRepository;
-      _layoutRepository = layoutRepository;
+      TemplateId = t.TemplateId,
+      Name = t.Name,
+      TemplateSource = t.TemplateSource,
+      LayoutName = t.Layout?.Name,
+      IsForMultipleContents = t.IsForMultipleContents
+    }).ToList();
+
+    _logger.LogInformation("Returning {TemplateCount} templates", dtos.Count);
+    return Ok(dtos);
+  }
+
+  // GET: api/templates/{id}
+  [HttpGet("{id}")]
+  public async Task<ActionResult<TemplateDetailDto>> GetById(int id)
+  {
+    _logger.LogDebug("API GetById requested for template id: {TemplateId}", id);
+
+    var template = await _templateRepository.GetByIdWithLayoutAsync(id);
+    if (template == null)
+    {
+      _logger.LogWarning("Template not found with id: {TemplateId}", id);
+      return NotFound();
     }
 
-    // GET: Templates
-    public async Task<IActionResult> Index()
+    var dto = new TemplateDetailDto
     {
-      return View(await _templateRepository.GetAllWithLayoutAsync());
+      TemplateId = template.TemplateId,
+      Name = template.Name,
+      TemplateSource = template.TemplateSource,
+      SourceTypeId = template.SourceTypeId,
+      IsForMultipleContents = template.IsForMultipleContents,
+      LayoutId = template.LayoutId,
+      LayoutName = template.Layout?.Name
+    };
+
+    _logger.LogDebug("Found template: {TemplateId} - {TemplateName}", template.TemplateId, template.Name);
+    return Ok(dto);
+  }
+
+  // POST: api/templates
+  [HttpPost]
+  public async Task<ActionResult<TemplateDetailDto>> Create([FromBody] TemplateCreateDto dto)
+  {
+    _logger.LogDebug("API Create template requested for name: {TemplateName}", dto.Name);
+
+    if (!ModelState.IsValid)
+    {
+      _logger.LogWarning("Model state invalid for template creation: {TemplateName}", dto.Name);
+      return BadRequest(ModelState);
     }
 
-    // GET: Templates/Details/5
-    public async Task<IActionResult> Details(int? id)
+    var template = new Template
     {
-      if (id == null)
+      Name = dto.Name,
+      TemplateSource = dto.TemplateSource,
+      SourceTypeId = dto.SourceTypeId,
+      IsForMultipleContents = dto.IsForMultipleContents,
+      LayoutId = dto.LayoutId
+    };
+
+    await _templateRepository.AddAsync(template);
+    _logger.LogInformation("Created new template: {TemplateId} - {TemplateName}", template.TemplateId, template.Name);
+
+    var resultDto = new TemplateDetailDto
+    {
+      TemplateId = template.TemplateId,
+      Name = template.Name,
+      TemplateSource = template.TemplateSource,
+      SourceTypeId = template.SourceTypeId,
+      IsForMultipleContents = template.IsForMultipleContents,
+      LayoutId = template.LayoutId
+    };
+
+    return CreatedAtAction(nameof(GetById), new { id = template.TemplateId }, resultDto);
+  }
+
+  // PUT: api/templates/{id}
+  [HttpPut("{id}")]
+  public async Task<ActionResult<TemplateDetailDto>> Update(int id, [FromBody] TemplateUpdateDto dto)
+  {
+    _logger.LogDebug("API Update template requested for: {TemplateId} - {TemplateName}", id, dto.Name);
+
+    if (!ModelState.IsValid)
+    {
+      _logger.LogWarning("Model state invalid for template update: {TemplateId}", id);
+      return BadRequest(ModelState);
+    }
+
+    var template = await _templateRepository.GetByIdAsync(id);
+    if (template == null)
+    {
+      _logger.LogWarning("Template not found for update with id: {TemplateId}", id);
+      return NotFound();
+    }
+
+    template.Name = dto.Name;
+    template.TemplateSource = dto.TemplateSource;
+    template.SourceTypeId = dto.SourceTypeId;
+    template.IsForMultipleContents = dto.IsForMultipleContents;
+    template.LayoutId = dto.LayoutId;
+
+    try
+    {
+      await _templateRepository.UpdateAsync(template);
+      _logger.LogInformation("Updated template: {TemplateId} - {TemplateName}", template.TemplateId, template.Name);
+    }
+    catch (DbUpdateConcurrencyException ex)
+    {
+      _logger.LogError(ex, "Concurrency exception updating template: {TemplateId}", template.TemplateId);
+      if (!await _templateRepository.ExistsAsync(template.TemplateId))
       {
         return NotFound();
       }
-
-      var template = await _templateRepository.GetByIdWithLayoutAsync(id.Value);
-      if (template == null)
+      else
       {
-        return NotFound();
+        throw;
       }
-
-      return View(template);
     }
 
-    /// <summary>
-    /// Displays the Create Template view
-    /// </summary>
-    /// <returns></returns>
-    // GET: Templates/Create
-    public async Task<IActionResult> Create()
+    var resultDto = new TemplateDetailDto
     {
-      var layouts = await _layoutRepository.GetAllAsync();
-      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
-      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name");
+      TemplateId = template.TemplateId,
+      Name = template.Name,
+      TemplateSource = template.TemplateSource,
+      SourceTypeId = template.SourceTypeId,
+      IsForMultipleContents = template.IsForMultipleContents,
+      LayoutId = template.LayoutId
+    };
 
-      var types = new[]
-      {
-        new { Name = "Content", Value = 0 },
-        new { Name = "ContentType", Value = 1 }
-      };
-      ViewData["Types"] = new SelectList(types, "Value", "Name");
+    return Ok(resultDto);
+  }
 
-      return View();
-    }
+  // DELETE: api/templates/{id}
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(int id)
+  {
+    _logger.LogDebug("API Delete requested for template id: {TemplateId}", id);
 
-    /// <summary>
-    /// Processes the Create Template form submission
-    /// </summary>
-    /// <param name="template"></param>
-    /// <returns></returns>
-    // POST: Templates/Create
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("TemplateId,TemplateSource,TemplateSource,LayoutId,Name,IsForMultipleContents")] Template template)
+    var template = await _templateRepository.GetByIdAsync(id);
+    if (template == null)
     {
-      if (ModelState.IsValid)
-      {
-        await _templateRepository.AddAsync(template);
-        return RedirectToAction("Index");
-      }
-
-      var layouts = await _layoutRepository.GetAllAsync();
-      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
-      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-
-      var types = new[]
-      {
-        new { Name = "Content", Value = 0 },
-        new { Name = "ContentType", Value = 1 }
-      };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
-
-      return View(template);
+      _logger.LogWarning("Template not found for delete with id: {TemplateId}", id);
+      return NotFound();
     }
 
-    // GET: Templates/Edit/5
-    public async Task<IActionResult> Edit(int? id)
+    await _templateRepository.DeleteAsync(template);
+    _logger.LogInformation("Deleted template: {TemplateId} - {TemplateName}", template.TemplateId, template.Name);
+
+    return NoContent();
+  }
+
+  // GET: api/templates/form-options
+  [HttpGet("form-options")]
+  public async Task<ActionResult<TemplateFormOptionsDto>> GetFormOptions()
+  {
+    _logger.LogDebug("API GetFormOptions requested");
+
+    var layouts = await _layoutRepository.GetAllAsync();
+
+    var dto = new TemplateFormOptionsDto
     {
-      if (id == null)
+      Layouts = layouts.Select(l => new LookupItemDto
       {
-        return NotFound();
-      }
+        Id = l.LayoutId,
+        Name = l.Name ?? $"Layout {l.LayoutId}"
+      }).ToList()
+    };
 
-      var template = await _templateRepository.GetByIdAsync(id.Value);
-      if (template == null)
-      {
-        return NotFound();
-      }
-
-      var layouts = await _layoutRepository.GetAllAsync();
-      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
-      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-
-      var types = new[]
-      {
-        new { Name = "Content", Value = 0 },
-        new { Name = "ContentType", Value = 1 }
-      };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
-      return View(template);
-    }
-
-    // POST: Templates/Edit/5
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("TemplateId,TemplateSource,TemplateSource,LayoutId,Name,IsForMultipleContents")] Template template)
-    {
-      if (id != template.TemplateId)
-      {
-        return NotFound();
-      }
-
-      if (ModelState.IsValid)
-      {
-        try
-        {
-          await _templateRepository.UpdateAsync(template);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-          if (!await _templateRepository.ExistsAsync(template.TemplateId))
-          {
-            return NotFound();
-          }
-          else
-          {
-            throw;
-          }
-        }
-        return RedirectToAction("Index");
-      }
-
-      var layouts = await _layoutRepository.GetAllAsync();
-      var layoutItems = layouts.Select(l => new { LayoutId = l.LayoutId, Name = l.Name ?? $"Layout {l.LayoutId}" }).ToList();
-      ViewData["LayoutId"] = new SelectList(layoutItems, "LayoutId", "Name", template.LayoutId);
-
-      var types = new[]
-      {
-        new { Name = "Content", Value = 0 },
-        new { Name = "ContentType", Value = 1 }
-      };
-      ViewData["Types"] = new SelectList(types, "Value", "Name", Convert.ToInt32(template.IsForMultipleContents));
-      return View(template);
-    }
-
-    // GET: Templates/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-      if (id == null)
-      {
-        return NotFound();
-      }
-
-      var template = await _templateRepository.GetByIdWithLayoutAsync(id.Value);
-      if (template == null)
-      {
-        return NotFound();
-      }
-
-      return View(template);
-    }
-
-    // POST: Templates/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-      var template = await _templateRepository.GetByIdAsync(id);
-      if (template != null)
-      {
-        await _templateRepository.DeleteAsync(template);
-      }
-      return RedirectToAction("Index");
-    }
+    _logger.LogInformation("Returning form options with {LayoutCount} layouts", dto.Layouts.Count);
+    return Ok(dto);
   }
 }
 

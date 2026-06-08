@@ -1,215 +1,202 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DSCMS.Models;
-using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using DSCMS.Models;
+using DSCMS.Models.DTOs;
+using DSCMS.Repositories.Interfaces;
 
-namespace DSCMS.Controllers
+namespace DSCMS.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class LayoutsController : ControllerBase
 {
-    [Authorize]
-    public class LayoutsController : Controller
+  private readonly ILayoutRepository _layoutRepository;
+  private readonly ILogger<LayoutsController> _logger;
+
+  public LayoutsController(ILayoutRepository layoutRepository, ILogger<LayoutsController> logger)
+  {
+    _layoutRepository = layoutRepository;
+    _logger = logger;
+  }
+
+  // GET: api/layouts
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<LayoutListDto>>> GetAll()
+  {
+    _logger.LogDebug("API GetAll layouts requested");
+
+    var layouts = await _layoutRepository.GetAllAsync();
+
+    // Inline FixNullLayouts logic
+    bool hasChanges = false;
+    foreach (var layout in layouts)
     {
-        private readonly ILayoutRepository _layoutRepository;
-        private readonly ILogger<LayoutsController> _logger;
+      if (string.IsNullOrEmpty(layout.Name))
+      {
+        layout.Name = $"Layout {layout.LayoutId}";
+        hasChanges = true;
+      }
 
-        public LayoutsController(ILayoutRepository layoutRepository, ILogger<LayoutsController> logger)
-        {
-            _layoutRepository = layoutRepository;
-            _logger = logger;
-        }
-
-        // GET: Layouts
-        public async Task<IActionResult> Index()
-        {
-            try
-            {
-                var layouts = await _layoutRepository.GetAllAsync();
-                await FixNullLayouts(layouts);
-                layouts = await _layoutRepository.GetAllAsync();
-                return View(layouts);
-            }
-            catch (Exception ex)
-            {
-                ViewBag.ErrorMessage = $"Error loading layouts: {ex.Message}. Attempting to create default layout...";
-
-                try
-                {
-                    await CreateDefaultLayoutIfNone();
-                    var layouts = await _layoutRepository.GetAllAsync();
-                    return View(layouts);
-                }
-                catch (Exception innerEx)
-                {
-                    ViewBag.ErrorMessage = $"Failed to create default layout: {innerEx.Message}";
-                    return View(new List<Layout>());
-                }
-            }
-        }
-
-        private async Task FixNullLayouts(List<Layout> layouts)
-        {
-            bool hasChanges = false;
-
-            foreach (var layout in layouts)
-            {
-                if (string.IsNullOrEmpty(layout.Name))
-                {
-                    layout.Name = $"Layout {layout.LayoutId}";
-                    hasChanges = true;
-                }
-
-                if (string.IsNullOrEmpty(layout.LayoutSource))
-                {
-                    layout.LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
-                    hasChanges = true;
-                }
-            }
-
-            if (hasChanges)
-            {
-                foreach (var layout in layouts)
-                {
-                    await _layoutRepository.UpdateAsync(layout);
-                }
-            }
-        }
-
-        private async Task CreateDefaultLayoutIfNone()
-        {
-            var layoutCount = await _layoutRepository.CountAsync();
-            if (layoutCount == 0)
-            {
-                var defaultLayout = new Layout
-                {
-                    Name = "Bootstrap Blog Layout",
-                    LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml",
-                    SourceTypeId = 1 // RazorFile
-                };
-
-                await _layoutRepository.AddAsync(defaultLayout);
-            }
-        }
-
-        // GET: Layouts/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var layout = await _layoutRepository.GetByIdAsync(id.Value);
-            if (layout == null)
-            {
-                return NotFound();
-            }
-
-            return View(layout);
-        }
-
-        // GET: Layouts/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Layouts/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("LayoutId,Name,LayoutSource,SourceTypeId")] Layout layout)
-        {
-            if (ModelState.IsValid)
-            {
-                await _layoutRepository.AddAsync(layout);
-                return RedirectToAction(nameof(Index));
-            }
-            return View(layout);
-        }
-
-        // GET: Layouts/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var layout = await _layoutRepository.GetByIdAsync(id.Value);
-            if (layout == null)
-            {
-                return NotFound();
-            }
-            return View(layout);
-        }
-
-        // POST: Layouts/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("LayoutId,Name,LayoutSource,SourceTypeId")] Layout layout)
-        {
-            if (id != layout.LayoutId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    await _layoutRepository.UpdateAsync(layout);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await _layoutRepository.ExistsAsync(layout.LayoutId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(layout);
-        }
-
-        // GET: Layouts/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var layout = await _layoutRepository.GetByIdAsync(id.Value);
-            if (layout == null)
-            {
-                return NotFound();
-            }
-
-            return View(layout);
-        }
-
-        // POST: Layouts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var layout = await _layoutRepository.GetByIdAsync(id);
-            if (layout != null)
-            {
-                await _layoutRepository.DeleteAsync(layout);
-            }
-            return RedirectToAction(nameof(Index));
-        }
+      if (string.IsNullOrEmpty(layout.LayoutSource))
+      {
+        layout.LayoutSource = "/Views/DSCMS/Layouts/_BootstrapBlog.cshtml";
+        hasChanges = true;
+      }
     }
+
+    if (hasChanges)
+    {
+      foreach (var layout in layouts)
+      {
+        await _layoutRepository.UpdateAsync(layout);
+      }
+      layouts = await _layoutRepository.GetAllAsync();
+    }
+
+    var dtos = layouts.Select(l => new LayoutListDto
+    {
+      LayoutId = l.LayoutId,
+      Name = l.Name,
+      LayoutSource = l.LayoutSource,
+      SourceTypeName = l.SourceType?.Description
+    }).ToList();
+
+    _logger.LogInformation("Returning {LayoutCount} layouts", dtos.Count);
+    return Ok(dtos);
+  }
+
+  // GET: api/layouts/{id}
+  [HttpGet("{id}")]
+  public async Task<ActionResult<LayoutDetailDto>> GetById(int id)
+  {
+    _logger.LogDebug("API GetById requested for layout id: {LayoutId}", id);
+
+    var layout = await _layoutRepository.GetByIdAsync(id);
+    if (layout == null)
+    {
+      _logger.LogWarning("Layout not found with id: {LayoutId}", id);
+      return NotFound();
+    }
+
+    var dto = new LayoutDetailDto
+    {
+      LayoutId = layout.LayoutId,
+      Name = layout.Name,
+      LayoutSource = layout.LayoutSource,
+      SourceTypeId = layout.SourceTypeId,
+      SourceTypeName = layout.SourceType?.Description
+    };
+
+    _logger.LogDebug("Found layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
+    return Ok(dto);
+  }
+
+  // POST: api/layouts
+  [HttpPost]
+  public async Task<ActionResult<LayoutDetailDto>> Create([FromBody] LayoutCreateDto dto)
+  {
+    _logger.LogDebug("API Create layout requested for name: {LayoutName}", dto.Name);
+
+    if (!ModelState.IsValid)
+    {
+      _logger.LogWarning("Model state invalid for layout creation: {LayoutName}", dto.Name);
+      return BadRequest(ModelState);
+    }
+
+    var layout = new Layout
+    {
+      Name = dto.Name,
+      LayoutSource = dto.LayoutSource,
+      SourceTypeId = dto.SourceTypeId
+    };
+
+    await _layoutRepository.AddAsync(layout);
+    _logger.LogInformation("Created new layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
+
+    var resultDto = new LayoutDetailDto
+    {
+      LayoutId = layout.LayoutId,
+      Name = layout.Name,
+      LayoutSource = layout.LayoutSource,
+      SourceTypeId = layout.SourceTypeId
+    };
+
+    return CreatedAtAction(nameof(GetById), new { id = layout.LayoutId }, resultDto);
+  }
+
+  // PUT: api/layouts/{id}
+  [HttpPut("{id}")]
+  public async Task<ActionResult<LayoutDetailDto>> Update(int id, [FromBody] LayoutUpdateDto dto)
+  {
+    _logger.LogDebug("API Update layout requested for: {LayoutId} - {LayoutName}", id, dto.Name);
+
+    if (!ModelState.IsValid)
+    {
+      _logger.LogWarning("Model state invalid for layout update: {LayoutId}", id);
+      return BadRequest(ModelState);
+    }
+
+    var layout = await _layoutRepository.GetByIdAsync(id);
+    if (layout == null)
+    {
+      _logger.LogWarning("Layout not found for update with id: {LayoutId}", id);
+      return NotFound();
+    }
+
+    layout.Name = dto.Name;
+    layout.LayoutSource = dto.LayoutSource;
+    layout.SourceTypeId = dto.SourceTypeId;
+
+    try
+    {
+      await _layoutRepository.UpdateAsync(layout);
+      _logger.LogInformation("Updated layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
+    }
+    catch (DbUpdateConcurrencyException ex)
+    {
+      _logger.LogError(ex, "Concurrency exception updating layout: {LayoutId}", layout.LayoutId);
+      if (!await _layoutRepository.ExistsAsync(layout.LayoutId))
+      {
+        return NotFound();
+      }
+      else
+      {
+        throw;
+      }
+    }
+
+    var resultDto = new LayoutDetailDto
+    {
+      LayoutId = layout.LayoutId,
+      Name = layout.Name,
+      LayoutSource = layout.LayoutSource,
+      SourceTypeId = layout.SourceTypeId
+    };
+
+    return Ok(resultDto);
+  }
+
+  // DELETE: api/layouts/{id}
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(int id)
+  {
+    _logger.LogDebug("API Delete requested for layout id: {LayoutId}", id);
+
+    var layout = await _layoutRepository.GetByIdAsync(id);
+    if (layout == null)
+    {
+      _logger.LogWarning("Layout not found for delete with id: {LayoutId}", id);
+      return NotFound();
+    }
+
+    await _layoutRepository.DeleteAsync(layout);
+    _logger.LogInformation("Deleted layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
+
+    return NoContent();
+  }
 }
 
 
