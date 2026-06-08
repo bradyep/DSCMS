@@ -1,40 +1,7 @@
-@model DSCMS.Models.Layout
-
 @{
-  ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Layout";
 }
 
-<h2>Delete</h2>
+<div id="app"></div>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-  <h4>Layout</h4>
-  <hr />
-  <dl class="dl-horizontal">
-    <dt>
-      @Html.DisplayNameFor(model => model.Name)
-    </dt>
-    <dd>
-      @(Model.Name ?? "[No Name]")
-    </dd>
-    <dt>
-      @Html.DisplayNameFor(model => model.LayoutSource)
-    </dt>
-    <dd>
-      @(Model.LayoutSource ?? "[No File Location]")
-    </dd>
-    <dt>
-      Has Inline Content
-    </dt>
-    <dd>
-      @(Model.LayoutSource != null ? "Yes" : "No")
-    </dd>
-  </dl>
-
-  <form asp-action="Delete">
-    <div class="form-actions no-color">
-      <input type="submit" value="Delete" class="btn btn-default" /> |
-      <a asp-action="Index">Back to List</a>
-    </div>
-  </form>
-</div>
+<script src="~/js/layouts/delete.js" type="module"></script>

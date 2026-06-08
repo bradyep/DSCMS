@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using DSCMS.Data;
 using DSCMS.Models;
 using DSCMS.Services;
+using DSCMS.Repositories.Interfaces;
+using DSCMS.Repositories.Implementations;
 using Microsoft.AspNetCore.StaticFiles;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +40,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 //builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+// Add repositories
+builder.Services.AddScoped<IContentRepository, ContentRepository>();
+builder.Services.AddScoped<IContentTypeRepository, ContentTypeRepository>();
+builder.Services.AddScoped<ILayoutRepository, LayoutRepository>();
+builder.Services.AddScoped<ITemplateRepository, TemplateRepository>();
+builder.Services.AddScoped<IContentTypeFieldRepository, ContentTypeFieldRepository>();
+builder.Services.AddScoped<IContentTypeFieldItemRepository, ContentTypeFieldItemRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ISourceTypeRepository, SourceTypeRepository>();
 
 // Add MVC and Razor Pages
 builder.Services.AddControllersWithViews();
@@ -99,27 +111,27 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "Layouts",
     pattern: "Admin/Layouts/{action=Index}/{id?}",
-    defaults: new { controller = "Layouts" });
+    defaults: new { controller = "LayoutsView" });
 
 app.MapControllerRoute(
     name: "Templates",
     pattern: "Admin/Templates/{action=Index}/{id?}",
-    defaults: new { controller = "Templates" });
+    defaults: new { controller = "TemplatesView" });
 
 app.MapControllerRoute(
     name: "Contents",
     pattern: "Admin/Contents/{action=Index}/{id?}",
-    defaults: new { controller = "Contents" });
+    defaults: new { controller = "ContentsView" });
 
 app.MapControllerRoute(
     name: "Users",
     pattern: "Admin/Users/{action=Index}/{id?}",
-    defaults: new { controller = "Users" });
+    defaults: new { controller = "UsersView" });
 
 app.MapControllerRoute(
     name: "ContentTypes",
     pattern: "Admin/ContentTypes/{action=Index}/{id?}",
-    defaults: new { controller = "ContentTypes" });
+    defaults: new { controller = "ContentTypesView" });
 
 app.MapControllerRoute(
     name: "ContentTypeFieldItems",
@@ -139,7 +151,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "DefaultAdmin",
     pattern: "Admin",
-    defaults: new { controller = "Layouts", action = "Index" });
+    defaults: new { controller = "LayoutsView", action = "Index" });
 
 // Add explicit route for Diagnostics controller before the catch-all route
 app.MapControllerRoute(

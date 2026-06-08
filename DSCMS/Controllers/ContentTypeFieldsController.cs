@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DSCMS.Data;
 using DSCMS.Models;
+using DSCMS.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 
 namespace DSCMS.Controllers
@@ -14,18 +14,19 @@ namespace DSCMS.Controllers
   [Authorize]
   public class ContentTypeFieldsController : Controller
   {
-    private readonly ApplicationDbContext _context;
+    private readonly IContentTypeFieldRepository _contentTypeFieldRepository;
+    private readonly IContentTypeRepository _contentTypeRepository;
 
-    public ContentTypeFieldsController(ApplicationDbContext context)
+    public ContentTypeFieldsController(IContentTypeFieldRepository contentTypeFieldRepository, IContentTypeRepository contentTypeRepository)
     {
-      _context = context;
+      _contentTypeFieldRepository = contentTypeFieldRepository;
+      _contentTypeRepository = contentTypeRepository;
     }
 
     // GET: ContentTypeFields
     public async Task<IActionResult> Index()
     {
-      var applicationDbContext = _context.ContentTypeFields.Include(c => c.ContentType);
-      return View(await applicationDbContext.ToListAsync());
+      return View(await _contentTypeFieldRepository.GetAllWithContentTypeAsync());
     }
 
     // GET: ContentTypeFields/Details/5
@@ -36,7 +37,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentTypeField = await _context.ContentTypeFields.SingleOrDefaultAsync(m => m.ContentTypeFieldId == id);
+      var contentTypeField = await _contentTypeFieldRepository.GetByIdAsync(id.Value);
       if (contentTypeField == null)
       {
         return NotFound();
@@ -46,15 +47,17 @@ namespace DSCMS.Controllers
     }
 
     // GET: ContentTypeFields/Create
-    public IActionResult Create(int? id)
+    public async Task<IActionResult> Create(int? id)
     {
       if (id > 0)
       {
-        ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes.Where(ct => ct.ContentTypeId == id), "ContentTypeId", "Name", id);
+        var filtered = await _contentTypeRepository.GetAllAsync();
+        ViewData["ContentTypeId"] = new SelectList(filtered.Where(ct => ct.ContentTypeId == id), "ContentTypeId", "Name", id);
       }
       else
       {
-        ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name");
+        var allContentTypes = await _contentTypeRepository.GetAllAsync();
+        ViewData["ContentTypeId"] = new SelectList(allContentTypes, "ContentTypeId", "Name");
       }
 
       return View();
@@ -67,21 +70,20 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([Bind("ContentTypeFieldId,ContentTypeId,Name,Required")] ContentTypeField contentTypeField)
     {
-      // ContentType ct = contentTypeField.ContentType;
-      ContentType ct = _context.ContentTypes.Where(x => x.ContentTypeId == contentTypeField.ContentTypeId).FirstOrDefault();
+      var ct = await _contentTypeRepository.GetByIdAsync(contentTypeField.ContentTypeId);
+      if (ct == null)
+      {
+        return NotFound();
+      }
 
       if (ModelState.IsValid)
       {
-        _context.Add(contentTypeField);
-        await _context.SaveChangesAsync();
-
-        // return RedirectToAction("Index");
-        // return View("/Views/ContentTypes/Edit.cshtml", ct);
-
-        // Run ContentType controller action: Edit
+        await _contentTypeFieldRepository.AddAsync(contentTypeField);
         return RedirectToAction("Edit", "ContentTypes", new { id = ct.ContentTypeId });
       }
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "ContentTypeId", contentTypeField.ContentTypeId);
+
+      var allContentTypes = await _contentTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(allContentTypes, "ContentTypeId", "ContentTypeId", contentTypeField.ContentTypeId);
       return View(contentTypeField);
     }
 
@@ -93,12 +95,14 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentTypeField = await _context.ContentTypeFields.SingleOrDefaultAsync(m => m.ContentTypeFieldId == id);
+      var contentTypeField = await _contentTypeFieldRepository.GetByIdAsync(id.Value);
       if (contentTypeField == null)
       {
         return NotFound();
       }
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", contentTypeField.ContentTypeId);
+
+      var allContentTypes = await _contentTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(allContentTypes, "ContentTypeId", "Name", contentTypeField.ContentTypeId);
       return View(contentTypeField);
     }
 
@@ -118,12 +122,11 @@ namespace DSCMS.Controllers
       {
         try
         {
-          _context.Update(contentTypeField);
-          await _context.SaveChangesAsync();
+          await _contentTypeFieldRepository.UpdateAsync(contentTypeField);
         }
         catch (DbUpdateConcurrencyException)
         {
-          if (!ContentTypeFieldExists(contentTypeField.ContentTypeFieldId))
+          if (!await _contentTypeFieldRepository.ExistsAsync(contentTypeField.ContentTypeFieldId))
           {
             return NotFound();
           }
@@ -134,7 +137,9 @@ namespace DSCMS.Controllers
         }
         return RedirectToAction("Index");
       }
-      ViewData["ContentTypeId"] = new SelectList(_context.ContentTypes, "ContentTypeId", "Name", contentTypeField.ContentTypeId);
+
+      var allContentTypes = await _contentTypeRepository.GetAllAsync();
+      ViewData["ContentTypeId"] = new SelectList(allContentTypes, "ContentTypeId", "Name", contentTypeField.ContentTypeId);
       return View(contentTypeField);
     }
 
@@ -146,7 +151,7 @@ namespace DSCMS.Controllers
         return NotFound();
       }
 
-      var contentTypeField = await _context.ContentTypeFields.SingleOrDefaultAsync(m => m.ContentTypeFieldId == id);
+      var contentTypeField = await _contentTypeFieldRepository.GetByIdAsync(id.Value);
       if (contentTypeField == null)
       {
         return NotFound();
@@ -160,20 +165,17 @@ namespace DSCMS.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-      ContentTypeField ctf = _context.ContentTypeFields.Include(x => x.ContentType).Where(x => x.ContentTypeFieldId == id).FirstOrDefault();
-      // ContentType ct = ctf.ContentType;
-      var contentTypeField = await _context.ContentTypeFields.SingleOrDefaultAsync(m => m.ContentTypeFieldId == id);
-      _context.ContentTypeFields.Remove(contentTypeField);
-      await _context.SaveChangesAsync();
+      var ctf = await _contentTypeFieldRepository.GetByIdWithContentTypeAsync(id);
+      var contentTypeField = await _contentTypeFieldRepository.GetByIdAsync(id);
 
-      // return RedirectToAction("Index");
-      // return View("/Views/ContentTypes/Edit.cshtml", ctf.ContentType);
+      if (ctf == null || ctf.ContentType == null || contentTypeField == null)
+      {
+        return NotFound();
+      }
+
+      await _contentTypeFieldRepository.DeleteAsync(contentTypeField);
       return RedirectToAction("Edit", "ContentTypes", new { id = ctf.ContentType.ContentTypeId });
-    }
-
-    private bool ContentTypeFieldExists(int id)
-    {
-      return _context.ContentTypeFields.Any(e => e.ContentTypeFieldId == id);
     }
   }
 }
+
