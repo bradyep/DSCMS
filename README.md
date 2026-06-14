@@ -52,14 +52,16 @@ Browse to the `/admin` route of your DSCMS instance.
 
 ### Production Deployment
 
-1. Put together the new container (with the correct version): `docker build -t bradyep/dscms:v1.0.0 .`
-2. Push the new container to docker hub: `docker push bradyep/dscms`
+**Note**: Swap in the correct version number in the commands below
+
+1. Put together the new container: `docker build -t bradyep/dscms:v1.0.0 .`
+2. Push the new container to docker hub: `docker push bradyep/dscms:v1.0.0`
 3. Log on to the remote server: `ssh bradyep@66.228.49.247`
 4. Stop the currently running nffyi container: `sudo docker stop [id]`
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
-7. Get the newly updated image: `sudo docker pull bradyep/dscms`
-8. Start up the the new container: `sudo docker run -d -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms`
+7. Get the newly updated image: `sudo docker pull bradyep/dscms:v1.0.0`
+8. Start up the the new container: `sudo docker run -d -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms:v1.0.0`
 
 ## Server
 
