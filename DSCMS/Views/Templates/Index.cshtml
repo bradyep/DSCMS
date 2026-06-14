@@ -1,66 +1,7 @@
-@model IEnumerable<DSCMS.Models.Template>
-
 @{
-  ViewData["Title"] = "Index";
+    ViewData["Title"] = "Templates";
 }
 
-<h2>Index</h2>
+<div id="app"></div>
 
-<p>
-  <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-  <thead>
-    <tr>
-      <th>
-        @Html.DisplayNameFor(model => model.Name)
-      </th>
-      <th>
-        Layout
-      </th>
-      <th>
-        File Name
-      </th>
-      <th>
-        @Html.DisplayNameFor(model => model.IsForMultipleContents)
-      </th>
-      <th>
-        Has Inline Content
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    @foreach (var item in Model)
-    {
-      <tr>
-        <td>
-          @(item.Name ?? "[No Name]")
-        </td>
-        <td>
-          @(item.Layout?.Name ?? "[No Layout]")
-        </td>
-        <td>
-          @if (item.TemplateSource != null)
-          {
-            @item.TemplateSource.Substring(item.TemplateSource.LastIndexOf('/') + 1)
-          }
-          else
-          {
-            <span class="text-muted">[No File]</span>
-          }
-        </td>
-        <td>
-          @(item.IsForMultipleContents > 0 ? "ContentType" : "Content")
-        </td>
-        <td>
-          @(item.TemplateSource != null ? "Yes" : "No")
-        </td>
-        <td>
-          <a asp-action="Edit" asp-route-id="@item.TemplateId">Edit</a> |
-          <a asp-action="Details" asp-route-id="@item.TemplateId">Details</a> |
-          <a asp-action="Delete" asp-route-id="@item.TemplateId">Delete</a>
-        </td>
-      </tr>
-    }
-  </tbody>
-</table>
+<script src="~/js/templates/index.js" type="module"></script>

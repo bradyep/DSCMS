@@ -1,75 +1,36 @@
-@model IEnumerable<DSCMS.Models.Content>
-
 @{
-  ViewData["Title"] = "Index";
+  ViewData["Title"] = "Contents";
 }
 
-<h2>Index</h2>
+<h2>Contents</h2>
 
 <p>
-  <a asp-action="Create">Create New</a>
+  <a asp-controller="ContentsView" asp-action="Create">Create New</a>
 </p>
 
-<form asp-controller="Contents" asp-action="Index">
+<form id="filterForm" method="get">
   <p>
-    @*Content Type: <input type="text" name="contentType">*@
-    <select name="contentType" class="form-control filter" asp-items="ViewBag.ContentType"></select>
-    <input type="submit" value="Filter" />
+    <select id="contentTypeFilter" name="contentType" class="form-control filter"></select>
+    <button type="submit" class="btn btn-default">Filter</button>
   </p>
 </form>
 
 <table class="table">
   <thead>
     <tr>
-      <th>
-        @Html.DisplayNameFor(model => model.Title)
-      </th>
-      <th>
-        Content Type
-      </th>
-      <th>
-        @Html.DisplayNameFor(model => model.UrlToDisplay)
-      </th>
-      <th>
-        @Html.DisplayNameFor(model => model.BodySource)
-      </th>
-      @*<th>
-            @Html.DisplayNameFor(model => model.CreationDate)
-        </th>*@
-      <th>
-        @Html.DisplayNameFor(model => model.LastUpdatedDate)
-      </th>
+      <th>Title</th>
+      <th>Content Type</th>
+      <th>URL To Display</th>
+      <th>Body Source</th>
+      <th>Last Updated Date</th>
       <th></th>
     </tr>
   </thead>
-  <tbody>
-    @foreach (var item in Model)
-    {
-      <tr>
-        <td>
-          @Html.DisplayFor(modelItem => item.Title)
-        </td>
-        <td>
-          @Html.DisplayFor(modelItem => item.ContentType.Name)
-        </td>
-        <td>
-          @Html.DisplayFor(modelItem => item.UrlToDisplay)
-        </td>
-        <td>
-          @(item.BodySource == null || item.BodySource.Trim() == "" ? "False" : "True")
-        </td>
-        @*<td>
-              @Html.DisplayFor(modelItem => item.CreationDate)
-          </td>*@
-        <td>
-          @Html.DisplayFor(modelItem => item.LastUpdatedDate)
-        </td>
-        <td>
-          <a asp-action="Edit" asp-route-id="@item.ContentId">Edit</a> |
-          <a asp-action="Details" asp-route-id="@item.ContentId">Details</a> |
-          <a asp-action="Delete" asp-route-id="@item.ContentId">Delete</a>
-        </td>
-      </tr>
-    }
+  <tbody id="contentsTableBody">
+    <tr>
+      <td colspan="6" class="text-center">Loading...</td>
+    </tr>
   </tbody>
 </table>
+
+<script src="~/js/contents/index.js"></script>

@@ -1,185 +1,240 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using DSCMS.Data;
-using DSCMS.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using DSCMS.Models;
+using DSCMS.Models.DTOs;
+using DSCMS.Repositories.Interfaces;
 
-namespace DSCMS.Controllers
+namespace DSCMS.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class ContentTypesController : ControllerBase
 {
-  [Authorize]
-  public class ContentTypesController : Controller
+  private readonly IContentTypeRepository _contentTypeRepository;
+  private readonly ITemplateRepository _templateRepository;
+  private readonly ILogger<ContentTypesController> _logger;
+
+  public ContentTypesController(
+    IContentTypeRepository contentTypeRepository,
+    ITemplateRepository templateRepository,
+    ILogger<ContentTypesController> logger)
   {
-    private readonly ApplicationDbContext _context;
+    _contentTypeRepository = contentTypeRepository;
+    _templateRepository = templateRepository;
+    _logger = logger;
+  }
 
-    public ContentTypesController(ApplicationDbContext context)
+  // GET: api/contenttypes
+  [HttpGet]
+  public async Task<ActionResult<IEnumerable<ContentTypeListDto>>> GetAll()
+  {
+    _logger.LogDebug("API GetAll content types requested");
+
+    var contentTypes = await _contentTypeRepository.GetAllWithTemplateAsync();
+
+    var dtos = contentTypes.Select(ct => new ContentTypeListDto
     {
-      _context = context;
+      ContentTypeId = ct.ContentTypeId,
+      Name = ct.Name,
+      Title = ct.Title,
+      Description = ct.Description,
+      ItemsPerPage = ct.ItemsPerPage,
+      MultipleContentsTemplateName = ct.MultipleContentsTemplate?.Name
+    }).ToList();
+
+    _logger.LogInformation("Returning {ContentTypeCount} content types", dtos.Count);
+    return Ok(dtos);
+  }
+
+  // GET: api/contenttypes/{id}
+  [HttpGet("{id}")]
+  public async Task<ActionResult<ContentTypeDetailDto>> GetById(int id)
+  {
+    _logger.LogDebug("API GetById requested for content type id: {ContentTypeId}", id);
+
+    var contentType = await _contentTypeRepository.GetByIdWithTemplateAsync(id);
+    if (contentType == null)
+    {
+      _logger.LogWarning("Content type not found with id: {ContentTypeId}", id);
+      return NotFound();
     }
 
-    // GET: ContentTypes
-    public async Task<IActionResult> Index()
+    var dto = new ContentTypeDetailDto
     {
-      var applicationDbContext = _context.ContentTypes.Include(c => c.MultipleContentsTemplate);
-      return View(await applicationDbContext.ToListAsync());
+      ContentTypeId = contentType.ContentTypeId,
+      Name = contentType.Name,
+      Title = contentType.Title,
+      Description = contentType.Description,
+      ItemsPerPage = contentType.ItemsPerPage,
+      MultipleContentsTemplateId = contentType.MultipleContentsTemplateId,
+      DefaultSingleContentTemplateId = contentType.DefaultSingleContentTemplateId,
+      IsDefaultContentType = contentType.IsDefaultContentType,
+      MultipleContentsTemplateName = contentType.MultipleContentsTemplate?.Name,
+      DefaultSingleContentTemplateName = contentType.DefaultSingleContentTemplate?.Name
+    };
+
+    _logger.LogDebug("Found content type: {ContentTypeId} - {ContentTypeName}", contentType.ContentTypeId, contentType.Name);
+    return Ok(dto);
+  }
+
+  // POST: api/contenttypes
+  [HttpPost]
+  public async Task<ActionResult<ContentTypeDetailDto>> Create([FromBody] ContentTypeCreateDto dto)
+  {
+    _logger.LogDebug("API Create content type requested for name: {ContentTypeName}", dto.Name);
+
+    if (dto.DefaultSingleContentTemplateId < 1)
+    {
+      dto.DefaultSingleContentTemplateId = null;
     }
 
-    // GET: ContentTypes/Details/5
-    public async Task<IActionResult> Details(int? id)
+    if (!ModelState.IsValid)
     {
-      if (id == null)
+      _logger.LogWarning("Model state invalid for content type creation: {ContentTypeName}", dto.Name);
+      return BadRequest(ModelState);
+    }
+
+    var contentType = new ContentType
+    {
+      Name = dto.Name,
+      Title = dto.Title,
+      Description = dto.Description,
+      ItemsPerPage = dto.ItemsPerPage,
+      MultipleContentsTemplateId = dto.MultipleContentsTemplateId,
+      DefaultSingleContentTemplateId = dto.DefaultSingleContentTemplateId,
+      IsDefaultContentType = dto.IsDefaultContentType
+    };
+
+    await _contentTypeRepository.AddAsync(contentType);
+    _logger.LogInformation("Created new content type: {ContentTypeId} - {ContentTypeName}", contentType.ContentTypeId, contentType.Name);
+
+    var resultDto = new ContentTypeDetailDto
+    {
+      ContentTypeId = contentType.ContentTypeId,
+      Name = contentType.Name,
+      Title = contentType.Title,
+      Description = contentType.Description,
+      ItemsPerPage = contentType.ItemsPerPage,
+      MultipleContentsTemplateId = contentType.MultipleContentsTemplateId,
+      DefaultSingleContentTemplateId = contentType.DefaultSingleContentTemplateId,
+      IsDefaultContentType = contentType.IsDefaultContentType
+    };
+
+    return CreatedAtAction(nameof(GetById), new { id = contentType.ContentTypeId }, resultDto);
+  }
+
+  // PUT: api/contenttypes/{id}
+  [HttpPut("{id}")]
+  public async Task<ActionResult<ContentTypeDetailDto>> Update(int id, [FromBody] ContentTypeUpdateDto dto)
+  {
+    _logger.LogDebug("API Update content type requested for: {ContentTypeId} - {ContentTypeName}", id, dto.Name);
+
+    if (!ModelState.IsValid)
+    {
+      _logger.LogWarning("Model state invalid for content type update: {ContentTypeId}", id);
+      return BadRequest(ModelState);
+    }
+
+    var contentType = await _contentTypeRepository.GetByIdAsync(id);
+    if (contentType == null)
+    {
+      _logger.LogWarning("Content type not found for update with id: {ContentTypeId}", id);
+      return NotFound();
+    }
+
+    contentType.Name = dto.Name;
+    contentType.Title = dto.Title;
+    contentType.Description = dto.Description;
+    contentType.ItemsPerPage = dto.ItemsPerPage;
+    contentType.MultipleContentsTemplateId = dto.MultipleContentsTemplateId;
+    contentType.DefaultSingleContentTemplateId = dto.DefaultSingleContentTemplateId;
+    contentType.IsDefaultContentType = dto.IsDefaultContentType;
+
+    try
+    {
+      await _contentTypeRepository.UpdateAsync(contentType);
+      _logger.LogInformation("Updated content type: {ContentTypeId} - {ContentTypeName}", contentType.ContentTypeId, contentType.Name);
+    }
+    catch (DbUpdateConcurrencyException ex)
+    {
+      _logger.LogError(ex, "Concurrency exception updating content type: {ContentTypeId}", contentType.ContentTypeId);
+      if (!await _contentTypeRepository.ExistsAsync(contentType.ContentTypeId))
       {
         return NotFound();
       }
-
-      var contentType = await _context.ContentTypes.Include(ct => ct.MultipleContentsTemplate).SingleOrDefaultAsync(m => m.ContentTypeId == id);
-      if (contentType == null)
+      else
       {
-        return NotFound();
+        throw;
       }
-
-      return View(contentType);
     }
 
-    // GET: ContentTypes/Create
-    public IActionResult Create()
+    var resultDto = new ContentTypeDetailDto
     {
-      // ViewData for Multiple Contents Template (for ContentType listings)
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name");
+      ContentTypeId = contentType.ContentTypeId,
+      Name = contentType.Name,
+      Title = contentType.Title,
+      Description = contentType.Description,
+      ItemsPerPage = contentType.ItemsPerPage,
+      MultipleContentsTemplateId = contentType.MultipleContentsTemplateId,
+      DefaultSingleContentTemplateId = contentType.DefaultSingleContentTemplateId,
+      IsDefaultContentType = contentType.IsDefaultContentType
+    };
 
-      // ViewData for Default Single Content Template
-      List<Template> ts = new List<Template>();
-      ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", ts);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
-      
-      return View();
-    }
+    return Ok(resultDto);
+  }
 
-    // POST: ContentTypes/Create
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("ContentTypeId,Description,Name,MultipleContentsTemplateId,DefaultSingleContentTemplateId,Title,ItemsPerPage,IsDefaultContentType")] ContentType contentType)
+  // DELETE: api/contenttypes/{id}
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(int id)
+  {
+    _logger.LogDebug("API Delete requested for content type id: {ContentTypeId}", id);
+
+    var contentType = await _contentTypeRepository.GetByIdAsync(id);
+    if (contentType == null)
     {
-      if (contentType.DefaultSingleContentTemplateId < 1) contentType.DefaultSingleContentTemplateId = null;
-      if (ModelState.IsValid)
-      {
-        _context.Add(contentType);
-        await _context.SaveChangesAsync();
-        return RedirectToAction("Index");
-      }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
-
-      // Figure out the default single content template ID to use
-      int defaultSingleTemplateIdToUse = contentType.DefaultSingleContentTemplateId ?? 0;
-
-      List <Template> ts = new List<Template>();
-      ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", defaultSingleTemplateIdToUse);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
-      
-      return View(contentType);
+      _logger.LogWarning("Content type not found for delete with id: {ContentTypeId}", id);
+      return NotFound();
     }
 
-    // GET: ContentTypes/Edit/5
-    public async Task<IActionResult> Edit(int? id)
+    await _contentTypeRepository.DeleteAsync(contentType);
+    _logger.LogInformation("Deleted content type: {ContentTypeId} - {ContentTypeName}", contentType.ContentTypeId, contentType.Name);
+
+    return NoContent();
+  }
+
+  // GET: api/contenttypes/form-options
+  [HttpGet("form-options")]
+  public async Task<ActionResult<ContentTypeFormOptionsDto>> GetFormOptions()
+  {
+    _logger.LogDebug("API GetFormOptions requested");
+
+    var multipleContentsTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(1);
+    var singleContentTemplates = await _templateRepository.GetByIsForMultipleContentsAsync(0);
+
+    var dto = new ContentTypeFormOptionsDto
     {
-      if (id == null)
+      MultipleContentsTemplates = multipleContentsTemplates.Select(t => new LookupItemDto
       {
-        return NotFound();
-      }
-
-      var contentType = await _context.ContentTypes.Include(ct => ct.ContentTypeFields).SingleOrDefaultAsync(m => m.ContentTypeId == id);
-      if (contentType == null)
+        Id = t.TemplateId,
+        Name = t.Name ?? $"Template {t.TemplateId}"
+      }).ToList(),
+      SingleContentTemplates = new List<LookupItemDto>
       {
-        return NotFound();
+        new LookupItemDto { Id = 0, Name = "" }
       }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates.Where(t => t.IsForMultipleContents == 1), "TemplateId", "Name", contentType.MultipleContentsTemplateId);
+    };
 
-      List<Template> ts = new List<Template>();
-      ts.Add(new Template { Name = "", TemplateId = 0 });
-      ts.AddRange(_context.Templates.Where(t => t.IsForMultipleContents == 0).ToList());
-      var tsSelectList = new SelectList(ts, "TemplateId", "Name", contentType.DefaultSingleContentTemplateId);
-      ViewData["DefaultSingleContentTemplateId"] = tsSelectList;
-
-      return View(contentType);
-    }
-
-    // POST: ContentTypes/Edit/5
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("ContentTypeId,Description,Name,MultipleContentsTemplateId,Title,ItemsPerPage,DefaultSingleContentTemplateId,IsDefaultContentType")] ContentType contentType)
+    dto.SingleContentTemplates.AddRange(singleContentTemplates.Select(t => new LookupItemDto
     {
-      if (id != contentType.ContentTypeId)
-      {
-        return NotFound();
-      }
+      Id = t.TemplateId,
+      Name = t.Name ?? $"Template {t.TemplateId}"
+    }));
 
-      if (ModelState.IsValid)
-      {
-        try
-        {
-          _context.Update(contentType);
-          await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-          if (!ContentTypeExists(contentType.ContentTypeId))
-          {
-            return NotFound();
-          }
-          else
-          {
-            throw;
-          }
-        }
-        return RedirectToAction("Index");
-      }
-      ViewData["MultipleContentsTemplateId"] = new SelectList(_context.Templates, "TemplateId", "Name", contentType.MultipleContentsTemplateId);
-      return View(contentType);
-    }
-
-    // GET: ContentTypes/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-      if (id == null)
-      {
-        return NotFound();
-      }
-
-      var contentType = await _context.ContentTypes.Include(ct => ct.MultipleContentsTemplate).SingleOrDefaultAsync(m => m.ContentTypeId == id);
-      if (contentType == null)
-      {
-        return NotFound();
-      }
-
-      return View(contentType);
-    }
-
-    // POST: ContentTypes/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-      var contentType = await _context.ContentTypes.SingleOrDefaultAsync(m => m.ContentTypeId == id);
-      _context.ContentTypes.Remove(contentType);
-      await _context.SaveChangesAsync();
-      return RedirectToAction("Index");
-    }
-
-    private bool ContentTypeExists(int id)
-    {
-      return _context.ContentTypes.Any(e => e.ContentTypeId == id);
-    }
+    _logger.LogInformation("Returning form options with {MultiCount} multiple and {SingleCount} single templates",
+      dto.MultipleContentsTemplates.Count, dto.SingleContentTemplates.Count);
+    return Ok(dto);
   }
 }

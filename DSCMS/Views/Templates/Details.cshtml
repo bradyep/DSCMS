@@ -1,57 +1,7 @@
-@model DSCMS.Models.Template
-
 @{
-  ViewData["Title"] = "Details";
+    ViewData["Title"] = "Template Details";
 }
 
-<h2>Details</h2>
+<div id="app"></div>
 
-<div>
-  <h4>Template</h4>
-  <hr />
-  <dl class="dl-horizontal">
-    <dt>
-      @Html.DisplayNameFor(model => model.Name)
-    </dt>
-    <dd>
-      @(Model.Name ?? "[No Name]")
-    </dd>
-    <dt>
-      Layout
-    </dt>
-    <dd>
-      @(Model.Layout?.Name ?? "[No Layout]")
-    </dd>
-    <dt>
-      @Html.DisplayNameFor(model => model.IsForMultipleContents)
-    </dt>
-    <dd>
-      @(Model.IsForMultipleContents > 0 ? "ContentType" : "Content")
-    </dd>
-    <dt>
-      @Html.DisplayNameFor(model => model.TemplateSource)
-    </dt>
-    <dd>
-      @(Model.TemplateSource ?? "[No File Location]")
-    </dd>
-    <dt>
-      Has Inline Content
-    </dt>
-    <dd>
-      @(Model.TemplateSource != null ? "Yes" : "No")
-    </dd>
-    @if (Model.TemplateSource != null)
-    {
-      <dt>
-        Content Preview
-      </dt>
-      <dd>
-        <pre style="max-height: 200px; overflow-y: auto; background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;">@Model.TemplateSource</pre>
-      </dd>
-    }
-  </dl>
-</div>
-<div>
-  <a asp-action="Edit" asp-route-id="@Model.TemplateId">Edit</a> |
-  <a asp-action="Index">Back to List</a>
-</div>
+<script src="~/js/templates/details.js" type="module"></script>
