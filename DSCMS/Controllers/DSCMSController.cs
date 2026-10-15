@@ -79,7 +79,9 @@ namespace DSCMS.Controllers
         ViewData["Title"] = content.Title ?? "Title";
 
         // DEBUG: Add debugging information
-        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, BodySource Length: {content.BodySource?.Length ?? 0}, BodySource Preview: {content.BodySource?.Substring(0, Math.Min(100, content.BodySource?.Length ?? 0)) ?? "NULL"}";
+        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, BodySource Length: {content.BodySource?.Length ?? 0}," +
+                                $" BodySource Preview: {content.BodySource?.Substring(0, Math.Min(100, 
+                                  content.BodySource?.Length ?? 0)) ?? "NULL"}";
 
         // Use content's template, or fall back to ContentType's default template if content has no template
         int templateIdToUse = content.TemplateId > 0 ? content.TemplateId :
