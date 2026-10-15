@@ -10,7 +10,7 @@ The Dead Simple Content Management System: a fully functional, fast and simple C
 
 ### Routing
 
-User requests are handled by `DSCMSController.Content` which is the default route (defined in `startup.cs`) and serves up either specific content or items of a certain content type. The format is as follows: `/{contentType}/{content}`. So for example, `/blog` would display a list of blog posts, while `/blog/my-first-post` would display a specific blog post.
+User requests are handled by `DSCMSController.Content` which is the default route (defined in `Program.cs`) and serves up either specific content or items of a certain content type. The format is as follows: `/{contentType}/{content}`. So for example, `/blog` would display a list of blog posts, while `/blog/my-first-post` would display a specific blog post.
 
 ### Models
 

@@ -68,7 +68,6 @@ var config = app.Services.GetRequiredService<IConfigurationService>();
 var dbSettings = config.GetDatabaseSettings();
 logger.LogInformation("Database configured: {DatabaseType}", dbSettings.DatabaseType);
 
-
 // Configure the HTTP request pipeline (equivalent to Configure method)
 if (app.Environment.IsDevelopment())
 {

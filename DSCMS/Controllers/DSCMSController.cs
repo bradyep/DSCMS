@@ -40,6 +40,7 @@ namespace DSCMS.Controllers
     /// <returns></returns>
     public async Task<IActionResult> Content(string contentTypeName = "blog", string contentUrl = "", string page = "")
     {
+      // TODO: The contentType that this app does to by default should be set in the settings somehow
       _logger.LogDebug("Content requested: ContentTypeName={ContentTypeName}, ContentUrl={ContentUrl}, Page={Page}",
         contentTypeName, contentUrl, page);
 
