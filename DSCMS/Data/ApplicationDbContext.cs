@@ -78,6 +78,7 @@ namespace DSCMS.Data
         }
 
         public DbSet<Layout> Layouts { get; set; }
+        public DbSet<LayoutValue> LayoutValues { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }

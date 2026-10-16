@@ -15,7 +15,7 @@ namespace DSCMS.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
 
             modelBuilder.Entity("DSCMS.Models.ApplicationUser", b =>
                 {
@@ -248,6 +248,30 @@ namespace DSCMS.Migrations
                     b.HasIndex("SourceTypeId");
 
                     b.ToTable("Layouts");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.LayoutValue", b =>
+                {
+                    b.Property<int>("LayoutValueId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("LayoutId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("LayoutValueId");
+
+                    b.HasIndex("LayoutId");
+
+                    b.ToTable("LayoutValues");
                 });
 
             modelBuilder.Entity("DSCMS.Models.SourceType", b =>
@@ -551,6 +575,17 @@ namespace DSCMS.Migrations
                     b.Navigation("SourceType");
                 });
 
+            modelBuilder.Entity("DSCMS.Models.LayoutValue", b =>
+                {
+                    b.HasOne("DSCMS.Models.Layout", "Layout")
+                        .WithMany("LayoutValues")
+                        .HasForeignKey("LayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Layout");
+                });
+
             modelBuilder.Entity("DSCMS.Models.Template", b =>
                 {
                     b.HasOne("DSCMS.Models.Layout", "Layout")
@@ -645,6 +680,8 @@ namespace DSCMS.Migrations
 
             modelBuilder.Entity("DSCMS.Models.Layout", b =>
                 {
+                    b.Navigation("LayoutValues");
+
                     b.Navigation("Templates");
                 });
 

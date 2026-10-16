@@ -162,6 +162,7 @@ namespace DSCMS.Controllers
       }
 
       ViewData["Layout"] = template?.Layout?.LayoutSource ?? "";
+      ViewData["LayoutEntity"] = template?.Layout;
 
       // Determine view location
       string viewLocationToUse = template?.TemplateSource ?? "/Views/Home/Index.cshtml";

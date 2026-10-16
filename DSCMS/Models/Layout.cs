@@ -27,5 +27,12 @@ namespace DSCMS.Models
     public SourceType? SourceType { get; set; }
 
     public List<Template> Templates { get; set; } = new List<Template>();
+    public List<LayoutValue> LayoutValues { get; set; } = new List<LayoutValue>();
+
+    public string GetValueFor(string key)
+    {
+      LayoutValue? value = this.LayoutValues.Where(lv => lv.Key == key).FirstOrDefault();
+      return value == null ? "" : value.Value ?? "";
+    }
   }
 }
