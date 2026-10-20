@@ -23,6 +23,7 @@ public class LayoutDetailDto
   public string LayoutSource { get; set; } = string.Empty;
   public int SourceTypeId { get; set; }
   public string? SourceTypeName { get; set; }
+  public List<LayoutValueDto> LayoutValues { get; set; } = new();
 }
 
 /// <summary>
@@ -38,6 +39,8 @@ public class LayoutCreateDto
 
   [Required]
   public int SourceTypeId { get; set; }
+
+  public List<LayoutValueDto>? LayoutValues { get; set; }
 }
 
 /// <summary>
@@ -53,4 +56,19 @@ public class LayoutUpdateDto
 
   [Required]
   public int SourceTypeId { get; set; }
+
+  public List<LayoutValueDto>? LayoutValues { get; set; }
+}
+
+/// <summary>
+/// DTO for a single Layout key/value pair
+/// </summary>
+public class LayoutValueDto
+{
+  public int LayoutValueId { get; set; }
+
+  [Required]
+  public string Key { get; set; } = string.Empty;
+
+  public string? Value { get; set; }
 }

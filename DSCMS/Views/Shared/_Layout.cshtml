@@ -32,8 +32,15 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
+                        @{
+                            var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                            if (currentController.EndsWith("View"))
+                            {
+                                currentController = currentController.Substring(0, currentController.Length - "View".Length);
+                            }
+                        }
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button">
-                            @ViewContext.RouteData.Values["controller"] <span class="caret"></span>
+                            @currentController <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a asp-route="Layouts">Layouts</a></li>
