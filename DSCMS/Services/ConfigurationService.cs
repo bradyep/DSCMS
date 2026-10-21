@@ -114,5 +114,24 @@ namespace DSCMS.Services
                 };
             }
         }
+
+        public StaticFileSettings GetStaticFileSettings()
+        {
+            try
+            {
+                var staticFileSettings = new StaticFileSettings();
+                _configuration.GetSection("StaticFileSettings").Bind(staticFileSettings);
+
+                _logger.LogDebug("Static file settings loaded: StoragePath={StoragePath}, MaxUploadBytes={MaxUploadBytes}",
+                    staticFileSettings.StoragePath, staticFileSettings.MaxUploadBytes);
+
+                return staticFileSettings;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading static file settings");
+                return new StaticFileSettings();
+            }
+        }
     }
 }

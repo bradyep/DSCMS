@@ -5,7 +5,7 @@ using DSCMS.Models;
 using DSCMS.Services;
 using DSCMS.Repositories.Interfaces;
 using DSCMS.Repositories.Implementations;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +50,10 @@ builder.Services.AddScoped<IContentTypeFieldRepository, ContentTypeFieldReposito
 builder.Services.AddScoped<IContentTypeFieldItemRepository, ContentTypeFieldItemRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISourceTypeRepository, SourceTypeRepository>();
+builder.Services.AddScoped<IStaticUploadRepository, StaticUploadRepository>();
+
+// Admin-uploaded static files (stored on the data volume, served at /static)
+builder.Services.AddSingleton<IStaticFileStorageService, StaticFileStorageService>();
 
 // Add MVC and Razor Pages
 builder.Services.AddControllersWithViews();
@@ -85,14 +89,28 @@ else
 // app.UseHttpsRedirection();
 
 // Configure static files with custom MIME types safely
-var provider = new FileExtensionContentTypeProvider();
-var customMappings = new Dictionary<string, string>(provider.Mappings);
-customMappings[".odt"] = "application/vnd.oasis.opendocument.text";
-var customProvider = new FileExtensionContentTypeProvider(customMappings);
+var staticFileStorage = app.Services.GetRequiredService<IStaticFileStorageService>();
 
 app.UseStaticFiles(new StaticFileOptions
 {
-  ContentTypeProvider = customProvider
+  ContentTypeProvider = staticFileStorage.ContentTypeProvider
+});
+
+// Serve admin-uploaded files. Unknown types are allowed because uploaded games
+// often ship assets (.data, .unityweb, ...) that have no registered MIME type.
+var uploadsFileProvider = new PhysicalFileProvider(staticFileStorage.RootPath);
+app.UseDefaultFiles(new DefaultFilesOptions
+{
+  FileProvider = uploadsFileProvider,
+  RequestPath = StaticFileStorageService.RequestPath
+});
+app.UseStaticFiles(new StaticFileOptions
+{
+  FileProvider = uploadsFileProvider,
+  RequestPath = StaticFileStorageService.RequestPath,
+  ContentTypeProvider = staticFileStorage.ContentTypeProvider,
+  ServeUnknownFileTypes = true,
+  DefaultContentType = "application/octet-stream"
 });
 
 logger?.LogDebug("Static files configured with custom MIME types");
@@ -131,6 +149,11 @@ app.MapControllerRoute(
     name: "ContentTypes",
     pattern: "Admin/ContentTypes/{action=Index}/{id?}",
     defaults: new { controller = "ContentTypesView" });
+
+app.MapControllerRoute(
+    name: "StaticUploads",
+    pattern: "Admin/StaticUploads/{action=Index}/{id?}",
+    defaults: new { controller = "StaticUploadsView" });
 
 app.MapControllerRoute(
     name: "ContentTypeFieldItems",

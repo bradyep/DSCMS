@@ -248,3 +248,7 @@ ModelManifest.xml
 
 # JetBrains Rider
 .idea/
+
+# Admin-uploaded static files (live on the data volume, not in source control)
+DSCMS/dscms-data/static/
+DSCMS/dscms-data/static-staging/

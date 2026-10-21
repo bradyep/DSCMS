@@ -317,6 +317,91 @@ namespace DSCMS.Migrations
                         });
                 });
 
+            modelBuilder.Entity("DSCMS.Models.StaticUpload", b =>
+                {
+                    b.Property<int>("StaticUploadId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EntryPoint")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FileCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FolderPath")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsArchive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("LastReplacedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TotalSizeBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UploadedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("StaticUploadId");
+
+                    b.HasIndex("FolderPath")
+                        .IsUnique();
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("StaticUploads");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.StaticUploadFile", b =>
+                {
+                    b.Property<int>("StaticUploadFileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StaticUploadId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("StaticUploadFileId");
+
+                    b.HasIndex("StaticUploadId");
+
+                    b.ToTable("StaticUploadFiles");
+                });
+
             modelBuilder.Entity("DSCMS.Models.Template", b =>
                 {
                     b.Property<int>("TemplateId")
@@ -586,6 +671,27 @@ namespace DSCMS.Migrations
                     b.Navigation("Layout");
                 });
 
+            modelBuilder.Entity("DSCMS.Models.StaticUpload", b =>
+                {
+                    b.HasOne("DSCMS.Models.ApplicationUser", "UploadedByUser")
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("UploadedByUser");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.StaticUploadFile", b =>
+                {
+                    b.HasOne("DSCMS.Models.StaticUpload", "StaticUpload")
+                        .WithMany("Files")
+                        .HasForeignKey("StaticUploadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StaticUpload");
+                });
+
             modelBuilder.Entity("DSCMS.Models.Template", b =>
                 {
                     b.HasOne("DSCMS.Models.Layout", "Layout")
@@ -683,6 +789,11 @@ namespace DSCMS.Migrations
                     b.Navigation("LayoutValues");
 
                     b.Navigation("Templates");
+                });
+
+            modelBuilder.Entity("DSCMS.Models.StaticUpload", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("DSCMS.Models.Template", b =>

@@ -67,6 +67,8 @@ Browse to the `/admin` route of your DSCMS instance.
 
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
+* Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`. Back up this folder along with `dscms.db`.
+* Uploads are capped by `StaticFileSettings:MaxUploadBytes` (200 MB by default). A reverse proxy in front of the container has its own limit — for nginx, set `client_max_body_size 200m;` in the site's `server` block, or larger uploads fail with HTTP 413 before reaching the app.
 
 ## Testing
 
