@@ -97,6 +97,19 @@ namespace DSCMS.Tests.Controllers
             Assert.Equal(nameof(_controller.GetById), created.ActionName);
         }
 
+        [Theory]
+        [InlineData("static")]
+        [InlineData("Static")]
+        public async Task Create_ReservedName_ReturnsBadRequest(string name)
+        {
+            var dto = new ContentTypeCreateDto { Name = name, Title = "Static", ItemsPerPage = 10, MultipleContentsTemplateId = 1 };
+
+            var result = await _controller.Create(dto);
+
+            Assert.IsType<BadRequestObjectResult>(result.Result);
+            _contentTypeRepo.Verify(r => r.AddAsync(It.IsAny<ContentType>()), Times.Never);
+        }
+
         [Fact]
         public async Task GetFormOptions_ReturnsOkWithTemplateLists()
         {

@@ -42,7 +42,7 @@ Represents a type of item associated with a specific content type (such as tease
 
 #### ContentItem
 
-Represents an actual child item of content (eg. blog post teaser text "my first post"). Associated with a specific content type and content item type.
+Represents an actual child item of content (e.g. blog post teaser text "my first post"). Associated with a specific content type and content item type.
 
 ## How To
 
@@ -61,12 +61,14 @@ Browse to the `/admin` route of your DSCMS instance.
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
 7. Get the newly updated image: `sudo docker pull bradyep/dscms:v1.0.0`
-8. Start up the the new container: `sudo docker run -d --restart unless-stopped -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms`
+8. Start up the new container: `sudo docker run -d --restart unless-stopped -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms`
 
 ## Server
 
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
+* Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`. Back up this folder along with `dscms.db`.
+* Uploads are capped by `StaticFileSettings:MaxUploadBytes` (200 MB by default). A reverse proxy in front of the container has its own limit — for nginx, set `client_max_body_size 200m;` in the site's `server` block, or larger uploads fail with HTTP 413 before reaching the app.
 
 ## Testing
 
@@ -87,7 +89,7 @@ End-to-end tests live under `DSCMS.Tests/E2E/` and use [Microsoft Playwright](ht
 - Blog page loads by default, posts are visible, and pagination works
 - Games, Projects, and About sections load with the correct content
 
-The fixture automatically starts the app before the first test runs and shuts it down afterwards, so no manual setup is needed from VS Test Explorer or the CLI.
+The fixture automatically starts the app before the first test runs and shuts it down afterward, so no manual setup is needed from VS Test Explorer or the CLI.
 
 **One-time browser install** (per machine, or after a Playwright version bump):
 

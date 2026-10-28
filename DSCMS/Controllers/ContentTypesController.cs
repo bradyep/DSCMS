@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using DSCMS.Models;
 using DSCMS.Models.DTOs;
 using DSCMS.Repositories.Interfaces;
+using DSCMS.Services;
 
 namespace DSCMS.Controllers;
 
@@ -91,6 +92,11 @@ public class ContentTypesController : ControllerBase
       dto.DefaultSingleContentTemplateId = null;
     }
 
+    if (IsReservedName(dto.Name))
+    {
+      ModelState.AddModelError(nameof(dto.Name), $"'{dto.Name}' is reserved and can't be used as a content type name.");
+    }
+
     if (!ModelState.IsValid)
     {
       _logger.LogWarning("Model state invalid for content type creation: {ContentTypeName}", dto.Name);
@@ -131,6 +137,11 @@ public class ContentTypesController : ControllerBase
   public async Task<ActionResult<ContentTypeDetailDto>> Update(int id, [FromBody] ContentTypeUpdateDto dto)
   {
     _logger.LogDebug("API Update content type requested for: {ContentTypeId} - {ContentTypeName}", id, dto.Name);
+
+    if (IsReservedName(dto.Name))
+    {
+      ModelState.AddModelError(nameof(dto.Name), $"'{dto.Name}' is reserved and can't be used as a content type name.");
+    }
 
     if (!ModelState.IsValid)
     {
@@ -236,5 +247,13 @@ public class ContentTypesController : ControllerBase
     _logger.LogInformation("Returning form options with {MultiCount} multiple and {SingleCount} single templates",
       dto.MultipleContentsTemplates.Count, dto.SingleContentTemplates.Count);
     return Ok(dto);
+  }
+
+  /// <summary>
+  /// Content type names become the first URL segment, so they can't shadow paths the app serves itself.
+  /// </summary>
+  private static bool IsReservedName(string? name)
+  {
+    return string.Equals(name?.Trim(), StaticFileStorageService.RequestPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
   }
 }
