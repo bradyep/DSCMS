@@ -19,4 +19,9 @@
     <Folder Include="dscms-data\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\raw\resume\resume-brady-prigge.docx" />
+    <_ContentIncludedByDefault Remove="wwwroot\raw\resume\resume-brady-prigge.pdf" />
+  </ItemGroup>
+
 </Project>
