@@ -32,7 +32,7 @@ Razor template that contains all the HTML needed to represent specific content.
 
 Defines a certain type of content, such as "Blog Post" or "News Article".
 
-#### Content}
+#### Content
 
 Represents a content entity (such as a blog post) with metadata, relationships, and associated content items.
 

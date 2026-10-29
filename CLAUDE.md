@@ -14,9 +14,9 @@ dotnet build DSCMS/DSCMS.csproj
 dotnet run --project DSCMS/DSCMS.csproj
 ```
 
-Unit tests (controllers, fast, no running app needed):
+Unit tests (controllers + services, fast, no running app needed):
 ```powershell
-dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers"
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers|FullyQualifiedName~Services"
 ```
 
 E2E tests (Playwright, drives a real Chromium browser against a real app instance on port 5099):
@@ -46,7 +46,7 @@ dotnet ef database update --project DSCMS --startup-project DSCMS
 
 ### Content model
 
-The CMS is built from six core EF entities (`DSCMS/Models/`) wired together in `DSCMS/Data/ApplicationDbContext.cs`:
+The CMS is built from these core EF entities (`DSCMS/Models/`) wired together in `DSCMS/Data/ApplicationDbContext.cs`:
 
 - **ContentType** — a category of content (e.g. "blog", "games"). Has a `Name` (used in URLs), an `ItemsPerPage` for pagination, and points at two templates: `MultipleContentsTemplate` (list view) and `DefaultSingleContentTemplate` (fallback single-item view).
 - **Content** — one item of a ContentType (e.g. a blog post). Has `UrlToDisplay` (slug), `BodySource`, and an optional `TemplateId` that overrides the ContentType's default.
@@ -54,7 +54,19 @@ The CMS is built from six core EF entities (`DSCMS/Models/`) wired together in `
 - **ContentTypeFieldItem** — the actual value of a ContentTypeField for one Content instance.
 - **Template** — a Razor view path (or inline source) plus a `SourceType` and an optional `Layout`. Can be flagged `IsForMultipleContents`.
 - **Layout** — the outer HTML shell a Template renders into.
+- **LayoutValue** — key/value pairs attached to a Layout (read via `Layout.GetValueFor(key)`), used to keep site-specific data (names, links, etc.) out of the Razor files.
 - **SourceType** — enum-like lookup (RazorFile / InlineRazor / Markdown / HTML / Text) seeded via `HasData`, shared by Template, Layout, and Content.BodySourceType.
+- **StaticUpload** / **StaticUploadFile** — admin-uploaded static files (see below). One StaticUpload per upload (a single file or an extracted .zip), with one StaticUploadFile row per file on disk (relative path, size, SHA-256).
+
+### Static file uploads
+
+Site-specific static files (resumes, HTML5/Flash games, etc.) are **not** shipped in `wwwroot` — admins upload them under Admin → Static Files, and they're served at `/static/{folderPath}/...`.
+
+- Files are stored under `StaticFileSettings:StoragePath` — `/dscms-data/static` in production, i.e. on the persistent Docker volume next to `dscms.db`. Never store uploads in `wwwroot`: it's baked into the image and wiped on every redeploy. A full site backup = the database + this folder (the per-file hashes exist so a future backup/restore feature can verify the two match).
+- `IStaticFileStorageService` (`DSCMS/Services/StaticFileStorageService.cs`) owns all file-system work: folder-path normalization, staging uploads in a sibling `static-staging` folder (never publicly served) and then committing them with a directory move, zip extraction (zip-slip checks, size/entry limits, flattening a single root folder, skipping `__MACOSX`/`.DS_Store`), deletion, and URL building. The controller (`StaticUploadsController`) handles validation and DB records, and should not touch the file system directly.
+- Every upload owns its own folder (folders may be nested, like `games/shapeshifter`). Folders must not overlap — an upload can't sit inside or contain another — so deleting or replacing one never affects another. Replacing keeps the folder and URLs the same.
+- Program.cs registers a second `UseDefaultFiles`/`UseStaticFiles` pair for the upload folder, with `ServeUnknownFileTypes` enabled so game assets with unregistered extensions still load. The `/static` prefix is the `StaticFileStorageService.RequestPath` constant, and `static` is a reserved ContentType name (checked in `ContentTypesController`).
+- Upload size limits come from config via `[StaticUploadSizeLimit]` (`DSCMS/Filters/`), not a hard-coded `[RequestSizeLimit]`. In production, the reverse proxy's body-size limit must also allow them (see README).
 
 Note: the `ContentTypeField`/`ContentTypeFieldItem` tables were originally named `ContentTypeItem`/`ContentItem` — renamed via the `RenameContentTypeItemsToContentTypeFields` migration. `DiagnosticsController.cs` still references the old names in some backup-restore/repair code paths that operate on pre-migration data; that's expected, not a bug.
 
@@ -64,7 +76,7 @@ All public traffic funnels through `DSCMSController.Content` (`DSCMS/Controllers
 
 ### Admin layer: API + view-shell split
 
-Each admin resource (Contents, ContentTypes, ContentTypeFields, ContentTypeFieldItems, Layouts, Templates, Users) has **two controllers**:
+Each admin resource (Contents, ContentTypes, ContentTypeFields, ContentTypeFieldItems, Layouts, Templates, StaticUploads, Users) has **two controllers**:
 - `{Resource}Controller` — `[Authorize] [ApiController] [Route("api/[controller]")]`, does all real CRUD against the repository layer and returns DTOs (`DSCMS/Models/DTOs/`).
 - `{Resource}ViewController` — `[Authorize]` MVC controller that only returns the Razor shell pages under `Views/{Resource}/*.cshtml`; it holds no business logic.
 
@@ -83,8 +95,9 @@ Uses ASP.NET Core Identity (`ApplicationUser : IdentityUser`) with EF store via 
 ### Testing
 
 - Controller unit tests (`DSCMS.Tests/Controllers/`) use xUnit + Moq, mocking repositories — no database or running app required.
+- Service tests (`DSCMS.Tests/Services/`) exercise services directly; `StaticFileStorageServiceTests` uses a real throwaway temp folder (no mocks) so the zip-safety and file-system behavior is actually tested.
 - E2E tests (`DSCMS.Tests/E2E/`) use Playwright + `PlaywrightFixture`, which starts a real `dotnet run` instance on a dedicated port (5099, separate from the normal dev port 5000) via `IAsyncLifetime`, and tears it down after the test collection. They exercise real rendering (blog listing/pagination, Games/Projects/About sections) rather than mocking anything.
 
 ### Configuration
 
-`appsettings.json` is for local dev; `appsettings.Production.json` is copied in during the Docker build and used for production. `IConfigurationService` (`DSCMS/Services/`) wraps typed access to config sections (EmailSettings, DatabaseSettings) rather than controllers reading `IConfiguration` directly.
+`appsettings.json` is for local dev; `appsettings.Production.json` is copied in during the Docker build and used for production. `IConfigurationService` (`DSCMS/Services/`) wraps typed access to config sections (EmailSettings, DatabaseSettings, StaticFileSettings) rather than controllers reading `IConfiguration` directly.
