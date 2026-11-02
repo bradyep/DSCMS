@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
@@ -16,7 +15,6 @@ namespace DSCMS.Services
 
     private const int MaxFolderDepth = 5;
     private const int MaxFolderPathLength = 200;
-    private const int CopyBufferSize = 81920;
 
     private static readonly Regex InvalidFolderChars = new("[^a-z0-9._-]+", RegexOptions.Compiled);
     private static readonly Regex InvalidFileNameChars = new("[^A-Za-z0-9._-]+", RegexOptions.Compiled);
@@ -26,6 +24,7 @@ namespace DSCMS.Services
     private readonly ILogger<StaticFileStorageService> _logger;
 
     public string RootPath { get; }
+    public string StagingRootPath => _stagingRoot;
     public StaticFileSettings Settings { get; }
     public FileExtensionContentTypeProvider ContentTypeProvider { get; }
 
@@ -236,7 +235,6 @@ namespace DSCMS.Services
 
       // A zip of "shapeshifter/" should land in the chosen folder, not in folder/shapeshifter/
       var commonRoot = GetCommonRootFolder(entries.Select(x => x.Path));
-      var stagingPrefix = Path.GetFullPath(staged.StagingPath) + Path.DirectorySeparatorChar;
       var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
       var remainingBytes = Settings.MaxExtractedBytes;
 
@@ -244,17 +242,14 @@ namespace DSCMS.Services
       {
         var relativePath = commonRoot == null ? path : path.Substring(commonRoot.Length + 1);
 
-        if (relativePath.Split('/').Any(s => s.Length == 0 || s == "." || s == ".."))
+        if (!SafeFileIO.IsCleanRelativePath(relativePath))
         {
           throw new StaticUploadException($"The archive entry '{entry.FullName}' has an invalid path.");
         }
 
         // Guard against "zip slip": entries must never resolve outside the staging folder
-        var destination = Path.GetFullPath(Path.Combine(staged.StagingPath, relativePath));
-        if (!destination.StartsWith(stagingPrefix, StringComparison.Ordinal))
-        {
-          throw new StaticUploadException($"The archive entry '{entry.FullName}' points outside the upload folder.");
-        }
+        var destination = SafeFileIO.ResolveInside(staged.StagingPath, relativePath)
+          ?? throw new StaticUploadException($"The archive entry '{entry.FullName}' points outside the upload folder.");
 
         if (!seenPaths.Add(relativePath))
         {
@@ -275,29 +270,9 @@ namespace DSCMS.Services
       staged.EntryPoint = FindEntryPoint(staged.Files);
     }
 
-    private static async Task<(long Size, string Sha256)> WriteFileAsync(Stream source, string destination, long maxBytes, string tooLargeMessage, CancellationToken cancellationToken)
+    private static Task<(long Size, string Sha256)> WriteFileAsync(Stream source, string destination, long maxBytes, string tooLargeMessage, CancellationToken cancellationToken)
     {
-      using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-      var buffer = new byte[CopyBufferSize];
-      long total = 0;
-
-      await using (var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, CopyBufferSize, useAsync: true))
-      {
-        int read;
-        while ((read = await source.ReadAsync(buffer, cancellationToken)) > 0)
-        {
-          total += read;
-          if (total > maxBytes)
-          {
-            throw new StaticUploadException(tooLargeMessage);
-          }
-
-          hash.AppendData(buffer, 0, read);
-          await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
-        }
-      }
-
-      return (total, Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant());
+      return SafeFileIO.WriteFileAsync(source, destination, maxBytes, () => new StaticUploadException(tooLargeMessage), cancellationToken);
     }
 
     private StagedFile CreateStagedFile(string relativePath, long size, string sha256)
