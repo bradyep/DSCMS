@@ -62,11 +62,22 @@ The CMS is built from these core EF entities (`DSCMS/Models/`) wired together in
 
 Site-specific static files (resumes, HTML5/Flash games, etc.) are **not** shipped in `wwwroot` — admins upload them under Admin → Static Files, and they're served at `/static/{folderPath}/...`.
 
-- Files are stored under `StaticFileSettings:StoragePath` — `/dscms-data/static` in production, i.e. on the persistent Docker volume next to `dscms.db`. Never store uploads in `wwwroot`: it's baked into the image and wiped on every redeploy. A full site backup = the database + this folder (the per-file hashes exist so a future backup/restore feature can verify the two match).
+- Files are stored under `StaticFileSettings:StoragePath` — `/dscms-data/static` in production, i.e. on the persistent Docker volume next to `dscms.db`. Never store uploads in `wwwroot`: it's baked into the image and wiped on every redeploy. A full site backup = the database + this folder; the per-file hashes let backup/restore verify the two match (see below).
 - `IStaticFileStorageService` (`DSCMS/Services/StaticFileStorageService.cs`) owns all file-system work: folder-path normalization, staging uploads in a sibling `static-staging` folder (never publicly served) and then committing them with a directory move, zip extraction (zip-slip checks, size/entry limits, flattening a single root folder, skipping `__MACOSX`/`.DS_Store`), deletion, and URL building. The controller (`StaticUploadsController`) handles validation and DB records, and should not touch the file system directly.
 - Every upload owns its own folder (folders may be nested, like `games/shapeshifter`). Folders must not overlap — an upload can't sit inside or contain another — so deleting or replacing one never affects another. Replacing keeps the folder and URLs the same.
 - Program.cs registers a second `UseDefaultFiles`/`UseStaticFiles` pair for the upload folder, with `ServeUnknownFileTypes` enabled so game assets with unregistered extensions still load. The `/static` prefix is the `StaticFileStorageService.RequestPath` constant, and `static` is a reserved ContentType name (checked in `ContentTypesController`).
 - Upload size limits come from config via `[StaticUploadSizeLimit]` (`DSCMS/Filters/`), not a hard-coded `[RequestSizeLimit]`. In production, the reverse proxy's body-size limit must also allow them (see README).
+
+### Backup & restore
+
+Admin → Backup & Restore (`BackupController` + `BackupViewController`, `wwwroot/js/backup/index.js`) packs `dscms.db` + the whole static folder into one .zip with a `manifest.json` (`DSCMS/Models/BackupManifest.cs`), and restores it. `IBackupService` (`DSCMS/Services/BackupService.cs`) owns all of it, the same way `StaticFileStorageService` owns uploads:
+
+- The DB is copied with SQLite's backup API (`SqliteConnection.BackupDatabase`) in both directions, never by copying the file (WAL). Temp DBs use `Pooling=False` so their files can be deleted.
+- Restore is two steps: stage (extract into `static-staging/restore-*`, verify hashes against the manifest, integrity-check the DB, compare migrations, migrate an older DB, cross-check `StaticUploadFiles` rows against the files) → commit (pre-restore snapshot into `BackupSettings:StoragePath`, carry over the target's `AspNet*` tables and reassign orphaned `CreatedBy`/`LastUpdatedBy`/`UploadedBy`, rename-swap the static folder, copy the DB in; roll the folder back if the DB copy fails).
+- Restore never extracts nested archives: a `.zip` under `static/` is restored byte-for-byte.
+- Migration compatibility: unknown migration IDs that sort *after* the app's latest migration mean a newer backup (refused). Older unknown IDs are legacy history from the 2016 app (`00000000000000_CreateIdentitySchema`, `20160730002021_initial` exist in real DBs) and are ignored.
+- `MaintenanceState` (singleton gate) + `MaintenanceModeMiddleware`: one backup/restore at a time; other `/api` writes get 409 while a backup is being written, and everything except `/api/backup` gets 503 during the swap.
+- `SafeFileIO` (`DSCMS/Services/`) holds the hashed/size-capped write and zip-slip helpers shared with `StaticFileStorageService`.
 
 Note: the `ContentTypeField`/`ContentTypeFieldItem` tables were originally named `ContentTypeItem`/`ContentItem` — renamed via the `RenameContentTypeItemsToContentTypeFields` migration. `DiagnosticsController.cs` still references the old names in some backup-restore/repair code paths that operate on pre-migration data; that's expected, not a bug.
 
@@ -76,7 +87,7 @@ All public traffic funnels through `DSCMSController.Content` (`DSCMS/Controllers
 
 ### Admin layer: API + view-shell split
 
-Each admin resource (Contents, ContentTypes, ContentTypeFields, ContentTypeFieldItems, Layouts, Templates, StaticUploads, Users) has **two controllers**:
+Each admin resource (Contents, ContentTypes, ContentTypeFields, ContentTypeFieldItems, Layouts, Templates, StaticUploads, Users, Backup) has **two controllers**:
 - `{Resource}Controller` — `[Authorize] [ApiController] [Route("api/[controller]")]`, does all real CRUD against the repository layer and returns DTOs (`DSCMS/Models/DTOs/`).
 - `{Resource}ViewController` — `[Authorize]` MVC controller that only returns the Razor shell pages under `Views/{Resource}/*.cshtml`; it holds no business logic.
 
@@ -95,9 +106,9 @@ Uses ASP.NET Core Identity (`ApplicationUser : IdentityUser`) with EF store via 
 ### Testing
 
 - Controller unit tests (`DSCMS.Tests/Controllers/`) use xUnit + Moq, mocking repositories — no database or running app required.
-- Service tests (`DSCMS.Tests/Services/`) exercise services directly; `StaticFileStorageServiceTests` uses a real throwaway temp folder (no mocks) so the zip-safety and file-system behavior is actually tested.
+- Service tests (`DSCMS.Tests/Services/`) exercise services directly; `StaticFileStorageServiceTests` uses a real throwaway temp folder (no mocks) so the zip-safety and file-system behavior is actually tested. `BackupServiceTests` does the same with real SQLite files migrated via `Database.Migrate()`.
 - E2E tests (`DSCMS.Tests/E2E/`) use Playwright + `PlaywrightFixture`, which starts a real `dotnet run` instance on a dedicated port (5099, separate from the normal dev port 5000) via `IAsyncLifetime`, and tears it down after the test collection. They exercise real rendering (blog listing/pagination, Games/Projects/About sections) rather than mocking anything.
 
 ### Configuration
 
-`appsettings.json` is for local dev; `appsettings.Production.json` is copied in during the Docker build and used for production. `IConfigurationService` (`DSCMS/Services/`) wraps typed access to config sections (EmailSettings, DatabaseSettings, StaticFileSettings) rather than controllers reading `IConfiguration` directly.
+`appsettings.json` is for local dev; `appsettings.Production.json` is copied in during the Docker build and used for production. `IConfigurationService` (`DSCMS/Services/`) wraps typed access to config sections (EmailSettings, DatabaseSettings, StaticFileSettings, BackupSettings) rather than controllers reading `IConfiguration` directly.

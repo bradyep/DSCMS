@@ -6,6 +6,7 @@ using DSCMS.Services;
 using DSCMS.Repositories.Interfaces;
 using DSCMS.Repositories.Implementations;
 using Microsoft.Extensions.FileProviders;
+using DSCMS.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,10 @@ builder.Services.AddScoped<IStaticUploadRepository, StaticUploadRepository>();
 // Admin-uploaded static files (stored on the data volume, served at /static)
 builder.Services.AddSingleton<IStaticFileStorageService, StaticFileStorageService>();
 
+// Whole-site backup and restore (database + static uploads)
+builder.Services.AddSingleton<MaintenanceState>();
+builder.Services.AddSingleton<IBackupService, BackupService>();
+
 // Add MVC and Razor Pages
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -87,6 +92,9 @@ else
 
 // Comment out HTTPS redirection for localhost development
 // app.UseHttpsRedirection();
+
+// Hold back traffic while a restore swaps the database and static files
+app.UseMiddleware<MaintenanceModeMiddleware>();
 
 // Configure static files with custom MIME types safely
 var staticFileStorage = app.Services.GetRequiredService<IStaticFileStorageService>();
@@ -154,6 +162,11 @@ app.MapControllerRoute(
     name: "StaticUploads",
     pattern: "Admin/StaticUploads/{action=Index}/{id?}",
     defaults: new { controller = "StaticUploadsView" });
+
+app.MapControllerRoute(
+    name: "Backup",
+    pattern: "Admin/Backup/{action=Index}/{id?}",
+    defaults: new { controller = "BackupView" });
 
 app.MapControllerRoute(
     name: "ContentTypeFieldItems",

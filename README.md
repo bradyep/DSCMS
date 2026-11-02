@@ -67,8 +67,26 @@ Browse to the `/admin` route of your DSCMS instance.
 
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
-* Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`. Back up this folder along with `dscms.db`.
+* Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`.
 * Uploads are capped by `StaticFileSettings:MaxUploadBytes` (200 MB by default). A reverse proxy in front of the container has its own limit — for nginx, set `client_max_body_size 200m;` in the site's `server` block, or larger uploads fail with HTTP 413 before reaching the app.
+* Restoring a backup uploads the whole site in one request, capped by `BackupSettings:MaxRestoreBytes` (2 GB by default). Raise the proxy's limit to match (e.g. `client_max_body_size 2g;`, and a longer `proxy_read_timeout` for large sites), or restores fail with HTTP 413.
+
+## Backup & Restore
+
+**Admin → Backup & Restore** downloads the whole site — `dscms.db` plus everything in the static folder — as one .zip, and restores such a .zip onto any DSCMS instance.
+
+* A backup contains `manifest.json` (format version, source, EF migrations, and a SHA-256 for every file), `dscms.db`, and `static/...`. Restore refuses archives whose files don't match the manifest, that contain unsafe paths, or whose database references static files that aren't in the archive.
+* Restore keeps the **target site's user accounts**. Content owned by accounts that don't exist on the target is reassigned to the admin doing the restore.
+* Before every restore, a snapshot of the current site is saved to `/dscms-data/backups` (the newest `BackupSettings:SnapshotsToKeep`, default 3, are kept). Snapshots can be downloaded or restored from the same page to undo a restore. Backups contain password hashes, so treat downloaded files as sensitive.
+* A backup from a **newer** schema (migrations this site doesn't have) is refused; a backup from an **older** schema is upgraded during the restore.
+
+### Publishing dev changes to production
+
+1. Deploy the current code to production first (see Production Deployment above), so production's schema is at least as new as dev's.
+2. In dev, go to **Admin → Backup & Restore** and click **Download Backup**.
+3. In production, go to **Admin → Backup & Restore**, upload the file, and click **Upload and Check**. Review the summary and any warnings (e.g. layout values still pointing at `localhost`).
+4. Tick the confirmation box and click **Restore Now**. The site answers 503 for the few seconds the swap takes.
+5. If something's wrong, restore the `pre-restore-...` snapshot listed on the same page.
 
 ## Testing
 

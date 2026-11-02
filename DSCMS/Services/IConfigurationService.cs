@@ -37,6 +37,11 @@ namespace DSCMS.Services
         /// Get settings for admin-uploaded static files
         /// </summary>
         StaticFileSettings GetStaticFileSettings();
+
+        /// <summary>
+        /// Get settings for site backup and restore
+        /// </summary>
+        BackupSettings GetBackupSettings();
     }
 
     public class EmailSettings
@@ -67,5 +72,18 @@ namespace DSCMS.Services
         public long MaxUploadBytes { get; set; } = 200L * 1024 * 1024;
         public long MaxExtractedBytes { get; set; } = 1024L * 1024 * 1024;
         public int MaxArchiveEntries { get; set; } = 5000;
+    }
+
+    public class BackupSettings
+    {
+        /// <summary>
+        /// Folder for automatic pre-restore snapshots. Must be on persistent storage and never publicly served,
+        /// because backups contain password hashes.
+        /// </summary>
+        public string StoragePath { get; set; } = "dscms-data/backups";
+        public long MaxRestoreBytes { get; set; } = 2L * 1024 * 1024 * 1024;
+        public long MaxExtractedBytes { get; set; } = 10L * 1024 * 1024 * 1024;
+        public int MaxArchiveEntries { get; set; } = 50000;
+        public int SnapshotsToKeep { get; set; } = 3;
     }
 }

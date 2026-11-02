@@ -252,3 +252,6 @@ ModelManifest.xml
 # Admin-uploaded static files (live on the data volume, not in source control)
 DSCMS/dscms-data/static/
 DSCMS/dscms-data/static-staging/
+
+# Backup snapshots contain password hashes; never commit them
+DSCMS/dscms-data/backups/

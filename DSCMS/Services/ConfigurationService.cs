@@ -133,5 +133,24 @@ namespace DSCMS.Services
                 return new StaticFileSettings();
             }
         }
+
+        public BackupSettings GetBackupSettings()
+        {
+            try
+            {
+                var backupSettings = new BackupSettings();
+                _configuration.GetSection("BackupSettings").Bind(backupSettings);
+
+                _logger.LogDebug("Backup settings loaded: StoragePath={StoragePath}, MaxRestoreBytes={MaxRestoreBytes}",
+                    backupSettings.StoragePath, backupSettings.MaxRestoreBytes);
+
+                return backupSettings;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading backup settings");
+                return new BackupSettings();
+            }
+        }
     }
 }

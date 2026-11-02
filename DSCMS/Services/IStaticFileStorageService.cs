@@ -13,6 +13,11 @@ namespace DSCMS.Services
     /// </summary>
     string RootPath { get; }
 
+    /// <summary>
+    /// Private working folder beside <see cref="RootPath"/> (same volume, never served). Emptied at startup.
+    /// </summary>
+    string StagingRootPath { get; }
+
     StaticFileSettings Settings { get; }
 
     FileExtensionContentTypeProvider ContentTypeProvider { get; }
