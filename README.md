@@ -57,7 +57,7 @@ Browse to the `/admin` route of your DSCMS instance.
 1. Put together the new container: `docker build -t bradyep/dscms:v1.0.0 .`
 2. Push the new container to docker hub: `docker push bradyep/dscms:v1.0.0`
 3. Log on to the remote server: `ssh bradyep@66.228.49.247`
-4. Stop the currently running nffyi container: `sudo docker stop [id]`
+4. Stop the currently running container: `sudo docker stop [id]`
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
 7. Get the newly updated image: `sudo docker pull bradyep/dscms:v1.0.0`
@@ -75,7 +75,7 @@ Browse to the `/admin` route of your DSCMS instance.
 
 **Admin → Backup & Restore** downloads the whole site — `dscms.db` plus everything in the static folder — as one .zip, and restores such a .zip onto any DSCMS instance.
 
-* A backup contains `manifest.json` (format version, source, EF migrations, and a SHA-256 for every file), `dscms.db`, and `static/...`. Restore refuses archives whose files don't match the manifest, that contain unsafe paths, or whose database references static files that aren't in the archive.
+* A backup contains `manifest.json` (format version, source, EF migrations, and an SHA-256 for every file), `dscms.db`, and `static/...`. Restore refuses archives whose files don't match the manifest, that contain unsafe paths, or whose database references static files that aren't in the archive.
 * Restore keeps the **target site's user accounts**. Content owned by accounts that don't exist on the target is reassigned to the admin doing the restore.
 * Before every restore, a snapshot of the current site is saved to `/dscms-data/backups` (the newest `BackupSettings:SnapshotsToKeep`, default 3, are kept). Snapshots can be downloaded or restored from the same page to undo a restore. Backups contain password hashes, so treat downloaded files as sensitive.
 * A backup from a **newer** schema (migrations this site doesn't have) is refused; a backup from an **older** schema is upgraded during the restore.
@@ -94,7 +94,7 @@ The solution contains a single test project, `DSCMS.Tests`, which houses both un
 
 ### Unit Tests
 
-Controller-level unit tests live under `DSCMS.Tests/Controllers/` and use [xUnit](https://xunit.net/) with [Moq](https://github.com/moq/moq4). They test routing logic and controller behaviour in isolation and can be run at any time without a running app.
+Controller-level unit tests live under `DSCMS.Tests/Controllers/` and use [xUnit](https://xunit.net/) with [Moq](https://github.com/moq/moq4). They test routing logic and controller behavior in isolation and can be run at any time without a running app.
 
 ```powershell
 dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers"
@@ -135,7 +135,7 @@ $env:HEADED = "1"; dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
 
 This project is currently in active development.
 
-Certain parts of the system are still hard-coded, overly tied to my personal webiste and need to be made dynamic.
+Certain parts of the system are still hard-coded, overly tied to my personal website and need to be made dynamic.
 
 Although the system is currently focused on blog posts, the goal is to make it a fully functional CMS that can handle different types of websites.
 
