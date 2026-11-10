@@ -220,7 +220,7 @@ namespace DSCMS.Services
 
     private async Task ExtractArchiveAsync(Stream content, StagedUpload staged, CancellationToken cancellationToken)
     {
-      using var archive = new ZipArchive(content, ZipArchiveMode.Read, leaveOpen: true);
+      await using var archive = new ZipArchive(content, ZipArchiveMode.Read, leaveOpen: true);
 
       var entries = archive.Entries
         .Where(e => !e.FullName.EndsWith('/') && !e.FullName.EndsWith('\\'))

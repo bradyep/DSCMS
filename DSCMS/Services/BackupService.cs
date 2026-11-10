@@ -164,7 +164,7 @@ namespace DSCMS.Services
         }
 
         await using (var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true))
-        using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
+        await using (var archive = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
         {
           manifest.Database = await AddFileToArchiveAsync(archive, BackupManifest.DatabaseEntryName, dbPath, cancellationToken);
           manifest.Database.Path = BackupManifest.DatabaseEntryName;
@@ -273,7 +273,7 @@ namespace DSCMS.Services
         throw new BackupException("The file is not a valid .zip archive.", ex);
       }
 
-      using (archive)
+      await using (archive)
       {
         var entries = archive.Entries.Where(e => !e.FullName.EndsWith('/')).ToList();
         if (entries.Count > Settings.MaxArchiveEntries + 2)
