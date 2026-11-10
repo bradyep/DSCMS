@@ -50,7 +50,7 @@ namespace DSCMS.Services
     private readonly string _environmentName;
     private readonly string _snapshotRoot;
 
-    private readonly object _stagedLock = new();
+    private readonly Lock _stagedLock = new();
     private StagedRestore? _staged;
 
     public BackupSettings Settings { get; }
