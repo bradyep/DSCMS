@@ -21,7 +21,7 @@ if (builder.Environment.IsDevelopment())
   builder.Logging.SetMinimumLevel(LogLevel.Debug);
 }
 
-// Add services to the container (equivalent to ConfigureServices)
+// Add services to the container
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -37,8 +37,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Add application services with proper dependency injection
-//builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+// Add application services
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
