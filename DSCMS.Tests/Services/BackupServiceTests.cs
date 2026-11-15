@@ -49,6 +49,7 @@ namespace DSCMS.Tests.Services
       SqliteConnection.ClearAllPools();
       if (Directory.Exists(_tempRoot))
       {
+        SetLiveReadOnly(false);
         Directory.Delete(_tempRoot, recursive: true);
       }
     }
@@ -183,6 +184,25 @@ namespace DSCMS.Tests.Services
       command.ExecuteNonQuery();
     }
 
+    // Makes SQLite open the live database read-only, as it does when the file belongs to another user
+    private void SetLiveReadOnly(bool readOnly)
+    {
+      var path = Path.Combine(_tempRoot, "dscms.db");
+      if (File.Exists(path))
+      {
+        File.SetAttributes(path, readOnly ? FileAttributes.ReadOnly : FileAttributes.Normal);
+      }
+    }
+
+    private object? QueryLive(string sql)
+    {
+      using var connection = new SqliteConnection(_liveConnectionString);
+      connection.Open();
+      using var command = connection.CreateCommand();
+      command.CommandText = sql;
+      return command.ExecuteScalar();
+    }
+
     private List<string> ContentUrls()
     {
       using var context = CreateContext();
@@ -279,6 +299,66 @@ namespace DSCMS.Tests.Services
       Assert.StartsWith("pre-restore-", result.SnapshotName);
       Assert.NotNull(_service.GetSnapshotPath(result.SnapshotName));
       Assert.Empty(Directory.GetDirectories(_storage.StagingRootPath));
+    }
+
+    [Fact]
+    public async Task GetStatus_WarnsWhenDatabaseIsReadOnly()
+    {
+      SetLiveReadOnly(true);
+
+      var status = await _service.GetStatusAsync();
+
+      Assert.Contains(status.Warnings, w => w.Contains("can't write to its database"));
+    }
+
+    [Fact]
+    public async Task Stage_BlocksWhenDatabaseIsReadOnly()
+    {
+      var backup = await CreateBackupBytesAsync();
+      SetLiveReadOnly(true);
+
+      var preview = await StageAsync(backup);
+
+      Assert.False(preview.CanRestore);
+      Assert.Contains(preview.Errors, e => e.Contains("can't write to its database"));
+    }
+
+    [Fact]
+    public async Task Commit_WhenDatabaseBecameReadOnly_ChangesNothing()
+    {
+      AddUpload("games/foo", ("index.html", Encoding.UTF8.GetBytes("<html></html>")));
+      var backup = await CreateBackupBytesAsync();
+      ExecuteOnLive("UPDATE \"Contents\" SET \"UrlToDisplay\" = 'changed-post'");
+      File.WriteAllText(Path.Combine(_storage.RootPath, "added-later.txt"), "new");
+      var preview = await StageAsync(backup);
+      SetLiveReadOnly(true);
+
+      var ex = await Assert.ThrowsAsync<BackupException>(() => _service.CommitRestoreAsync(preview.Token!, LiveUserId));
+
+      Assert.Contains("Nothing was changed", ex.Message);
+      SetLiveReadOnly(false);
+      Assert.Equal(new[] { "changed-post" }, ContentUrls());
+      Assert.True(File.Exists(Path.Combine(_storage.RootPath, "added-later.txt")));
+    }
+
+    [Fact]
+    public async Task Restore_OntoWalDatabaseWithDifferentPageSize_Succeeds()
+    {
+      // SQLite's backup API refuses to write into a WAL database whose page size differs from the
+      // source ("attempt to write a readonly database"). Old production DBs can use 1024-byte pages
+      // in WAL mode, while backups made from newer dev DBs use 4096.
+      var backup = await CreateBackupBytesAsync();
+      ExecuteOnLive("UPDATE \"Contents\" SET \"UrlToDisplay\" = 'changed-post'");
+      // EF creates the database in WAL mode, where the page size can't change, so leave WAL first
+      ExecuteOnLive("PRAGMA journal_mode = DELETE; PRAGMA page_size = 1024; VACUUM; PRAGMA journal_mode = WAL;");
+      Assert.Equal(1024L, QueryLive("PRAGMA page_size"));
+      Assert.Equal("wal", QueryLive("PRAGMA journal_mode"));
+
+      var preview = await StageAsync(backup);
+      Assert.True(preview.CanRestore, string.Join(" | ", preview.Errors));
+      await _service.CommitRestoreAsync(preview.Token!, LiveUserId);
+
+      Assert.Equal(new[] { "first-post" }, ContentUrls());
     }
 
     [Fact]

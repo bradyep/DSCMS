@@ -23,8 +23,9 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Create non-root user for security
-RUN groupadd -r dscms && useradd -r -g dscms dscms
+# Create non-root user for security. The IDs are fixed because files on the dscms-data volume
+# are owned by this user: if a rebuild picked different IDs, the app could no longer write to them.
+RUN groupadd -r -g 999 dscms && useradd -r -u 999 -g dscms dscms
 
 # Create app directory and set permissions
 WORKDIR /app

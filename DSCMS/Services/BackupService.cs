@@ -100,6 +100,12 @@ namespace DSCMS.Services
         status.Warnings.AddRange(untracked);
       }
 
+      var writeProblem = DatabaseAccess.FindWriteProblem(_liveConnectionString);
+      if (writeProblem != null)
+      {
+        status.Warnings.Insert(0, writeProblem);
+      }
+
       return Task.FromResult(status);
     }
 
@@ -235,6 +241,13 @@ namespace DSCMS.Services
         if (preview.CanRestore)
         {
           VerifyDatabase(workDir, preview);
+        }
+
+        // Better to say so now than to fail halfway through the restore
+        var writeProblem = DatabaseAccess.FindWriteProblem(_liveConnectionString);
+        if (writeProblem != null)
+        {
+          preview.Errors.Add(writeProblem);
         }
       }
       catch
@@ -531,6 +544,15 @@ namespace DSCMS.Services
 
       try
       {
+        // Pooled connections keep the access they were opened with, so a permissions fix made since then
+        // would otherwise go unnoticed until a restart
+        SqliteConnection.ClearAllPools();
+        var writeProblem = DatabaseAccess.FindWriteProblem(_liveConnectionString);
+        if (writeProblem != null)
+        {
+          throw new BackupException($"Nothing was changed. {writeProblem}");
+        }
+
         // Taken while the site is still serving, so the downtime is only the swap itself
         var snapshotName = await CreateSnapshotAsync(cancellationToken);
 
@@ -542,6 +564,15 @@ namespace DSCMS.Services
         catch (SqliteException ex)
         {
           throw new BackupException($"This site's user accounts could not be carried over, so nothing was changed: {ex.Message}", ex);
+        }
+
+        try
+        {
+          MatchLivePageSize(stagedDb);
+        }
+        catch (SqliteException ex)
+        {
+          throw new BackupException($"The backup's database could not be prepared for this site, so nothing was changed: {ex.Message}", ex);
         }
 
         lease.EnterRestoringMode();
@@ -582,6 +613,47 @@ namespace DSCMS.Services
       {
         TryDeleteDirectory(staged.WorkDir);
       }
+    }
+
+    /// <summary>
+    /// SQLite's backup API can't write into a WAL-mode database with a different page size: it fails with
+    /// "attempt to write a readonly database". Older databases often use 1024-byte pages while newer ones use
+    /// 4096, so rebuild the staged copy (which nothing else uses) with the live database's page size.
+    /// </summary>
+    private void MatchLivePageSize(string stagedDbPath)
+    {
+      long livePageSize;
+      using (var live = OpenConnection(_liveConnectionString))
+      {
+        livePageSize = QueryPageSize(live);
+      }
+
+      using var staged = OpenConnection(TempConnectionString(stagedDbPath));
+      var stagedPageSize = QueryPageSize(staged);
+      if (stagedPageSize == livePageSize)
+      {
+        return;
+      }
+
+      // The page size can only change outside WAL mode, and only takes effect through VACUUM
+      Execute(staged, "PRAGMA journal_mode = DELETE");
+      Execute(staged, $"PRAGMA page_size = {livePageSize}");
+      Execute(staged, "VACUUM");
+
+      var converted = QueryPageSize(staged);
+      if (converted != livePageSize)
+      {
+        throw new BackupException($"The backup's database uses {converted}-byte pages and could not be converted to this site's {livePageSize}-byte pages, so nothing was changed.");
+      }
+
+      _logger.LogInformation("Converted the staged database from {From}-byte to {To}-byte pages to match the live database", stagedPageSize, livePageSize);
+    }
+
+    private static long QueryPageSize(SqliteConnection connection)
+    {
+      using var command = connection.CreateCommand();
+      command.CommandText = "PRAGMA page_size";
+      return Convert.ToInt64(command.ExecuteScalar());
     }
 
     /// <summary>

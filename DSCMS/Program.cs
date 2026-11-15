@@ -76,6 +76,20 @@ var config = app.Services.GetRequiredService<IConfigurationService>();
 var dbSettings = config.GetDatabaseSettings();
 logger.LogInformation("Database configured: {DatabaseType}", dbSettings.DatabaseType);
 
+// A database the app can't write still opens (read-only), so check now rather than on the first failed save
+try
+{
+  var dbWriteProblem = DatabaseAccess.FindWriteProblem(dbSettings.ConnectionString);
+  if (dbWriteProblem != null)
+  {
+    logger.LogError("{Problem}", dbWriteProblem);
+  }
+}
+catch (Exception ex)
+{
+  logger.LogWarning(ex, "Could not check whether the database is writable");
+}
+
 // Configure the HTTP request pipeline (equivalent to Configure method)
 if (app.Environment.IsDevelopment())
 {
