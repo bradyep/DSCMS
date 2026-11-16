@@ -10,7 +10,7 @@ The Dead Simple Content Management System: a fully functional, fast and simple C
 
 ### Routing
 
-User requests are handled by `DSCMSController.Content` which is the default route (defined in `startup.cs`) and serves up either specific content or items of a certain content type. The format is as follows: `/{contentType}/{content}`. So for example, `/blog` would display a list of blog posts, while `/blog/my-first-post` would display a specific blog post.
+User requests are handled by `DSCMSController.Content` which is the default route (defined in `Program.cs`) and serves up either specific content or items of a certain content type. The format is as follows: `/{contentType}/{content}`. So for example, `/blog` would display a list of blog posts, while `/blog/my-first-post` would display a specific blog post.
 
 ### Models
 
@@ -42,7 +42,7 @@ Represents a type of item associated with a specific content type (such as tease
 
 #### ContentItem
 
-Represents an actual child item of content (eg. blog post teaser text "my first post"). Associated with a specific content type and content item type.
+Represents an actual child item of content (e.g. blog post teaser text "my first post"). Associated with a specific content type and content item type.
 
 ## How To
 
@@ -57,16 +57,37 @@ Browse to the `/admin` route of your DSCMS instance.
 1. Put together the new container: `docker build -t bradyep/dscms:v1.0.0 .`
 2. Push the new container to docker hub: `docker push bradyep/dscms:v1.0.0`
 3. Log on to the remote server: `ssh bradyep@66.228.49.247`
-4. Stop the currently running nffyi container: `sudo docker stop [id]`
+4. Stop the currently running container: `sudo docker stop [id]`
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
 7. Get the newly updated image: `sudo docker pull bradyep/dscms:v1.0.0`
-8. Start up the the new container: `sudo docker run -d -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms:v1.0.0`
+8. Start up the new container: `sudo docker run -d --restart unless-stopped -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms:v1.0.0`
 
 ## Server
 
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
+* The container runs as user `dscms`, UID/GID **999** (fixed in the Dockerfile). Everything in the data directory, including the directory itself and `dscms.db`, must be writable by that user. Otherwise SQLite silently opens the database read-only, every save fails with "attempt to write a readonly database", and the app logs an error at startup. To fix ownership: `sudo chown 999:999 /var/lib/docker/volumes/dscms-data/_data /var/lib/docker/volumes/dscms-data/_data/dscms.db`, then restart the container. Files copied in by hand from the host (e.g. a database restored with `cp`) will be owned by your host user, so re-run that `chown` afterwards.
+* Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`.
+* Uploads are capped by `StaticFileSettings:MaxUploadBytes` (200 MB by default). A reverse proxy in front of the container has its own limit — for nginx, set `client_max_body_size 200m;` in the site's `server` block, or larger uploads fail with HTTP 413 before reaching the app.
+* Restoring a backup uploads the whole site in one request, capped by `BackupSettings:MaxRestoreBytes` (2 GB by default). Raise the proxy's limit to match (e.g. `client_max_body_size 2g;`, and a longer `proxy_read_timeout` for large sites), or restores fail with HTTP 413.
+
+## Backup & Restore
+
+**Admin → Backup & Restore** downloads the whole site — `dscms.db` plus everything in the static folder — as one .zip, and restores such a .zip onto any DSCMS instance.
+
+* A backup contains `manifest.json` (format version, source, EF migrations, and an SHA-256 for every file), `dscms.db`, and `static/...`. Restore refuses archives whose files don't match the manifest, that contain unsafe paths, or whose database references static files that aren't in the archive.
+* Restore keeps the **target site's user accounts**. Content owned by accounts that don't exist on the target is reassigned to the admin doing the restore.
+* Before every restore, a snapshot of the current site is saved to `/dscms-data/backups` (the newest `BackupSettings:SnapshotsToKeep`, default 3, are kept). Snapshots can be downloaded or restored from the same page to undo a restore. Backups contain password hashes, so treat downloaded files as sensitive.
+* A backup from a **newer** schema (migrations this site doesn't have) is refused; a backup from an **older** schema is upgraded during the restore.
+
+### Publishing dev changes to production
+
+1. Deploy the current code to production first (see Production Deployment above), so production's schema is at least as new as dev's.
+2. In dev, go to **Admin → Backup & Restore** and click **Download Backup**.
+3. In production, go to **Admin → Backup & Restore**, upload the file, and click **Upload and Check**. Review the summary and any warnings (e.g. layout values still pointing at `localhost`).
+4. Tick the confirmation box and click **Restore Now**. The site answers 503 for the few seconds the swap takes.
+5. If something's wrong, restore the `pre-restore-...` snapshot listed on the same page.
 
 ## Testing
 
@@ -74,7 +95,7 @@ The solution contains a single test project, `DSCMS.Tests`, which houses both un
 
 ### Unit Tests
 
-Controller-level unit tests live under `DSCMS.Tests/Controllers/` and use [xUnit](https://xunit.net/) with [Moq](https://github.com/moq/moq4). They test routing logic and controller behaviour in isolation and can be run at any time without a running app.
+Controller-level unit tests live under `DSCMS.Tests/Controllers/` and use [xUnit](https://xunit.net/) with [Moq](https://github.com/moq/moq4). They test routing logic and controller behavior in isolation and can be run at any time without a running app.
 
 ```powershell
 dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers"
@@ -87,7 +108,7 @@ End-to-end tests live under `DSCMS.Tests/E2E/` and use [Microsoft Playwright](ht
 - Blog page loads by default, posts are visible, and pagination works
 - Games, Projects, and About sections load with the correct content
 
-The fixture automatically starts the app before the first test runs and shuts it down afterwards, so no manual setup is needed from VS Test Explorer or the CLI.
+The fixture automatically starts the app before the first test runs and shuts it down afterward, so no manual setup is needed from VS Test Explorer or the CLI.
 
 **One-time browser install** (per machine, or after a Playwright version bump):
 
@@ -115,7 +136,7 @@ $env:HEADED = "1"; dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
 
 This project is currently in active development.
 
-Certain parts of the system are still hard-coded, overly tied to my personal webiste and need to be made dynamic.
+Certain parts of the system are still hard-coded, overly tied to my personal website and need to be made dynamic.
 
 Although the system is currently focused on blog posts, the goal is to make it a fully functional CMS that can handle different types of websites.
 

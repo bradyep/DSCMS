@@ -6,6 +6,7 @@ namespace DSCMS.Repositories.Interfaces
   {
     Task<List<Layout>> GetAllAsync();
     Task<Layout?> GetByIdAsync(int id);
+    Task<Layout?> GetByIdWithValuesAsync(int id);
     Task<int> CountAsync();
     Task AddAsync(Layout layout);
     Task UpdateAsync(Layout layout);

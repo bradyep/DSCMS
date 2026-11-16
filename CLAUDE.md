@@ -1,0 +1,114 @@
+﻿# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+DSCMS ("Dead Simple CMS") is an ASP.NET Core 10 / EF Core (SQLite) content management system. It serves public content on a dynamic `/{contentTypeName}/{contentUrl?}` route and an admin UI under `/Admin` for managing content, layouts, templates, and users. It's deployed as a Docker container (see README.md for the docker build/push/deploy steps used for the production host).
+
+## Commands
+
+Build / run:
+```powershell
+dotnet build DSCMS/DSCMS.csproj
+dotnet run --project DSCMS/DSCMS.csproj
+```
+
+Unit tests (controllers + services, fast, no running app needed):
+```powershell
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers|FullyQualifiedName~Services"
+```
+
+E2E tests (Playwright, drives a real Chromium browser against a real app instance on port 5099):
+```powershell
+# one-time browser install per machine (or after a Playwright version bump)
+pwsh DSCMS.Tests\bin\Debug\net10.0\playwright.ps1 install chromium
+
+# convenience script — starts/stops the app for you
+pwsh .\Run-E2ETests.ps1
+
+# or directly; PlaywrightFixture starts/stops the app itself
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
+
+# watch it run in a visible browser window
+$env:HEADED = "1"; dotnet test DSCMS.Tests --filter "FullyQualifiedName~E2E"
+```
+
+Run a single test: add `--filter "FullyQualifiedName~ClassName.MethodName"` (standard xUnit/dotnet test filtering).
+
+EF Core migrations (run from repo root; project + startup-project both point at `DSCMS/DSCMS.csproj`):
+```powershell
+dotnet ef migrations add <Name> --project DSCMS --startup-project DSCMS
+dotnet ef database update --project DSCMS --startup-project DSCMS
+```
+
+## Architecture
+
+### Content model
+
+The CMS is built from these core EF entities (`DSCMS/Models/`) wired together in `DSCMS/Data/ApplicationDbContext.cs`:
+
+- **ContentType** — a category of content (e.g. "blog", "games"). Has a `Name` (used in URLs), an `ItemsPerPage` for pagination, and points at two templates: `MultipleContentsTemplate` (list view) and `DefaultSingleContentTemplate` (fallback single-item view).
+- **Content** — one item of a ContentType (e.g. a blog post). Has `UrlToDisplay` (slug), `BodySource`, and an optional `TemplateId` that overrides the ContentType's default.
+- **ContentTypeField** — defines a named custom field on a ContentType (e.g. "teaser").
+- **ContentTypeFieldItem** — the actual value of a ContentTypeField for one Content instance.
+- **Template** — a Razor view path (or inline source) plus a `SourceType` and an optional `Layout`. Can be flagged `IsForMultipleContents`.
+- **Layout** — the outer HTML shell a Template renders into.
+- **LayoutValue** — key/value pairs attached to a Layout (read via `Layout.GetValueFor(key)`), used to keep site-specific data (names, links, etc.) out of the Razor files.
+- **SourceType** — enum-like lookup (RazorFile / InlineRazor / Markdown / HTML / Text) seeded via `HasData`, shared by Template, Layout, and Content.BodySourceType.
+- **StaticUpload** / **StaticUploadFile** — admin-uploaded static files (see below). One StaticUpload per upload (a single file or an extracted .zip), with one StaticUploadFile row per file on disk (relative path, size, SHA-256).
+
+### Static file uploads
+
+Site-specific static files (resumes, HTML5/Flash games, etc.) are **not** shipped in `wwwroot` — admins upload them under Admin → Static Files, and they're served at `/static/{folderPath}/...`.
+
+- Files are stored under `StaticFileSettings:StoragePath` — `/dscms-data/static` in production, i.e. on the persistent Docker volume next to `dscms.db`. Never store uploads in `wwwroot`: it's baked into the image and wiped on every redeploy. A full site backup = the database + this folder; the per-file hashes let backup/restore verify the two match (see below).
+- `IStaticFileStorageService` (`DSCMS/Services/StaticFileStorageService.cs`) owns all file-system work: folder-path normalization, staging uploads in a sibling `static-staging` folder (never publicly served) and then committing them with a directory move, zip extraction (zip-slip checks, size/entry limits, flattening a single root folder, skipping `__MACOSX`/`.DS_Store`), deletion, and URL building. The controller (`StaticUploadsController`) handles validation and DB records, and should not touch the file system directly.
+- Every upload owns its own folder (folders may be nested, like `games/shapeshifter`). Folders must not overlap — an upload can't sit inside or contain another — so deleting or replacing one never affects another. Replacing keeps the folder and URLs the same.
+- Program.cs registers a second `UseDefaultFiles`/`UseStaticFiles` pair for the upload folder, with `ServeUnknownFileTypes` enabled so game assets with unregistered extensions still load. The `/static` prefix is the `StaticFileStorageService.RequestPath` constant, and `static` is a reserved ContentType name (checked in `ContentTypesController`).
+- Upload size limits come from config via `[StaticUploadSizeLimit]` (`DSCMS/Filters/`), not a hard-coded `[RequestSizeLimit]`. In production, the reverse proxy's body-size limit must also allow them (see README).
+
+### Backup & restore
+
+Admin → Backup & Restore (`BackupController` + `BackupViewController`, `wwwroot/js/backup/index.js`) packs `dscms.db` + the whole static folder into one .zip with a `manifest.json` (`DSCMS/Models/BackupManifest.cs`), and restores it. `IBackupService` (`DSCMS/Services/BackupService.cs`) owns all of it, the same way `StaticFileStorageService` owns uploads:
+
+- The DB is copied with SQLite's backup API (`SqliteConnection.BackupDatabase`) in both directions, never by copying the file (WAL). Temp DBs use `Pooling=False` so their files can be deleted.
+- Restore is two steps: stage (extract into `static-staging/restore-*`, verify hashes against the manifest, integrity-check the DB, compare migrations, migrate an older DB, cross-check `StaticUploadFiles` rows against the files) → commit (pre-restore snapshot into `BackupSettings:StoragePath`, carry over the target's `AspNet*` tables and reassign orphaned `CreatedBy`/`LastUpdatedBy`/`UploadedBy`, rename-swap the static folder, copy the DB in; roll the folder back if the DB copy fails).
+- Restore never extracts nested archives: a `.zip` under `static/` is restored byte-for-byte.
+- Migration compatibility: unknown migration IDs that sort *after* the app's latest migration mean a newer backup (refused). Older unknown IDs are legacy history from the 2016 app (`00000000000000_CreateIdentitySchema`, `20160730002021_initial` exist in real DBs) and are ignored.
+- `MaintenanceState` (singleton gate) + `MaintenanceModeMiddleware`: one backup/restore at a time; other `/api` writes get 409 while a backup is being written, and everything except `/api/backup` gets 503 during the swap.
+- `SafeFileIO` (`DSCMS/Services/`) holds the hashed/size-capped write and zip-slip helpers shared with `StaticFileStorageService`.
+
+Note: the `ContentTypeField`/`ContentTypeFieldItem` tables were originally named `ContentTypeItem`/`ContentItem` — renamed via the `RenameContentTypeItemsToContentTypeFields` migration. `DiagnosticsController.cs` still references the old names in some backup-restore/repair code paths that operate on pre-migration data; that's expected, not a bug.
+
+### Public content rendering
+
+All public traffic funnels through `DSCMSController.Content` (`DSCMS/Controllers/DSCMSController.cs`), mapped by the `cms` and `default` routes in `Program.cs` as `{contentTypeName}/{contentUrl?}`. Given `contentTypeName` it looks up the `ContentType`; if `contentUrl` is also present it resolves a specific `Content` row, otherwise it lists/paginates all Content for that type. It then picks a Template (falling back through Content → ContentType default → a `Bootstrap{ContentTypeName}` convention view → an empty template) and renders `content.Template.Layout` around it. If no `ContentType` matches at all, it shows a first-run welcome page — this is how a fresh install behaves before any admin setup.
+
+### Admin layer: API + view-shell split
+
+Each admin resource (Contents, ContentTypes, ContentTypeFields, ContentTypeFieldItems, Layouts, Templates, StaticUploads, Users, Backup) has **two controllers**:
+- `{Resource}Controller` — `[Authorize] [ApiController] [Route("api/[controller]")]`, does all real CRUD against the repository layer and returns DTOs (`DSCMS/Models/DTOs/`).
+- `{Resource}ViewController` — `[Authorize]` MVC controller that only returns the Razor shell pages under `Views/{Resource}/*.cshtml`; it holds no business logic.
+
+The shell pages are then driven client-side by matching JS under `wwwroot/js/{resource}/{index,create,edit,details,delete}.js`, which call the `api/[controller]` endpoints. When adding an admin feature, you generally touch four things per action: the API controller method + DTO, the Razor shell view, and its JS file — plus the corresponding route registration in `Program.cs` (routes are explicit per admin resource, not a single catch-all).
+
+This split is a holdover from DSCMS's original incarnation as a traditional MVC app (~9 years old), not a deliberate design choice — the plan is to eventually replace the ViewController + JS shell layer with Blazor, while the API controllers stick around as the data layer underneath. Don't "clean up" the split as an inconsistency; if asked to build new admin functionality, it's worth confirming whether it should follow the existing Razor+JS pattern or start using Blazor instead.
+
+### Data access
+
+All EF access goes through a repository per entity (`DSCMS/Repositories/Interfaces` + `Implementations`), registered as scoped services in `Program.cs`. Controllers depend on repository interfaces, never on `ApplicationDbContext` directly. Repository methods are named for their `Include`/filter shape (e.g. `GetByContentTypeIdWithDetailsAsync`, `GetByIdWithFieldItemsAsync`) rather than being generic — follow that convention (specific, intention-revealing method names) rather than adding generic `Get`/`Query` overloads.
+
+### Identity
+
+Uses ASP.NET Core Identity (`ApplicationUser : IdentityUser`) with EF store via `ApplicationDbContext : IdentityDbContext<ApplicationUser>`. Password policy is deliberately relaxed (no digit/uppercase/special-char requirements, min length 6) — this is intentional for a personal-site CMS, not an oversight.
+
+### Testing
+
+- Controller unit tests (`DSCMS.Tests/Controllers/`) use xUnit + Moq, mocking repositories — no database or running app required.
+- Service tests (`DSCMS.Tests/Services/`) exercise services directly; `StaticFileStorageServiceTests` uses a real throwaway temp folder (no mocks) so the zip-safety and file-system behavior is actually tested. `BackupServiceTests` does the same with real SQLite files migrated via `Database.Migrate()`.
+- E2E tests (`DSCMS.Tests/E2E/`) use Playwright + `PlaywrightFixture`, which starts a real `dotnet run` instance on a dedicated port (5099, separate from the normal dev port 5000) via `IAsyncLifetime`, and tears it down after the test collection. They exercise real rendering (blog listing/pagination, Games/Projects/About sections) rather than mocking anything.
+
+### Configuration
+
+`appsettings.json` is for local dev; `appsettings.Production.json` is copied in during the Docker build and used for production. `IConfigurationService` (`DSCMS/Services/`) wraps typed access to config sections (EmailSettings, DatabaseSettings, StaticFileSettings, BackupSettings) rather than controllers reading `IConfiguration` directly.

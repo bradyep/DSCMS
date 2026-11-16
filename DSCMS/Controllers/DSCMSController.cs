@@ -40,6 +40,7 @@ namespace DSCMS.Controllers
     /// <returns></returns>
     public async Task<IActionResult> Content(string contentTypeName = "blog", string contentUrl = "", string page = "")
     {
+      // TODO: The contentType that this app does to by default should be set in the settings somehow
       _logger.LogDebug("Content requested: ContentTypeName={ContentTypeName}, ContentUrl={ContentUrl}, Page={Page}",
         contentTypeName, contentUrl, page);
 
@@ -79,7 +80,9 @@ namespace DSCMS.Controllers
         ViewData["Title"] = content.Title ?? "Title";
 
         // DEBUG: Add debugging information
-        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, BodySource Length: {content.BodySource?.Length ?? 0}, BodySource Preview: {content.BodySource?.Substring(0, Math.Min(100, content.BodySource?.Length ?? 0)) ?? "NULL"}";
+        ViewData["DebugInfo"] = $"Content ID: {content.ContentId}, BodySource Length: {content.BodySource?.Length ?? 0}," +
+                                $" BodySource Preview: {content.BodySource?.Substring(0, Math.Min(100, 
+                                  content.BodySource?.Length ?? 0)) ?? "NULL"}";
 
         // Use content's template, or fall back to ContentType's default template if content has no template
         int templateIdToUse = content.TemplateId > 0 ? content.TemplateId :
@@ -159,6 +162,7 @@ namespace DSCMS.Controllers
       }
 
       ViewData["Layout"] = template?.Layout?.LayoutSource ?? "";
+      ViewData["LayoutEntity"] = template?.Layout;
 
       // Determine view location
       string viewLocationToUse = template?.TemplateSource ?? "/Views/Home/Index.cshtml";

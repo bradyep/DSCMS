@@ -67,6 +67,23 @@ namespace DSCMS.Data
                 .HasForeignKey(c => c.BodySourceTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
             
+            // Configure StaticUpload relationships
+            builder.Entity<StaticUpload>()
+                .HasIndex(u => u.FolderPath)
+                .IsUnique();
+
+            builder.Entity<StaticUpload>()
+                .HasOne(u => u.UploadedByUser)
+                .WithMany()
+                .HasForeignKey(u => u.UploadedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<StaticUploadFile>()
+                .HasOne(f => f.StaticUpload)
+                .WithMany(u => u.Files)
+                .HasForeignKey(f => f.StaticUploadId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Seed SourceTypes data
             builder.Entity<SourceType>().HasData(
                 new SourceType { SourceTypeId = 1, Description = "RazorFile" },
@@ -78,12 +95,15 @@ namespace DSCMS.Data
         }
 
         public DbSet<Layout> Layouts { get; set; }
+        public DbSet<LayoutValue> LayoutValues { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<Content> Contents { get; set; }
         public DbSet<ContentType> ContentTypes { get; set; }
         public DbSet<ContentTypeField> ContentTypeFields { get; set; }
         public DbSet<ContentTypeFieldItem> ContentTypeFieldItems { get; set; }
         public DbSet<SourceType> SourceTypes { get; set; }
+        public DbSet<StaticUpload> StaticUploads { get; set; }
+        public DbSet<StaticUploadFile> StaticUploadFiles { get; set; }
 
     }
 }

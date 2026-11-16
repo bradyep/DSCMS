@@ -24,6 +24,14 @@ namespace DSCMS.Repositories.Implementations
       return await _context.Layouts.FirstOrDefaultAsync(l => l.LayoutId == id);
     }
 
+    public async Task<Layout?> GetByIdWithValuesAsync(int id)
+    {
+      return await _context.Layouts
+        .Include(l => l.LayoutValues)
+        .Include(l => l.SourceType)
+        .FirstOrDefaultAsync(l => l.LayoutId == id);
+    }
+
     public async Task<int> CountAsync()
     {
       return await _context.Layouts.CountAsync();

@@ -20,6 +20,10 @@
   <link rel="stylesheet" href="~/lib/font-awesome-4.6.3/css/font-awesome.min.css">
 </head>
 
+@{
+  var dscmsLayout = ViewData["LayoutEntity"] as DSCMS.Models.Layout;
+}
+
 <body>
 
   <div class="blog-masthead">
@@ -37,8 +41,8 @@
   <div class="container">
 
     <div class="blog-header">
-      <h1 class="blog-title">bradyep.com</h1>
-      <p class="lead blog-description">A Vanity Website</p>
+      <h1 class="blog-title">@(dscmsLayout != null && dscmsLayout.GetValueFor("blog-title") != "" ? dscmsLayout.GetValueFor("blog-title") : dscmsLayout?.Name)</h1>
+      <p class="lead blog-description">@dscmsLayout?.GetValueFor("blog-description")</p>
     </div>
 
     <div class="row">
@@ -48,15 +52,23 @@
       <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
         <div class="sidebar-module sidebar-module-inset">
           <h4>About</h4>
-          <p>Homepage of Brady Prigge</p>
+          @* <div class="blog-about-content">Homepage of Brady Prigge</div> *@
+          <div class="blog-about-content">@(dscmsLayout != null && dscmsLayout.GetValueFor("blog-about-content") != "" ? dscmsLayout.GetValueFor("blog-about-content") : "My homepage")</div>
         </div>
 
         <div class="sidebar-module">
           <h4>Elsewhere</h4>
-          <ol class="list-unstyled">
-            <li><a href="https://github.com/bradyep" target="_blank">GitHub</a></li>
-            <li><a href="https://www.npmjs.com/~bradyep" target="_blank">npm</a></li>
-          </ol>
+          <div class="blog-elsewhere">
+            @Html.Raw(dscmsLayout != null && dscmsLayout.GetValueFor("blog-elsewhere") != "" ? dscmsLayout.GetValueFor("blog-elsewhere") : "<a href=\"https://github.com/bradyep/DSCMS\" target=\"_blank\">DSCMS</a>")
+          </div>
+          @*
+          <div class="blog-elsewhere">
+            <ol class="list-unstyled">
+              <li><a href="https://github.com/bradyep" target="_blank">GitHub</a></li>
+              <li><a href="https://www.npmjs.com/~bradyep" target="_blank">npm</a></li>
+            </ol>
+          </div>
+          *@
         </div>
       </div><!-- /.blog-sidebar -->
 
@@ -65,13 +77,14 @@
 
   </div><!-- /.container -->
 
-  <footer class="blog-footer">
-    <p>This site runs on <a href="https://github.com/bradyep/DSCMS">DSCMS</a>, the Dead Simple CMS.</p>
-    <p>Blog template built for <a href="http://getbootstrap.com">Bootstrap</a> by <a href="https://twitter.com/mdo">@@mdo</a>.</p>
-    <p>
-      <a href="#">Back to top</a>
-    </p>
-  </footer>
+<footer class="blog-footer">
+  <div class="blog-footer-text">
+    @Html.Raw(dscmsLayout != null && dscmsLayout.GetValueFor("blog-footer-text") != "" ? dscmsLayout.GetValueFor("blog-footer-text") : "<p>This site runs on <a href=\"https://github.com/bradyep/DSCMS\">DSCMS</a>, the Dead Simple CMS.</p><p>Blog template built for <a href=\"http://getbootstrap.com\">Bootstrap</a> by <a href=\"https://twitter.com/mdo\">@@mdo</a>.</p>")
+  </div>
+  <p>
+    <a href="#">Back to top</a>
+  </p>
+</footer>
 
   <environment names="Development">
     <script src="~/lib/jquery/dist/jquery.js"></script>

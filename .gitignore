@@ -200,7 +200,7 @@ Generated_Code/
 # to a newer Visual Studio version. Backup files are not needed,
 # because we have git ;-)
 _UpgradeReport_Files/
-Backup*/
+/Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
 
@@ -248,3 +248,10 @@ ModelManifest.xml
 
 # JetBrains Rider
 .idea/
+
+# Admin-uploaded static files (live on the data volume, not in source control)
+DSCMS/dscms-data/static/
+DSCMS/dscms-data/static-staging/
+
+# Backup snapshots contain password hashes; never commit them
+DSCMS/dscms-data/backups/

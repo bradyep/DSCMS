@@ -74,7 +74,7 @@ public class LayoutsController : ControllerBase
   {
     _logger.LogDebug("API GetById requested for layout id: {LayoutId}", id);
 
-    var layout = await _layoutRepository.GetByIdAsync(id);
+    var layout = await _layoutRepository.GetByIdWithValuesAsync(id);
     if (layout == null)
     {
       _logger.LogWarning("Layout not found with id: {LayoutId}", id);
@@ -87,7 +87,13 @@ public class LayoutsController : ControllerBase
       Name = layout.Name,
       LayoutSource = layout.LayoutSource,
       SourceTypeId = layout.SourceTypeId,
-      SourceTypeName = layout.SourceType?.Description
+      SourceTypeName = layout.SourceType?.Description,
+      LayoutValues = layout.LayoutValues.Select(lv => new LayoutValueDto
+      {
+        LayoutValueId = lv.LayoutValueId,
+        Key = lv.Key,
+        Value = lv.Value
+      }).ToList()
     };
 
     _logger.LogDebug("Found layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
@@ -113,6 +119,11 @@ public class LayoutsController : ControllerBase
       SourceTypeId = dto.SourceTypeId
     };
 
+    foreach (var valueDto in dto.LayoutValues ?? new List<LayoutValueDto>())
+    {
+      layout.LayoutValues.Add(new LayoutValue { Key = valueDto.Key, Value = valueDto.Value });
+    }
+
     await _layoutRepository.AddAsync(layout);
     _logger.LogInformation("Created new layout: {LayoutId} - {LayoutName}", layout.LayoutId, layout.Name);
 
@@ -121,7 +132,13 @@ public class LayoutsController : ControllerBase
       LayoutId = layout.LayoutId,
       Name = layout.Name,
       LayoutSource = layout.LayoutSource,
-      SourceTypeId = layout.SourceTypeId
+      SourceTypeId = layout.SourceTypeId,
+      LayoutValues = layout.LayoutValues.Select(lv => new LayoutValueDto
+      {
+        LayoutValueId = lv.LayoutValueId,
+        Key = lv.Key,
+        Value = lv.Value
+      }).ToList()
     };
 
     return CreatedAtAction(nameof(GetById), new { id = layout.LayoutId }, resultDto);
@@ -139,7 +156,7 @@ public class LayoutsController : ControllerBase
       return BadRequest(ModelState);
     }
 
-    var layout = await _layoutRepository.GetByIdAsync(id);
+    var layout = await _layoutRepository.GetByIdWithValuesAsync(id);
     if (layout == null)
     {
       _logger.LogWarning("Layout not found for update with id: {LayoutId}", id);
@@ -149,6 +166,28 @@ public class LayoutsController : ControllerBase
     layout.Name = dto.Name;
     layout.LayoutSource = dto.LayoutSource;
     layout.SourceTypeId = dto.SourceTypeId;
+
+    var incomingValues = dto.LayoutValues ?? new List<LayoutValueDto>();
+    var existingValuesById = layout.LayoutValues.ToDictionary(lv => lv.LayoutValueId);
+    var incomingIds = incomingValues.Where(v => v.LayoutValueId > 0).Select(v => v.LayoutValueId).ToHashSet();
+
+    foreach (var toRemove in layout.LayoutValues.Where(lv => !incomingIds.Contains(lv.LayoutValueId)).ToList())
+    {
+      layout.LayoutValues.Remove(toRemove);
+    }
+
+    foreach (var valueDto in incomingValues)
+    {
+      if (valueDto.LayoutValueId > 0 && existingValuesById.TryGetValue(valueDto.LayoutValueId, out var existingValue))
+      {
+        existingValue.Key = valueDto.Key;
+        existingValue.Value = valueDto.Value;
+      }
+      else
+      {
+        layout.LayoutValues.Add(new LayoutValue { Key = valueDto.Key, Value = valueDto.Value });
+      }
+    }
 
     try
     {
@@ -173,7 +212,13 @@ public class LayoutsController : ControllerBase
       LayoutId = layout.LayoutId,
       Name = layout.Name,
       LayoutSource = layout.LayoutSource,
-      SourceTypeId = layout.SourceTypeId
+      SourceTypeId = layout.SourceTypeId,
+      LayoutValues = layout.LayoutValues.Select(lv => new LayoutValueDto
+      {
+        LayoutValueId = lv.LayoutValueId,
+        Key = lv.Key,
+        Value = lv.Value
+      }).ToList()
     };
 
     return Ok(resultDto);

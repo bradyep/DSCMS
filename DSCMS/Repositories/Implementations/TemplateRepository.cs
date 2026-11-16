@@ -40,6 +40,7 @@ namespace DSCMS.Repositories.Implementations
     {
       return await _context.Templates
         .Include(t => t.Layout)
+          .ThenInclude(l => l!.LayoutValues)
         .Where(t => t.TemplateId == id)
         .FirstOrDefaultAsync();
     }

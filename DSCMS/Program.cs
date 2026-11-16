@@ -5,7 +5,8 @@ using DSCMS.Models;
 using DSCMS.Services;
 using DSCMS.Repositories.Interfaces;
 using DSCMS.Repositories.Implementations;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
+using DSCMS.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,7 @@ if (builder.Environment.IsDevelopment())
   builder.Logging.SetMinimumLevel(LogLevel.Debug);
 }
 
-// Add services to the container (equivalent to ConfigureServices)
+// Add services to the container
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -36,8 +37,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Add application services with proper dependency injection
-//builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
+// Add application services
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
@@ -50,6 +50,14 @@ builder.Services.AddScoped<IContentTypeFieldRepository, ContentTypeFieldReposito
 builder.Services.AddScoped<IContentTypeFieldItemRepository, ContentTypeFieldItemRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISourceTypeRepository, SourceTypeRepository>();
+builder.Services.AddScoped<IStaticUploadRepository, StaticUploadRepository>();
+
+// Admin-uploaded static files (stored on the data volume, served at /static)
+builder.Services.AddSingleton<IStaticFileStorageService, StaticFileStorageService>();
+
+// Whole-site backup and restore (database + static uploads)
+builder.Services.AddSingleton<MaintenanceState>();
+builder.Services.AddSingleton<IBackupService, BackupService>();
 
 // Add MVC and Razor Pages
 builder.Services.AddControllersWithViews();
@@ -68,6 +76,19 @@ var config = app.Services.GetRequiredService<IConfigurationService>();
 var dbSettings = config.GetDatabaseSettings();
 logger.LogInformation("Database configured: {DatabaseType}", dbSettings.DatabaseType);
 
+// A database the app can't write still opens (read-only), so check now rather than on the first failed save
+try
+{
+  var dbWriteProblem = DatabaseAccess.FindWriteProblem(dbSettings.ConnectionString);
+  if (dbWriteProblem != null)
+  {
+    logger.LogError("{Problem}", dbWriteProblem);
+  }
+}
+catch (Exception ex)
+{
+  logger.LogWarning(ex, "Could not check whether the database is writable");
+}
 
 // Configure the HTTP request pipeline (equivalent to Configure method)
 if (app.Environment.IsDevelopment())
@@ -85,15 +106,32 @@ else
 // Comment out HTTPS redirection for localhost development
 // app.UseHttpsRedirection();
 
+// Hold back traffic while a restore swaps the database and static files
+app.UseMiddleware<MaintenanceModeMiddleware>();
+
 // Configure static files with custom MIME types safely
-var provider = new FileExtensionContentTypeProvider();
-var customMappings = new Dictionary<string, string>(provider.Mappings);
-customMappings[".odt"] = "application/vnd.oasis.opendocument.text";
-var customProvider = new FileExtensionContentTypeProvider(customMappings);
+var staticFileStorage = app.Services.GetRequiredService<IStaticFileStorageService>();
 
 app.UseStaticFiles(new StaticFileOptions
 {
-  ContentTypeProvider = customProvider
+  ContentTypeProvider = staticFileStorage.ContentTypeProvider
+});
+
+// Serve admin-uploaded files. Unknown types are allowed because uploaded games
+// often ship assets (.data, .unityweb, ...) that have no registered MIME type.
+var uploadsFileProvider = new PhysicalFileProvider(staticFileStorage.RootPath);
+app.UseDefaultFiles(new DefaultFilesOptions
+{
+  FileProvider = uploadsFileProvider,
+  RequestPath = StaticFileStorageService.RequestPath
+});
+app.UseStaticFiles(new StaticFileOptions
+{
+  FileProvider = uploadsFileProvider,
+  RequestPath = StaticFileStorageService.RequestPath,
+  ContentTypeProvider = staticFileStorage.ContentTypeProvider,
+  ServeUnknownFileTypes = true,
+  DefaultContentType = "application/octet-stream"
 });
 
 logger?.LogDebug("Static files configured with custom MIME types");
@@ -132,6 +170,16 @@ app.MapControllerRoute(
     name: "ContentTypes",
     pattern: "Admin/ContentTypes/{action=Index}/{id?}",
     defaults: new { controller = "ContentTypesView" });
+
+app.MapControllerRoute(
+    name: "StaticUploads",
+    pattern: "Admin/StaticUploads/{action=Index}/{id?}",
+    defaults: new { controller = "StaticUploadsView" });
+
+app.MapControllerRoute(
+    name: "Backup",
+    pattern: "Admin/Backup/{action=Index}/{id?}",
+    defaults: new { controller = "BackupView" });
 
 app.MapControllerRoute(
     name: "ContentTypeFieldItems",
