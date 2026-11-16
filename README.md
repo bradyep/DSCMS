@@ -61,7 +61,7 @@ Browse to the `/admin` route of your DSCMS instance.
 5. Remove the old docker container: `sudo docker rm [id]`
 6. Remove the old docker image to save space: `sudo docker rmi [id]`
 7. Get the newly updated image: `sudo docker pull bradyep/dscms:v1.0.0`
-8. Start up the new container: `sudo docker run -d --restart unless-stopped -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms`
+8. Start up the new container: `sudo docker run -d --restart unless-stopped -p 127.0.0.1:5000:5000 -it --mount source=dscms-data,target=/dscms-data bradyep/dscms:v1.0.0`
 
 ## Server
 
