@@ -67,6 +67,7 @@ Browse to the `/admin` route of your DSCMS instance.
 
 * The data directory on the docker host is: `/var/lib/docker/volumes/dscms-data/_data`
 * The data directory in the docker image is `/dscms-data`
+* The container runs as user `dscms`, UID/GID **999** (fixed in the Dockerfile). Everything in the data directory, including the directory itself and `dscms.db`, must be writable by that user. Otherwise SQLite silently opens the database read-only, every save fails with "attempt to write a readonly database", and the app logs an error at startup. To fix ownership: `sudo chown 999:999 /var/lib/docker/volumes/dscms-data/_data /var/lib/docker/volumes/dscms-data/_data/dscms.db`, then restart the container. Files copied in by hand from the host (e.g. a database restored with `cp`) will be owned by your host user, so re-run that `chown` afterwards.
 * Static files uploaded through **Admin → Static Files** are stored in `/dscms-data/static` (so they survive redeploys) and served at `/static/...`.
 * Uploads are capped by `StaticFileSettings:MaxUploadBytes` (200 MB by default). A reverse proxy in front of the container has its own limit — for nginx, set `client_max_body_size 200m;` in the site's `server` block, or larger uploads fail with HTTP 413 before reaching the app.
 * Restoring a backup uploads the whole site in one request, capped by `BackupSettings:MaxRestoreBytes` (2 GB by default). Raise the proxy's limit to match (e.g. `client_max_body_size 2g;`, and a longer `proxy_read_timeout` for large sites), or restores fail with HTTP 413.
