@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function render(upload) {
     app.innerHTML = `
       <h2>Static File Details</h2>
+      ${(upload.warnings || []).map(w => `<div class="alert alert-warning">${escapeHtml(w)}</div>`).join('')}
       <dl class="dl-horizontal">
         <dt>Folder</dt>
         <dd>${escapeHtml(upload.folderPath)}</dd>

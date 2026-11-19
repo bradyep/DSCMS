@@ -5,7 +5,6 @@ using DSCMS.Models;
 using DSCMS.Services;
 using DSCMS.Repositories.Interfaces;
 using DSCMS.Repositories.Implementations;
-using Microsoft.Extensions.FileProviders;
 using DSCMS.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,8 +51,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISourceTypeRepository, SourceTypeRepository>();
 builder.Services.AddScoped<IStaticUploadRepository, StaticUploadRepository>();
 
-// Admin-uploaded static files (stored on the data volume, served at /static)
+// Admin-uploaded static files (stored on the data volume, served at their folder path and under /static)
 builder.Services.AddSingleton<IStaticFileStorageService, StaticFileStorageService>();
+builder.Services.AddSingleton<IStaticUploadRegistry, StaticUploadRegistry>();
+builder.Services.AddScoped<ICmsPageLookup, CmsPageLookup>();
 
 // Whole-site backup and restore (database + static uploads)
 builder.Services.AddSingleton<MaintenanceState>();
@@ -109,29 +110,16 @@ else
 // Hold back traffic while a restore swaps the database and static files
 app.UseMiddleware<MaintenanceModeMiddleware>();
 
+// Serve admin-uploaded files at their folder path (and the legacy /static alias).
+// Runs before the wwwroot files so an upload wins over them; a CMS page at the same URL wins over the upload.
+app.UseMiddleware<StaticUploadMiddleware>();
+
 // Configure static files with custom MIME types safely
 var staticFileStorage = app.Services.GetRequiredService<IStaticFileStorageService>();
 
 app.UseStaticFiles(new StaticFileOptions
 {
   ContentTypeProvider = staticFileStorage.ContentTypeProvider
-});
-
-// Serve admin-uploaded files. Unknown types are allowed because uploaded games
-// often ship assets (.data, .unityweb, ...) that have no registered MIME type.
-var uploadsFileProvider = new PhysicalFileProvider(staticFileStorage.RootPath);
-app.UseDefaultFiles(new DefaultFilesOptions
-{
-  FileProvider = uploadsFileProvider,
-  RequestPath = StaticFileStorageService.RequestPath
-});
-app.UseStaticFiles(new StaticFileOptions
-{
-  FileProvider = uploadsFileProvider,
-  RequestPath = StaticFileStorageService.RequestPath,
-  ContentTypeProvider = staticFileStorage.ContentTypeProvider,
-  ServeUnknownFileTypes = true,
-  DefaultContentType = "application/octet-stream"
 });
 
 logger?.LogDebug("Static files configured with custom MIME types");

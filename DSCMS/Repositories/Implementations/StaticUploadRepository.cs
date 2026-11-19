@@ -40,6 +40,14 @@ namespace DSCMS.Repositories.Implementations
       return await _context.StaticUploads.Select(u => u.FolderPath).ToListAsync();
     }
 
+    public async Task<List<StaticUpload>> GetAllWithFilesAsync()
+    {
+      return await _context.StaticUploads
+        .AsNoTracking()
+        .Include(u => u.Files)
+        .ToListAsync();
+    }
+
     public async Task AddAsync(StaticUpload upload)
     {
       _context.StaticUploads.Add(upload);

@@ -28,6 +28,11 @@ public class StaticUploadListDto
 public class StaticUploadDetailDto : StaticUploadListDto
 {
   public List<StaticUploadFileDto> Files { get; set; } = new();
+
+  /// <summary>
+  /// Things the admin should know about how this upload's URLs resolve (for example, a CMS page sharing its address).
+  /// </summary>
+  public List<string> Warnings { get; set; } = new();
 }
 
 public class StaticUploadFileDto

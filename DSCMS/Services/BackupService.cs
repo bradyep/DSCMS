@@ -44,6 +44,7 @@ namespace DSCMS.Services
     private static readonly JsonSerializerOptions ManifestJsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
 
     private readonly IStaticFileStorageService _storage;
+    private readonly IStaticUploadRegistry _uploadRegistry;
     private readonly MaintenanceState _maintenance;
     private readonly ILogger<BackupService> _logger;
     private readonly string _liveConnectionString;
@@ -55,18 +56,19 @@ namespace DSCMS.Services
 
     public BackupSettings Settings { get; }
 
-    public BackupService(IConfigurationService configurationService, IWebHostEnvironment environment, IStaticFileStorageService storage,
+    public BackupService(IConfigurationService configurationService, IWebHostEnvironment environment, IStaticFileStorageService storage, IStaticUploadRegistry uploadRegistry,
       MaintenanceState maintenance, ILogger<BackupService> logger)
       : this(configurationService.GetBackupSettings(), environment.ContentRootPath, configurationService.GetDatabaseSettings().ConnectionString,
-          environment.EnvironmentName, storage, maintenance, logger)
+          environment.EnvironmentName, storage, uploadRegistry, maintenance, logger)
     {
     }
 
     public BackupService(BackupSettings settings, string contentRootPath, string liveConnectionString, string environmentName,
-      IStaticFileStorageService storage, MaintenanceState maintenance, ILogger<BackupService> logger)
+      IStaticFileStorageService storage, IStaticUploadRegistry uploadRegistry, MaintenanceState maintenance, ILogger<BackupService> logger)
     {
       Settings = settings;
       _storage = storage;
+      _uploadRegistry = uploadRegistry;
       _maintenance = maintenance;
       _logger = logger;
       _liveConnectionString = liveConnectionString;
@@ -594,6 +596,9 @@ namespace DSCMS.Services
           UndoStaticSwap(previousStatic);
           throw new BackupException($"The database could not be restored, so nothing was changed: {ex.Message}", ex);
         }
+
+        // Still inside restoring mode (every request gets 503), so the first request afterwards rebuilds the upload index from the restored database
+        _uploadRegistry.Invalidate();
 
         if (previousStatic != null)
         {

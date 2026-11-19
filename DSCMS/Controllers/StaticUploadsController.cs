@@ -20,12 +20,17 @@ public class StaticUploadsController : ControllerBase
 
   private readonly IStaticUploadRepository _staticUploadRepository;
   private readonly IStaticFileStorageService _storage;
+  private readonly IStaticUploadRegistry _registry;
+  private readonly ICmsPageLookup _cmsPages;
   private readonly ILogger<StaticUploadsController> _logger;
 
-  public StaticUploadsController(IStaticUploadRepository staticUploadRepository, IStaticFileStorageService storage, ILogger<StaticUploadsController> logger)
+  public StaticUploadsController(IStaticUploadRepository staticUploadRepository, IStaticFileStorageService storage,
+    IStaticUploadRegistry registry, ICmsPageLookup cmsPages, ILogger<StaticUploadsController> logger)
   {
     _staticUploadRepository = staticUploadRepository;
     _storage = storage;
+    _registry = registry;
+    _cmsPages = cmsPages;
     _logger = logger;
   }
 
@@ -55,7 +60,7 @@ public class StaticUploadsController : ControllerBase
       return NotFound();
     }
 
-    return Ok(MapDetail(upload));
+    return Ok(await MapDetailAsync(upload));
   }
 
   // POST: api/staticuploads (multipart/form-data)
@@ -85,6 +90,13 @@ public class StaticUploadsController : ControllerBase
     if (normalizedFolder == null)
     {
       return BadRequest(new { error = $"'{requestedFolder}' is not a valid folder path. Use letters, numbers, '.', '-' or '_', separated by '/'." });
+    }
+
+    var reservedSegment = ReservedPaths.FindReservedUploadSegment(normalizedFolder);
+    if (reservedSegment != null)
+    {
+      _logger.LogWarning("Static upload folder {FolderPath} starts with reserved name {ReservedName}", normalizedFolder, reservedSegment);
+      return BadRequest(new { error = $"Folders can't start with '{reservedSegment}': the site already uses /{reservedSegment}/ for its own pages or files. Choose a different folder." });
     }
 
     var overlapping = FindOverlappingFolder(await _staticUploadRepository.GetAllFolderPathsAsync(), normalizedFolder);
@@ -137,10 +149,12 @@ public class StaticUploadsController : ControllerBase
       throw;
     }
 
+    _registry.Invalidate();
+
     _logger.LogInformation("Created static upload {StaticUploadId} at {FolderPath} with {FileCount} files",
       upload.StaticUploadId, upload.FolderPath, upload.FileCount);
 
-    return CreatedAtAction(nameof(GetById), new { id = upload.StaticUploadId }, MapDetail(upload));
+    return CreatedAtAction(nameof(GetById), new { id = upload.StaticUploadId }, await MapDetailAsync(upload));
   }
 
   // PUT: api/staticuploads/{id}/file (multipart/form-data) - replaces the contents, keeping the folder and URLs
@@ -193,11 +207,16 @@ public class StaticUploadsController : ControllerBase
       _logger.LogError(ex, "Files for static upload {StaticUploadId} were replaced on disk but the database update failed", id);
       throw;
     }
+    finally
+    {
+      // The files on disk changed either way
+      _registry.Invalidate();
+    }
 
     _logger.LogInformation("Replaced files for static upload {StaticUploadId} at {FolderPath} ({FileCount} files)",
       upload.StaticUploadId, upload.FolderPath, upload.FileCount);
 
-    return Ok(MapDetail(upload));
+    return Ok(await MapDetailAsync(upload));
   }
 
   // PUT: api/staticuploads/{id}
@@ -223,7 +242,7 @@ public class StaticUploadsController : ControllerBase
     await _staticUploadRepository.UpdateAsync(upload);
 
     _logger.LogInformation("Updated static upload {StaticUploadId}", id);
-    return Ok(MapDetail(upload));
+    return Ok(await MapDetailAsync(upload));
   }
 
   // DELETE: api/staticuploads/{id}
@@ -240,6 +259,7 @@ public class StaticUploadsController : ControllerBase
     }
 
     await _staticUploadRepository.DeleteAsync(upload);
+    _registry.Invalidate();
 
     try
     {
@@ -306,9 +326,15 @@ public class StaticUploadsController : ControllerBase
   // SQLite doesn't keep DateTimeKind; times are always stored as UTC, so mark them as such for the client
   private static DateTime AsUtc(DateTime value) => DateTime.SpecifyKind(value, DateTimeKind.Utc);
 
-  private StaticUploadDetailDto MapDetail(StaticUpload upload)
+  private async Task<StaticUploadDetailDto> MapDetailAsync(StaticUpload upload)
   {
     var dto = MapSummary<StaticUploadDetailDto>(upload);
+    if (await _cmsPages.IsCmsPageAsync(upload.FolderPath))
+    {
+      dto.Warnings.Add($"/{upload.FolderPath} is also a CMS page, which takes priority over this folder's own address. "
+        + "The files inside the folder are still served, so link to them by their full path.");
+    }
+
     dto.Files = upload.Files
       .OrderBy(f => f.RelativePath, StringComparer.OrdinalIgnoreCase)
       .Select(f => new StaticUploadFileDto

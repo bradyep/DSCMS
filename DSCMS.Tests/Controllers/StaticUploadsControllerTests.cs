@@ -14,6 +14,8 @@ namespace DSCMS.Tests.Controllers
     {
         private readonly Mock<IStaticUploadRepository> _uploadRepo;
         private readonly Mock<IStaticFileStorageService> _storage;
+        private readonly Mock<IStaticUploadRegistry> _registry;
+        private readonly Mock<ICmsPageLookup> _cmsPages;
         private readonly Mock<ILogger<StaticUploadsController>> _logger;
         private readonly StaticUploadsController _controller;
 
@@ -21,15 +23,17 @@ namespace DSCMS.Tests.Controllers
         {
             _uploadRepo = new Mock<IStaticUploadRepository>();
             _storage = new Mock<IStaticFileStorageService>();
+            _registry = new Mock<IStaticUploadRegistry>();
+            _cmsPages = new Mock<ICmsPageLookup>();
             _logger = new Mock<ILogger<StaticUploadsController>>();
 
             _storage.Setup(s => s.NormalizeFolderPath(It.IsAny<string?>()))
                 .Returns((string? p) => string.IsNullOrWhiteSpace(p) || p.Contains("..") ? null : p.Trim('/').ToLowerInvariant());
             _storage.Setup(s => s.BuildUrl(It.IsAny<string>(), It.IsAny<string?>()))
-                .Returns((string folder, string? file) => $"/static/{folder}/{file}");
+                .Returns((string folder, string? file) => $"/{folder}/{file}");
             _uploadRepo.Setup(r => r.GetAllFolderPathsAsync()).ReturnsAsync(new List<string>());
 
-            _controller = new StaticUploadsController(_uploadRepo.Object, _storage.Object, _logger.Object)
+            _controller = new StaticUploadsController(_uploadRepo.Object, _storage.Object, _registry.Object, _cmsPages.Object, _logger.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
             };
@@ -70,7 +74,7 @@ namespace DSCMS.Tests.Controllers
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
             var dto = Assert.Single(Assert.IsAssignableFrom<IEnumerable<StaticUploadListDto>>(ok.Value));
-            Assert.Equal("/static/resume/resume.pdf", dto.EntryUrl);
+            Assert.Equal("/resume/resume.pdf", dto.EntryUrl);
         }
 
         [Fact]
@@ -98,7 +102,7 @@ namespace DSCMS.Tests.Controllers
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
             var dto = Assert.IsType<StaticUploadDetailDto>(ok.Value);
-            Assert.Equal("/static/games/shapeshifter/index.html", Assert.Single(dto.Files).Url);
+            Assert.Equal("/games/shapeshifter/index.html", Assert.Single(dto.Files).Url);
         }
 
         [Fact]
@@ -267,6 +271,85 @@ namespace DSCMS.Tests.Controllers
             Assert.IsType<NoContentResult>(result);
             _uploadRepo.Verify(r => r.DeleteAsync(upload), Times.Once);
             _storage.Verify(s => s.DeleteFolder("games/shapeshifter"), Times.Once);
+            _registry.Verify(r => r.Invalidate(), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("static/games")]
+        [InlineData("admin")]
+        [InlineData("api/x")]
+        [InlineData("css")]
+        [InlineData("js/contents")]
+        [InlineData("lib")]
+        [InlineData("home/x")]
+        [InlineData("diagnostics")]
+        [InlineData("dscms")]
+        public async Task Create_ReservedFolder_ReturnsBadRequest(string folder)
+        {
+            var result = await _controller.Create(MakeFormFile("game.zip"), folder, null);
+
+            Assert.IsType<BadRequestObjectResult>(result.Result);
+            _storage.Verify(s => s.StageAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Theory]
+        [InlineData("images/logo")]
+        [InlineData("games/css")]
+        [InlineData("blog/attachments")]
+        public async Task Create_FolderOnlyLooksReserved_IsAllowed(string folder)
+        {
+            SetupStage(MakeStaged(false, "file.png"));
+
+            var result = await _controller.Create(MakeFormFile("file.png"), folder, null);
+
+            Assert.IsType<CreatedAtActionResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task Create_Valid_InvalidatesUploadIndex()
+        {
+            SetupStage(MakeStaged(false, "resume.pdf"));
+
+            await _controller.Create(MakeFormFile("resume.pdf"), "resume", null);
+
+            _registry.Verify(r => r.Invalidate(), Times.Once);
+        }
+
+        [Fact]
+        public async Task ReplaceFiles_Valid_InvalidatesUploadIndex()
+        {
+            var upload = new StaticUpload { StaticUploadId = 1, FolderPath = "resume" };
+            _uploadRepo.Setup(r => r.GetByIdWithFilesAsync(1)).ReturnsAsync(upload);
+            SetupStage(MakeStaged(false, "new.pdf"));
+
+            await _controller.ReplaceFiles(1, MakeFormFile("new.pdf"));
+
+            _registry.Verify(r => r.Invalidate(), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetById_FolderIsAlsoCmsPage_ReturnsWarning()
+        {
+            var upload = new StaticUpload { StaticUploadId = 1, FolderPath = "games/shapeshifter" };
+            _uploadRepo.Setup(r => r.GetByIdWithFilesAsync(1)).ReturnsAsync(upload);
+            _cmsPages.Setup(c => c.IsCmsPageAsync("games/shapeshifter")).ReturnsAsync(true);
+
+            var result = await _controller.GetById(1);
+
+            var dto = Assert.IsType<StaticUploadDetailDto>(Assert.IsType<OkObjectResult>(result.Result).Value);
+            Assert.Contains("/games/shapeshifter is also a CMS page", Assert.Single(dto.Warnings));
+        }
+
+        [Fact]
+        public async Task GetById_FolderIsNotCmsPage_HasNoWarnings()
+        {
+            var upload = new StaticUpload { StaticUploadId = 1, FolderPath = "ruffle" };
+            _uploadRepo.Setup(r => r.GetByIdWithFilesAsync(1)).ReturnsAsync(upload);
+
+            var result = await _controller.GetById(1);
+
+            var dto = Assert.IsType<StaticUploadDetailDto>(Assert.IsType<OkObjectResult>(result.Result).Value);
+            Assert.Empty(dto.Warnings);
         }
     }
 }

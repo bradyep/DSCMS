@@ -189,8 +189,8 @@ namespace DSCMS.Tests.Services
         [Fact]
         public void BuildUrl_EscapesSegments()
         {
-            Assert.Equal("/static/games/shapeshifter/", _service.BuildUrl("games/shapeshifter"));
-            Assert.Equal("/static/games/shapeshifter/assets/My%20Sprite.png", _service.BuildUrl("games/shapeshifter", "assets/My Sprite.png"));
+            Assert.Equal("/games/shapeshifter/", _service.BuildUrl("games/shapeshifter"));
+            Assert.Equal("/games/shapeshifter/assets/My%20Sprite.png", _service.BuildUrl("games/shapeshifter", "assets/My Sprite.png"));
         }
     }
 }

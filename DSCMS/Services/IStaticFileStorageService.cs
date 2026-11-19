@@ -9,7 +9,7 @@ namespace DSCMS.Services
   public interface IStaticFileStorageService
   {
     /// <summary>
-    /// Absolute path of the folder that is served at <see cref="StaticFileStorageService.RequestPath"/>.
+    /// Absolute path of the folder whose uploads are served at their folder path (see <c>StaticUploadMiddleware</c>).
     /// </summary>
     string RootPath { get; }
 

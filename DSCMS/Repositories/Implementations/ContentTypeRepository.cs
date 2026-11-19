@@ -53,6 +53,14 @@ namespace DSCMS.Repositories.Implementations
         .FirstOrDefaultAsync();
     }
 
+    public async Task<int?> GetIdByNameAsync(string name)
+    {
+      return await _context.ContentTypes
+        .Where(ct => ct.Name.ToLower() == name.ToLower())
+        .Select(ct => (int?)ct.ContentTypeId)
+        .FirstOrDefaultAsync();
+    }
+
     public async Task AddAsync(ContentType contentType)
     {
       _context.Add(contentType);
