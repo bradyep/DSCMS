@@ -8,6 +8,7 @@ using DSCMS.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace DSCMS.Tests.Services
 {
@@ -39,7 +40,7 @@ namespace DSCMS.Tests.Services
       _storage = new StaticFileStorageService(
         new StaticFileSettings { StoragePath = "static" }, _tempRoot, NullLogger<StaticFileStorageService>.Instance);
       _settings = new BackupSettings { StoragePath = "backups", SnapshotsToKeep = 2 };
-      _service = new BackupService(_settings, _tempRoot, _liveConnectionString, "Testing", _storage, _maintenance, NullLogger<BackupService>.Instance);
+      _service = new BackupService(_settings, _tempRoot, _liveConnectionString, "Testing", _storage, new Mock<IStaticUploadRegistry>().Object, _maintenance, NullLogger<BackupService>.Instance);
 
       SeedSite();
     }
@@ -430,7 +431,7 @@ namespace DSCMS.Tests.Services
       // Another connection holding the write lock lets the snapshot read the live database (WAL)
       // but makes the copy into it fail. A short timeout keeps the test from waiting out SQLite's default.
       var service = new BackupService(_settings, _tempRoot, _liveConnectionString + ";Default Timeout=1", "Testing",
-        _storage, _maintenance, NullLogger<BackupService>.Instance);
+        _storage, new Mock<IStaticUploadRegistry>().Object, _maintenance, NullLogger<BackupService>.Instance);
       var preview = await service.StageRestoreAsync(new MemoryStream(backup), "backup.zip");
       Assert.True(preview.CanRestore, string.Join(" | ", preview.Errors));
 

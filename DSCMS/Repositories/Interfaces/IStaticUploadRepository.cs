@@ -8,6 +8,7 @@ namespace DSCMS.Repositories.Interfaces
     Task<StaticUpload?> GetByIdAsync(int id);
     Task<StaticUpload?> GetByIdWithFilesAsync(int id);
     Task<List<string>> GetAllFolderPathsAsync();
+    Task<List<StaticUpload>> GetAllWithFilesAsync();
     Task AddAsync(StaticUpload upload);
     Task UpdateAsync(StaticUpload upload);
     Task ReplaceFilesAsync(StaticUpload upload, List<StaticUploadFile> files);

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <label for="folderPath" class="col-md-2 control-label">Folder</label>
         <div class="col-md-10">
           <input type="text" id="folderPath" name="folderPath" class="form-control" placeholder="e.g. resume or games/shapeshifter" />
-          <small class="form-text text-muted">Files will be served from <code id="urlPreview">/static/&hellip;/</code>. Defaults to the file name.</small>
+          <small class="form-text text-muted">Files will be served from <code id="urlPreview">/&hellip;/</code>. Defaults to the file name. If a CMS page has the same address, the page takes priority.</small>
         </div>
       </div>
       <div class="form-group">
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updatePreview() {
     const folder = folderInput.value.trim() || folderInput.placeholder;
-    urlPreview.textContent = `/static/${folder.replace(/^\/+|\/+$/g, '')}/`;
+    urlPreview.textContent = `/${folder.replace(/^\/+|\/+$/g, '')}/`;
   }
 
   fileInput.addEventListener('change', () => {

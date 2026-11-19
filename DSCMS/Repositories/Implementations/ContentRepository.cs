@@ -78,6 +78,11 @@ namespace DSCMS.Repositories.Implementations
         .FirstOrDefaultAsync();
     }
 
+    public async Task<bool> ExistsByUrlAndContentTypeAsync(string url, int contentTypeId)
+    {
+      return await _context.Contents.AnyAsync(c => c.UrlToDisplay == url && c.ContentTypeId == contentTypeId);
+    }
+
     public async Task AddAsync(Content content)
     {
       _context.Add(content);

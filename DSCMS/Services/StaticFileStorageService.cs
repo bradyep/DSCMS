@@ -9,7 +9,8 @@ namespace DSCMS.Services
   public class StaticFileStorageService : IStaticFileStorageService
   {
     /// <summary>
-    /// URL prefix uploads are served under. Also reserved as a ContentType name.
+    /// Legacy URL prefix: uploads are served at their own folder path, and also under this prefix so older links keep working.
+    /// Reserved as a ContentType name and as an upload folder name (see <see cref="ReservedPaths"/>).
     /// </summary>
     public const string RequestPath = "/static";
 
@@ -200,7 +201,7 @@ namespace DSCMS.Services
 
     public string BuildUrl(string folderPath, string? relativePath = null)
     {
-      var folderUrl = $"{RequestPath}/{EscapePath(folderPath)}/";
+      var folderUrl = $"/{EscapePath(folderPath)}/";
       return relativePath == null ? folderUrl : folderUrl + EscapePath(relativePath);
     }
 

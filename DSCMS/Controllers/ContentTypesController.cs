@@ -254,6 +254,6 @@ public class ContentTypesController : ControllerBase
   /// </summary>
   private static bool IsReservedName(string? name)
   {
-    return string.Equals(name?.Trim(), StaticFileStorageService.RequestPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+    return ReservedPaths.IsReservedContentTypeName(name);
   }
 }

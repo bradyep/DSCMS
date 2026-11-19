@@ -16,7 +16,7 @@ dotnet run --project DSCMS/DSCMS.csproj
 
 Unit tests (controllers + services, fast, no running app needed):
 ```powershell
-dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers|FullyQualifiedName~Services"
+dotnet test DSCMS.Tests --filter "FullyQualifiedName~Controllers|FullyQualifiedName~Services|FullyQualifiedName~Middleware"
 ```
 
 E2E tests (Playwright, drives a real Chromium browser against a real app instance on port 5099):
@@ -42,6 +42,13 @@ dotnet ef migrations add <Name> --project DSCMS --startup-project DSCMS
 dotnet ef database update --project DSCMS --startup-project DSCMS
 ```
 
+## Git workflow
+
+The user manages branches and commits themselves:
+- **Never create, switch, or delete branches**, even when a task seems to call for a new branch or a memory/plan mentions one. Work on whatever branch is checked out.
+- **Never commit, push, or stash** unless the user explicitly asks in the current conversation.
+- If you think a change belongs on a separate branch, say so and leave it to the user.
+
 ## Architecture
 
 ### Content model
@@ -60,12 +67,14 @@ The CMS is built from these core EF entities (`DSCMS/Models/`) wired together in
 
 ### Static file uploads
 
-Site-specific static files (resumes, HTML5/Flash games, etc.) are **not** shipped in `wwwroot` — admins upload them under Admin → Static Files, and they're served at `/static/{folderPath}/...`.
+Site-specific static files (resumes, HTML5/Flash games, etc.) are **not** shipped in `wwwroot` — admins upload them under Admin → Static Files, and they're served at `/{folderPath}/...` (and also at the legacy `/static/{folderPath}/...`, kept so older links still work).
 
 - Files are stored under `StaticFileSettings:StoragePath` — `/dscms-data/static` in production, i.e. on the persistent Docker volume next to `dscms.db`. Never store uploads in `wwwroot`: it's baked into the image and wiped on every redeploy. A full site backup = the database + this folder; the per-file hashes let backup/restore verify the two match (see below).
 - `IStaticFileStorageService` (`DSCMS/Services/StaticFileStorageService.cs`) owns all file-system work: folder-path normalization, staging uploads in a sibling `static-staging` folder (never publicly served) and then committing them with a directory move, zip extraction (zip-slip checks, size/entry limits, flattening a single root folder, skipping `__MACOSX`/`.DS_Store`), deletion, and URL building. The controller (`StaticUploadsController`) handles validation and DB records, and should not touch the file system directly.
 - Every upload owns its own folder (folders may be nested, like `games/shapeshifter`). Folders must not overlap — an upload can't sit inside or contain another — so deleting or replacing one never affects another. Replacing keeps the folder and URLs the same.
-- Program.cs registers a second `UseDefaultFiles`/`UseStaticFiles` pair for the upload folder, with `ServeUnknownFileTypes` enabled so game assets with unregistered extensions still load. The `/static` prefix is the `StaticFileStorageService.RequestPath` constant, and `static` is a reserved ContentType name (checked in `ContentTypesController`).
+- `StaticUploadMiddleware` (`DSCMS/Middleware/`) serves uploads. It runs before the wwwroot `UseStaticFiles`, so an upload wins over a wwwroot file. Precedence is **CMS page > upload > wwwroot**: for paths of up to two segments, `ICmsPageLookup` checks whether `DSCMSController` would really render a page there (a ContentType listing or an existing Content; the Welcome fallback doesn't count), and if so the request passes through. `/static/...` (the `StaticFileStorageService.RequestPath` alias) skips that check. A folder URL without a trailing slash gets a 301 to add the slash, as DefaultFiles does. Sending is delegated to a built-in `StaticFileMiddleware` (with `ServeUnknownFileTypes`), so Range requests, ETags and HEAD work.
+- `IStaticUploadRegistry` caches a URL → file index built from the `StaticUploadFiles` rows. Matching ignores case, and the request is rewritten to the on-disk case, so links behave the same on Windows and Linux. Only files the DB knows about are served. Call `Invalidate()` whenever uploads change: `StaticUploadsController` create/replace/delete and `BackupService` restore already do.
+- `ReservedPaths` (`DSCMS/Services/`) holds the first URL segments the app owns. ContentType names can't use `static`/`admin`/`api`/`identity`/`css`/`js`/`lib`. Upload folders can't use those either, nor any controller name (found by reflection, because of the `{controller}/{action}` default route). css/js/lib are reserved because the admin UI's own files live there.
 - Upload size limits come from config via `[StaticUploadSizeLimit]` (`DSCMS/Filters/`), not a hard-coded `[RequestSizeLimit]`. In production, the reverse proxy's body-size limit must also allow them (see README).
 
 ### Backup & restore
@@ -107,6 +116,7 @@ Uses ASP.NET Core Identity (`ApplicationUser : IdentityUser`) with EF store via 
 
 - Controller unit tests (`DSCMS.Tests/Controllers/`) use xUnit + Moq, mocking repositories — no database or running app required.
 - Service tests (`DSCMS.Tests/Services/`) exercise services directly; `StaticFileStorageServiceTests` uses a real throwaway temp folder (no mocks) so the zip-safety and file-system behavior is actually tested. `BackupServiceTests` does the same with real SQLite files migrated via `Database.Migrate()`.
+- Middleware tests (`DSCMS.Tests/Middleware/`) call the middleware directly with a `DefaultHttpContext` and real files in a temp folder (no TestHost).
 - E2E tests (`DSCMS.Tests/E2E/`) use Playwright + `PlaywrightFixture`, which starts a real `dotnet run` instance on a dedicated port (5099, separate from the normal dev port 5000) via `IAsyncLifetime`, and tears it down after the test collection. They exercise real rendering (blog listing/pagination, Games/Projects/About sections) rather than mocking anything.
 
 ### Configuration

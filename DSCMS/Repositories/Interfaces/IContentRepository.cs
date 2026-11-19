@@ -11,6 +11,7 @@ namespace DSCMS.Repositories.Interfaces
     Task<Content?> GetByIdWithFieldItemsAsync(int id);
     Task<Content?> GetByIdWithContentTypeAsync(int id);
     Task<Content?> GetByUrlAndContentTypeAsync(string url, int contentTypeId);
+    Task<bool> ExistsByUrlAndContentTypeAsync(string url, int contentTypeId);
     Task AddAsync(Content content);
     Task UpdateAsync(Content content);
     Task DeleteAsync(Content content);

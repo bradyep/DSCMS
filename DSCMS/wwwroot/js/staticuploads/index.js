@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     app.innerHTML = `
       <h2>Static Files</h2>
-      <p>Uploaded files are served under <code>/static/</code>. Use the URLs below to link to them from layouts, templates and content.</p>
+      <p>Uploaded files are served at their folder's path (a folder <code>games/shapeshifter</code> is at <code>/games/shapeshifter/</code>). Use the URLs below to link to them from layouts, templates and content. Older <code>/static/&hellip;</code> links still work.</p>
       <p><a href="/Admin/StaticUploads/Create" class="btn btn-primary">Upload New</a></p>
       ${uploads.length === 0 ? '<p class="text-muted">Nothing has been uploaded yet.</p>' : `
       <table class="table">

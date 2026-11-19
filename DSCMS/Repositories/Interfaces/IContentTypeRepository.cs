@@ -10,6 +10,7 @@ namespace DSCMS.Repositories.Interfaces
     Task<ContentType?> GetByIdWithTemplateAsync(int id);
     Task<ContentType?> GetByIdWithFieldsAsync(int id);
     Task<ContentType?> GetByNameAsync(string name);
+    Task<int?> GetIdByNameAsync(string name);
     Task AddAsync(ContentType contentType);
     Task UpdateAsync(ContentType contentType);
     Task DeleteAsync(ContentType contentType);
